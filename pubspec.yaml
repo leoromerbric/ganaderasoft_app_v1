@@ -1,5 +1,5 @@
 name: ganaderasoft_app_v1
-description: "A new Flutter project."
+description: "GanaderaSoft - Sistema de gestión integral para fincas ganaderas"
 publish_to: 'none'
 version: 0.1.0
 
@@ -9,6 +9,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  http: ^1.1.0
+  shared_preferences: ^2.2.2
+  provider: ^6.0.5
 
 dev_dependencies:
   flutter_test:

@@ -1,20 +1,24 @@
 import 'package:flutter/material.dart';
+import 'theme/app_theme.dart';
+import 'constants/app_constants.dart';
+import 'screens/splash_screen.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(const GanaderaSoftApp());
 }
 
-class MainApp extends StatelessWidget {
-  const MainApp({super.key});
+class GanaderaSoftApp extends StatelessWidget {
+  const GanaderaSoftApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(
-        body: Center(
-          child: Text('Hello World!'),
-        ),
-      ),
+    return MaterialApp(
+      title: AppConstants.appName,
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system, // Follows system preference
+      home: const SplashScreen(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }

@@ -1,0 +1,10 @@
+Request:
+curl --location --request POST 'http://localhost:8000/api/auth/logout' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 10|e5nBO39g66h8bouBJQt9Jz9IdKoLhcOYQooMeIMhba476851'
+
+Response:
+{
+    "success": true,
+    "message": "Logout exitoso"
+}

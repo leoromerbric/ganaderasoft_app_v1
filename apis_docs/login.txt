@@ -1,0 +1,25 @@
+Request:
+curl --location 'http://localhost:8000/api/auth/login' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data-raw '{
+    "email": "leoromerbric@gmail.com",
+    "password": "123456789"
+}'
+
+Response:
+{
+    "success": true,
+    "message": "Login exitoso",
+    "data": {
+        "user": {
+            "id": 6,
+            "name": "Leonel Romero - Usuario",
+            "email": "leoromerbric@gmail.com",
+            "type_user": "Propietario",
+            "image": "user.png"
+        },
+        "token": "10|e5nBO39g66h8bouBJQt9Jz9IdKoLhcOYQooMeIMhba476851",
+        "token_type": "Bearer"
+    }
+}

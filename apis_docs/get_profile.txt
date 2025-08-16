@@ -1,0 +1,31 @@
+Request:
+curl --location 'http://localhost:8000/api/profile' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 10|e5nBO39g66h8bouBJQt9Jz9IdKoLhcOYQooMeIMhba476851'
+
+Response:
+{
+    "success": true,
+    "message": "Perfil de usuario",
+    "data": {
+        "user": {
+            "id": 6,
+            "name": "Leonel Romero - Usuario",
+            "email": "leoromerbric@gmail.com",
+            "type_user": "Propietario",
+            "image": "user.png",
+            "email_verified_at": null,
+            "created_at": "2024-02-01T15:19:01.000000Z",
+            "propietario": {
+                "id": 6,
+                "id_Personal": 17873216,
+                "Nombre": "Leonel",
+                "Apellido": "Romero",
+                "Telefono": "04140659739",
+                "archivado": false,
+                "created_at": null,
+                "updated_at": null
+            }
+        }
+    }
+}

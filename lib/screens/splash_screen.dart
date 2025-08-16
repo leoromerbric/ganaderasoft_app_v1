@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../constants/app_constants.dart';
 import 'login_screen.dart';
 import 'home_screen.dart';
 
@@ -79,7 +80,7 @@ class _SplashScreenState extends State<SplashScreen> {
             
             // App name
             const Text(
-              'GanaderaSoft',
+              AppConstants.appName,
               style: TextStyle(
                 fontSize: 32,
                 fontWeight: FontWeight.bold,
@@ -90,7 +91,7 @@ class _SplashScreenState extends State<SplashScreen> {
             
             // Subtitle
             const Text(
-              'Gestión de Fincas Ganaderas',
+              AppConstants.appSubtitle,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.white70,

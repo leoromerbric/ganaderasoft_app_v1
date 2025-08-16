@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
+import '../constants/app_constants.dart';
 import 'profile_screen.dart';
 import 'fincas_screen.dart';
 import 'login_screen.dart';
@@ -59,19 +60,19 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Cerrar Sesión'),
-          content: const Text('¿Está seguro que desea cerrar sesión?'),
+          title: const Text(AppConstants.logoutConfirmTitle),
+          content: const Text(AppConstants.logoutConfirmMessage),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancelar'),
+              child: const Text(AppConstants.cancelButton),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _logout();
               },
-              child: const Text('Cerrar Sesión'),
+              child: const Text(AppConstants.logoutConfirmButton),
             ),
           ],
         );
@@ -83,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('GanaderaSoft'),
+        title: const Text(AppConstants.appName),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -162,7 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '¡Bienvenido a GanaderaSoft!',
+                      '¡Bienvenido a ${AppConstants.appName}!',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'constants/app_constants.dart';
 import 'screens/splash_screen.dart';
 
 void main() {
@@ -12,7 +13,7 @@ class GanaderaSoftApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'GanaderaSoft',
+      title: AppConstants.appName,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system, // Follows system preference

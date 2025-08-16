@@ -4,33 +4,31 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
+import '../constants/app_constants.dart';
 
 class AuthService {
-  static const String _tokenKey = 'auth_token';
-  static const String _userKey = 'user_data';
-
   // Get stored token
   Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_tokenKey);
+    return prefs.getString(AppConstants.tokenKey);
   }
 
   // Save token to storage
   Future<void> saveToken(String token) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_tokenKey, token);
+    await prefs.setString(AppConstants.tokenKey, token);
   }
 
   // Save user data to storage
   Future<void> saveUser(User user) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_userKey, jsonEncode(user.toJson()));
+    await prefs.setString(AppConstants.userKey, jsonEncode(user.toJson()));
   }
 
   // Get stored user data
   Future<User?> getUser() async {
     final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(_userKey);
+    final userData = prefs.getString(AppConstants.userKey);
     if (userData != null) {
       return User.fromJson(jsonDecode(userData));
     }
@@ -40,8 +38,8 @@ class AuthService {
   // Clear stored credentials
   Future<void> clearCredentials() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_userKey);
+    await prefs.remove(AppConstants.tokenKey);
+    await prefs.remove(AppConstants.userKey);
   }
 
   // Check if user is logged in

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/connectivity_service.dart';
 import '../models/user.dart';
 import 'sync_screen.dart';
 
@@ -15,11 +16,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   bool _isLoading = true;
   String? _error;
+  bool _isOffline = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final isConnected = await ConnectivityService.isConnected();
+    setState(() {
+      _isOffline = !isConnected;
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -28,6 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = true;
         _error = null;
       });
+
+      await _checkConnectivity();
 
       final user = await _authService.getProfile();
       setState(() {
@@ -46,7 +58,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi Cuenta'),
+        title: Row(
+          children: [
+            const Text('Mi Cuenta'),
+            if (_isOffline) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/connectivity_service.dart';
 import '../models/finca.dart';
+import '../constants/app_constants.dart';
 
 class FincasScreen extends StatefulWidget {
   const FincasScreen({super.key});
@@ -14,11 +16,21 @@ class _FincasScreenState extends State<FincasScreen> {
   List<Finca> _fincas = [];
   bool _isLoading = true;
   String? _error;
+  bool _isOffline = false;
+  String? _dataSourceMessage;
 
   @override
   void initState() {
     super.initState();
     _loadFincas();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final isConnected = await ConnectivityService.isConnected();
+    setState(() {
+      _isOffline = !isConnected;
+    });
   }
 
   Future<void> _loadFincas() async {
@@ -26,12 +38,17 @@ class _FincasScreenState extends State<FincasScreen> {
       setState(() {
         _isLoading = true;
         _error = null;
+        _dataSourceMessage = null;
       });
+
+      // Check connectivity status
+      await _checkConnectivity();
 
       final fincasResponse = await _authService.getFincas();
       setState(() {
         _fincas = fincasResponse.fincas;
         _isLoading = false;
+        _dataSourceMessage = fincasResponse.message;
       });
     } catch (e) {
       setState(() {
@@ -45,7 +62,28 @@ class _FincasScreenState extends State<FincasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Administrar Fincas'),
+        title: Row(
+          children: [
+            const Text('Administrar Fincas'),
+            if (_isOffline) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         actions: [
@@ -113,7 +151,45 @@ class _FincasScreenState extends State<FincasScreen> {
                         ],
                       ),
                     )
-                  : _buildFincasList(),
+                  : Column(
+                      children: [
+                        // Data source info banner
+                        if (_dataSourceMessage != null)
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.all(16).copyWith(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: _isOffline ? Colors.orange[100] : Colors.green[100],
+                              border: Border.all(
+                                color: _isOffline ? Colors.orange : Colors.green,
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  _isOffline ? Icons.cloud_off : Icons.cloud_done,
+                                  color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    _dataSourceMessage!,
+                                    style: TextStyle(
+                                      color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        Expanded(child: _buildFincasList()),
+                      ],
+                    ),
     );
   }
 

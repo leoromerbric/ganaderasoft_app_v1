@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../constants/app_constants.dart';
 import 'profile_screen.dart';
 import 'fincas_screen.dart';
+import 'configuration_data_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -170,6 +171,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.settings_applications),
+              title: const Text('Datos de Configuración'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ConfigurationDataScreen()),
+                );
+              },
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
@@ -299,6 +311,16 @@ class _HomeScreenState extends State<HomeScreen> {
                     () => Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => const FincasScreen()),
+                    ),
+                  ),
+                  _buildQuickAccessCard(
+                    context,
+                    'Datos de Configuración',
+                    Icons.settings_applications,
+                    'Ver configuraciones del sistema',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => const ConfigurationDataScreen()),
                     ),
                   ),
                 ],

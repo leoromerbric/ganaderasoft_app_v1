@@ -1,0 +1,32 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/fuente-agua' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de fuentes de agua obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "superficial",
+            "nombre": "Superficial"
+        },
+        {
+            "codigo": "subterranea",
+            "nombre": "Subterránea"
+        },
+        {
+            "codigo": "toma_directa_rio",
+            "nombre": "Toma directa de río"
+        },
+        {
+            "codigo": "sistema_riego",
+            "nombre": "Sistema de Riego"
+        },
+        {
+            "codigo": "otro",
+            "nombre": "Otro"
+        }
+    ]
+}

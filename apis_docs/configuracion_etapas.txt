@@ -1,0 +1,186 @@
+Request:
+curl --location 'http://localhost:8000/api/etapas' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de etapas obtenida exitosamente",
+    "data": [
+        {
+            "etapa_id": 15,
+            "etapa_nombre": "Becerro",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 16,
+            "etapa_nombre": "Becerra",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 17,
+            "etapa_nombre": "Maute",
+            "etapa_edad_ini": 365,
+            "etapa_edad_fin": 730,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 18,
+            "etapa_nombre": "Mauta",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 19,
+            "etapa_nombre": "Novillo",
+            "etapa_edad_ini": 730,
+            "etapa_edad_fin": 913,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 20,
+            "etapa_nombre": "Novilla",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 21,
+            "etapa_nombre": "Toro",
+            "etapa_edad_ini": 913,
+            "etapa_edad_fin": null,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 22,
+            "etapa_nombre": "Vaca",
+            "etapa_edad_ini": 913,
+            "etapa_edad_fin": null,
+            "etapa_fk_tipo_animal_id": 3,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 3,
+                "tipo_animal_nombre": "Vacuno"
+            }
+        },
+        {
+            "etapa_id": 23,
+            "etapa_nombre": "Bucerro",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        },
+        {
+            "etapa_id": 24,
+            "etapa_nombre": "Bucerra",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        },
+        {
+            "etapa_id": 25,
+            "etapa_nombre": "Añojo",
+            "etapa_edad_ini": 365,
+            "etapa_edad_fin": 730,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        },
+        {
+            "etapa_id": 26,
+            "etapa_nombre": "Añoja",
+            "etapa_edad_ini": 0,
+            "etapa_edad_fin": 365,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        },
+        {
+            "etapa_id": 27,
+            "etapa_nombre": "Butoro",
+            "etapa_edad_ini": 730,
+            "etapa_edad_fin": null,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "M",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        },
+        {
+            "etapa_id": 28,
+            "etapa_nombre": "Bufala",
+            "etapa_edad_ini": 913,
+            "etapa_edad_fin": null,
+            "etapa_fk_tipo_animal_id": 4,
+            "etapa_sexo": "H",
+            "tipo_animal": {
+                "tipo_animal_id": 4,
+                "tipo_animal_nombre": "Bufala"
+            }
+        }
+    ],
+    "pagination": {
+        "current_page": 1,
+        "last_page": 1,
+        "per_page": 15,
+        "total": 14
+    }
+}

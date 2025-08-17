@@ -1,0 +1,47 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/ph-suelo' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de pH de suelo obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "1",
+            "nombre": "1",
+            "descripcion": "Extremadamente ácido"
+        },
+        {
+            "codigo": "2",
+            "nombre": "2",
+            "descripcion": "Muy ácido"
+        },
+        {
+            "codigo": "3",
+            "nombre": "3",
+            "descripcion": "Ácido"
+        },
+        {
+            "codigo": "4",
+            "nombre": "4",
+            "descripcion": "Ligeramente ácido"
+        },
+        {
+            "codigo": "5",
+            "nombre": "5",
+            "descripcion": "Ligeramente ácido"
+        },
+        {
+            "codigo": "6",
+            "nombre": "6",
+            "descripcion": "Ligeramente ácido"
+        },
+        {
+            "codigo": "7",
+            "nombre": "7",
+            "descripcion": "Neutro"
+        }
+    ]
+}

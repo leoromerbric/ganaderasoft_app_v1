@@ -1,0 +1,48 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/textura-suelo' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de texturas de suelo obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "arcilla",
+            "nombre": "Arcilla"
+        },
+        {
+            "codigo": "arcillo_arenoso",
+            "nombre": "Arcillo arenoso"
+        },
+        {
+            "codigo": "arcillo_limoso",
+            "nombre": "Arcillo limoso"
+        },
+        {
+            "codigo": "franco",
+            "nombre": "Franco"
+        },
+        {
+            "codigo": "franco_arcillo_arenoso",
+            "nombre": "Franco arcillo arenoso"
+        },
+        {
+            "codigo": "franco_limoso",
+            "nombre": "Franco limoso"
+        },
+        {
+            "codigo": "franco_arenoso",
+            "nombre": "Franco arenoso"
+        },
+        {
+            "codigo": "limoso",
+            "nombre": "Limoso"
+        },
+        {
+            "codigo": "otro",
+            "nombre": "Otro"
+        }
+    ]
+}

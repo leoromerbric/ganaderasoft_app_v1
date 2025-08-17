@@ -1,0 +1,20 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/sexo' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de sexos obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "M",
+            "nombre": "Macho"
+        },
+        {
+            "codigo": "H",
+            "nombre": "Hembra"
+        }
+    ]
+}

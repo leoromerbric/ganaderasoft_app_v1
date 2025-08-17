@@ -1,0 +1,36 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/metodo-riego' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de métodos de riego obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "aspersion",
+            "nombre": "Aspersión"
+        },
+        {
+            "codigo": "inundacion",
+            "nombre": "Inundación"
+        },
+        {
+            "codigo": "surco_con_salida",
+            "nombre": "Surco con salida"
+        },
+        {
+            "codigo": "surco_sin_salida",
+            "nombre": "Surco sin salida"
+        },
+        {
+            "codigo": "goteo",
+            "nombre": "Goteo"
+        },
+        {
+            "codigo": "otro",
+            "nombre": "Otro"
+        }
+    ]
+}

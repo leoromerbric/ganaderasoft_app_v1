@@ -1,0 +1,32 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/tipo-relieve' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b
+
+Response:
+{
+    "success": true,
+    "message": "Lista de tipos de relieve obtenida exitosamente",
+    "data": [
+        {
+            "id": 1,
+            "valor": "Plano",
+            "descripcion": "Terreno plano sin pendientes significativas"
+        },
+        {
+            "id": 2,
+            "valor": "Ondulado",
+            "descripcion": "Terreno con ondulaciones suaves"
+        },
+        {
+            "id": 3,
+            "valor": "Montañoso",
+            "descripcion": "Terreno con pendientes pronunciadas y elevaciones"
+        },
+        {
+            "id": 4,
+            "valor": "Otro",
+            "descripcion": "Otro tipo de relieve no especificado"
+        }
+    ]
+}

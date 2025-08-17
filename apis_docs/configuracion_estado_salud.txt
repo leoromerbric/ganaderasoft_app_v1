@@ -1,0 +1,62 @@
+Request:
+curl --location 'http://localhost:8000/api/estados-salud' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de estados de salud",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "estado_id": 15,
+                "estado_nombre": "Sano"
+            },
+            {
+                "estado_id": 16,
+                "estado_nombre": "Enfermo"
+            },
+            {
+                "estado_id": 17,
+                "estado_nombre": "Muerto"
+            },
+            {
+                "estado_id": 18,
+                "estado_nombre": "Servicio"
+            },
+            {
+                "estado_id": 19,
+                "estado_nombre": "Gestacion"
+            }
+        ],
+        "first_page_url": "http://localhost:8000/api/estados-salud?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost:8000/api/estados-salud?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "active": false
+            },
+            {
+                "url": "http://localhost:8000/api/estados-salud?page=1",
+                "label": "1",
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://localhost:8000/api/estados-salud",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 5,
+        "total": 5
+    }
+}

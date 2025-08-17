@@ -1,0 +1,28 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/tipo-explotacion' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de tipos de explotación obtenida exitosamente",
+    "data": [
+        {
+            "codigo": "intensiva",
+            "nombre": "Intensiva"
+        },
+        {
+            "codigo": "extensiva",
+            "nombre": "Extensiva"
+        },
+        {
+            "codigo": "compuesta",
+            "nombre": "Compuesta"
+        },
+        {
+            "codigo": "otro",
+            "nombre": "Otro"
+        }
+    ]
+}

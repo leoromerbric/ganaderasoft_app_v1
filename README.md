@@ -10,6 +10,9 @@ GanaderaSoft es una aplicación móvil Flutter para la gestión integral de finc
 - 👤 **Perfil de usuario** - Información detallada del propietario
 - 📱 **Interfaz responsive** optimizada para dispositivos móviles
 - 🌐 **API REST** integración con backend Laravel
+- 📡 **Modo offline** - Funciona sin conexión a internet
+- 🔄 **Sincronización automática** - Actualiza datos cuando se restaura la conexión
+- 💾 **Almacenamiento local** - Datos persistentes con SQLite
 
 ## Funcionalidades Implementadas
 
@@ -18,18 +21,27 @@ GanaderaSoft es una aplicación móvil Flutter para la gestión integral de finc
 - Almacenamiento seguro de tokens de sesión
 - Logout con confirmación
 - Verificación automática de sesión activa
+- **Soporte offline**: Autenticación usando datos cached
 
 ### 2. Pantallas Principales
 - **Splash Screen**: Verificación de estado de autenticación
 - **Login**: Formulario de inicio de sesión con validación
-- **Home**: Pantalla principal con accesos rápidos
-- **Mi Cuenta**: Visualización del perfil del usuario
-- **Administrar Fincas**: Lista de fincas del usuario
+- **Home**: Pantalla principal con accesos rápidos e indicadores de conectividad
+- **Mi Cuenta**: Visualización del perfil del usuario con opción de sincronización
+- **Administrar Fincas**: Lista de fincas del usuario con soporte offline
+- **Sincronización**: Pantalla de progreso para actualizar datos online
 
 ### 3. Navegación
 - Menú lateral (Drawer) con navegación principal
 - Navegación entre pantallas con estado preservado
 - Manejo de rutas y navegación programática
+
+### 4. Funcionalidad Offline
+- **Almacenamiento local**: Base de datos SQLite para datos offline
+- **Cache inteligente**: Datos con timestamps para sincronización
+- **Indicadores visuales**: Estado de conectividad en tiempo real
+- **Auto-sincronización**: Actualización automática al restaurar conexión
+- **Sincronización manual**: Opción para actualizar datos desde el servidor
 
 ## Estructura del Proyecto
 
@@ -77,6 +89,8 @@ class AppConfig {
 - **Dart 3.8+** - Lenguaje de programación
 - **HTTP** - Cliente para peticiones REST
 - **SharedPreferences** - Almacenamiento local de datos
+- **SQLite** - Base de datos local para modo offline
+- **Connectivity Plus** - Monitoreo de conectividad de red
 - **Material Design 3** - Sistema de diseño
 
 ## Instalación y Ejecución
@@ -109,7 +123,7 @@ flutter build ios --release
 - Gestión detallada de animales
 - Reportes y estadísticas
 - Notificaciones push
-- Modo offline
+- ~~Modo offline~~ ✅ **Implementado**
 - Geolocalización de fincas
 - Exportación de datos
 

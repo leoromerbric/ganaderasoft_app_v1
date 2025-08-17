@@ -1,0 +1,52 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/tipo-explotacion' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de tipos de explotación",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Bovinos",
+            "descripcion": "Explotación ganadera de bovinos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Porcinos",
+            "descripcion": "Explotación ganadera de porcinos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Bovinos y Porcinos",
+            "descripcion": "Explotación mixta de bovinos y porcinos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 4,
+            "nombre": "Caprinos",
+            "descripcion": "Explotación ganadera de caprinos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 5,
+            "nombre": "Ovinos",
+            "descripcion": "Explotación ganadera de ovinos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

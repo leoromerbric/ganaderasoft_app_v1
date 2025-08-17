@@ -1,0 +1,36 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/fuente-agua' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de fuentes de agua",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Subterranea",
+            "descripcion": "Agua proveniente de pozos o manantiales subterráneos",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Superficial",
+            "descripcion": "Agua proveniente de ríos, lagos o embalses",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Lluvia",
+            "descripcion": "Agua de lluvia recolectada",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

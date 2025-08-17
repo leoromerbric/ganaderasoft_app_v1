@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
+import '../models/configuration_item.dart';
 import 'logging_service.dart';
 
 class DatabaseService {
@@ -53,6 +54,22 @@ class DatabaseService {
         updated_at TEXT NOT NULL,
         propietario_data TEXT,
         local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Create configuration_items table
+    await db.execute('''
+      CREATE TABLE configuration_items (
+        id INTEGER NOT NULL,
+        nombre TEXT NOT NULL,
+        descripcion TEXT NOT NULL,
+        activo INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        tipo TEXT NOT NULL,
+        is_synced INTEGER NOT NULL DEFAULT 0,
+        local_updated_at INTEGER NOT NULL,
+        PRIMARY KEY (id, tipo)
       )
     ''');
     
@@ -242,11 +259,131 @@ class DatabaseService {
       final db = await database;
       await db.delete('users');
       await db.delete('fincas');
+      await db.delete('configuration_items');
       
       LoggingService.info('All offline data cleared successfully', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error clearing offline data', 'DatabaseService', e);
       rethrow;
+    }
+  }
+
+  // Configuration operations
+  static Future<void> saveConfigurationItemsOffline(List<ConfigurationItem> items, String tipo) async {
+    try {
+      LoggingService.debug('Saving ${items.length} configuration items of type $tipo offline', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+
+      // Delete existing items of this type
+      batch.delete('configuration_items', where: 'tipo = ?', whereArgs: [tipo]);
+
+      // Insert new items
+      for (final item in items) {
+        batch.insert(
+          'configuration_items',
+          item.toDatabaseMap(),
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+
+      await batch.commit();
+      
+      LoggingService.info('${items.length} configuration items of type $tipo saved offline successfully', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving configuration items offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<ConfigurationItem>> getConfigurationItemsOffline(String tipo) async {
+    try {
+      LoggingService.debug('Retrieving configuration items of type $tipo from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'configuration_items',
+        where: 'tipo = ?',
+        whereArgs: [tipo],
+        orderBy: 'nombre ASC',
+      );
+
+      final items = maps.map((map) => ConfigurationItem.fromDatabase(map)).toList();
+      
+      LoggingService.info('${items.length} configuration items of type $tipo retrieved from offline storage', 'DatabaseService');
+      return items;
+    } catch (e) {
+      LoggingService.error('Error retrieving configuration items from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<DateTime?> getConfigurationLastUpdated(String tipo) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'configuration_items',
+        columns: ['local_updated_at'],
+        where: 'tipo = ?',
+        whereArgs: [tipo],
+        orderBy: 'local_updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty) return null;
+      
+      return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
+    } catch (e) {
+      LoggingService.error('Error getting configuration last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  static Future<Map<String, int>> getConfigurationCounts() async {
+    try {
+      final db = await database;
+      final Map<String, int> counts = {};
+      
+      for (final tipo in ConfigurationType.all) {
+        final result = await db.rawQuery(
+          'SELECT COUNT(*) as count FROM configuration_items WHERE tipo = ?',
+          [tipo]
+        );
+        counts[tipo] = result.isNotEmpty ? (result.first['count'] as int?) ?? 0 : 0;
+      }
+      
+      return counts;
+    } catch (e) {
+      LoggingService.error('Error getting configuration counts', 'DatabaseService', e);
+      return {};
+    }
+  }
+
+  static Future<Map<String, bool>> getConfigurationSyncStatus() async {
+    try {
+      final db = await database;
+      final Map<String, bool> syncStatus = {};
+      
+      for (final tipo in ConfigurationType.all) {
+        final result = await db.rawQuery(
+          'SELECT COUNT(*) as total, SUM(is_synced) as synced FROM configuration_items WHERE tipo = ?',
+          [tipo]
+        );
+        
+        if (result.isNotEmpty) {
+          final total = (result.first['total'] as int?) ?? 0;
+          final synced = (result.first['synced'] as int?) ?? 0;
+          syncStatus[tipo] = total > 0 && synced == total;
+        } else {
+          syncStatus[tipo] = false;
+        }
+      }
+      
+      return syncStatus;
+    } catch (e) {
+      LoggingService.error('Error getting configuration sync status', 'DatabaseService', e);
+      return {};
     }
   }
 }

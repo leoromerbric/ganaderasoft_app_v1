@@ -1,0 +1,52 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/tipos-animal' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de tipos de animal",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Bovino",
+            "descripcion": "Ganado bovino (vacas, toros)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Porcino",
+            "descripcion": "Ganado porcino (cerdos)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Caprino",
+            "descripcion": "Ganado caprino (cabras)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 4,
+            "nombre": "Ovino",
+            "descripcion": "Ganado ovino (ovejas)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 5,
+            "nombre": "Equino",
+            "descripcion": "Ganado equino (caballos)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

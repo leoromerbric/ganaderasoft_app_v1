@@ -1,0 +1,44 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/estado-salud' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de estados de salud",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Excelente",
+            "descripcion": "Animal en perfecto estado de salud",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Bueno",
+            "descripcion": "Animal con buen estado de salud",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Regular",
+            "descripcion": "Animal con estado de salud regular",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 4,
+            "nombre": "Malo",
+            "descripcion": "Animal con mal estado de salud",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

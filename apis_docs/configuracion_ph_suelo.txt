@@ -1,0 +1,60 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/ph-suelo' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de niveles de pH del suelo",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Muy Ácido",
+            "descripcion": "pH menor a 5.5",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Ácido",
+            "descripcion": "pH entre 5.5 y 6.0",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Ligeramente Ácido",
+            "descripcion": "pH entre 6.0 y 6.5",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 4,
+            "nombre": "Neutro",
+            "descripcion": "pH entre 6.5 y 7.5",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 5,
+            "nombre": "Ligeramente Alcalino",
+            "descripcion": "pH entre 7.5 y 8.0",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 6,
+            "nombre": "Alcalino",
+            "descripcion": "pH mayor a 8.0",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/textura-suelo' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de texturas de suelo",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Arenoso",
+            "descripcion": "Suelo con textura arenosa, buen drenaje",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Franco",
+            "descripcion": "Suelo franco, equilibrio entre arena, limo y arcilla",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Arcilloso",
+            "descripcion": "Suelo arcilloso, retiene agua",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 4,
+            "nombre": "Limoso",
+            "descripcion": "Suelo con textura limosa",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

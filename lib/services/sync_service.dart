@@ -3,8 +3,10 @@ import '../services/auth_service.dart';
 import '../services/database_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
+import '../services/configuration_service.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
+import '../models/configuration_item.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
@@ -75,7 +77,7 @@ class SyncService {
       _syncController.add(SyncData(
         status: SyncStatus.syncing,
         message: 'Sincronizando datos de fincas...',
-        progress: 0.7,
+        progress: 0.5,
       ));
 
       try {
@@ -90,6 +92,23 @@ class SyncService {
           message: 'Error al sincronizar fincas: ${e.toString()}',
         ));
         return false;
+      }
+
+      // Sync configuration data
+      _syncController.add(SyncData(
+        status: SyncStatus.syncing,
+        message: 'Sincronizando datos de configuración...',
+        progress: 0.8,
+      ));
+
+      try {
+        LoggingService.debug('Syncing configuration data...', 'SyncService');
+        await ConfigurationService.syncAllConfigurations();
+        LoggingService.info('Configuration data synchronized successfully', 'SyncService');
+      } catch (e) {
+        LoggingService.error('Error synchronizing configuration data', 'SyncService', e);
+        // Don't fail the whole sync for configuration errors, just log a warning
+        LoggingService.warning('Configuration sync failed but continuing...', 'SyncService');
       }
 
       LoggingService.info('Data synchronization completed successfully', 'SyncService');
@@ -117,6 +136,12 @@ class SyncService {
       'user': await DatabaseService.getUserLastUpdated(),
       'fincas': await DatabaseService.getFincasLastUpdated(),
     };
+
+    // Add configuration sync times
+    for (final tipo in ConfigurationType.all) {
+      final lastUpdated = await ConfigurationService.getLastUpdated(tipo);
+      lastSyncTimes['config_$tipo'] = lastUpdated;
+    }
     
     LoggingService.debug('Last sync times retrieved: ${lastSyncTimes.toString()}', 'SyncService');
     return lastSyncTimes;

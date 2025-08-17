@@ -1,0 +1,36 @@
+Request:
+curl --location 'http://localhost:8000/api/configuracion/etapas' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 11|4rzQUCFckd7hoczpjUkr0Zo2oN4ktxJlNlG73qxj3e4a160b'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de etapas de vida",
+    "data": [
+        {
+            "id": 1,
+            "nombre": "Cría",
+            "descripcion": "Animal en etapa de cría (0-6 meses)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 2,
+            "nombre": "Levante",
+            "descripcion": "Animal en etapa de levante (6-18 meses)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        },
+        {
+            "id": 3,
+            "nombre": "Adulto",
+            "descripcion": "Animal adulto (18+ meses)",
+            "activo": true,
+            "created_at": "2024-01-15T10:00:00.000000Z",
+            "updated_at": "2024-01-15T10:00:00.000000Z"
+        }
+    ]
+}

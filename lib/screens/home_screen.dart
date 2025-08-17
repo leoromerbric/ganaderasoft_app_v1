@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/connectivity_service.dart';
 import '../models/user.dart';
 import '../constants/app_constants.dart';
 import 'profile_screen.dart';
@@ -16,11 +17,20 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
   User? _currentUser;
+  bool _isOffline = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final isConnected = await ConnectivityService.isConnected();
+    setState(() {
+      _isOffline = !isConnected;
+    });
   }
 
   Future<void> _loadUserData() async {
@@ -84,7 +94,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(AppConstants.appName),
+        title: Row(
+          children: [
+            const Text(AppConstants.appName),
+            if (_isOffline) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -156,6 +187,37 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Connectivity status banner
+            if (_isOffline)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.orange[100],
+                  border: Border.all(color: Colors.orange, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.cloud_off,
+                      color: Colors.orange[800],
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Modo offline - Los datos se cargan desde caché local',
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(16.0),

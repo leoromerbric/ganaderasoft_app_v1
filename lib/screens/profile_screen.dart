@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/connectivity_service.dart';
 import '../models/user.dart';
+import 'sync_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -14,11 +16,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   User? _user;
   bool _isLoading = true;
   String? _error;
+  bool _isOffline = false;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
+    _checkConnectivity();
+  }
+
+  Future<void> _checkConnectivity() async {
+    final isConnected = await ConnectivityService.isConnected();
+    setState(() {
+      _isOffline = !isConnected;
+    });
   }
 
   Future<void> _loadProfile() async {
@@ -27,6 +38,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = true;
         _error = null;
       });
+
+      await _checkConnectivity();
 
       final user = await _authService.getProfile();
       setState(() {
@@ -45,7 +58,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mi Cuenta'),
+        title: Row(
+          children: [
+            const Text('Mi Cuenta'),
+            if (_isOffline) ...[
+              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.orange,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
@@ -165,6 +199,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'ID de Usuario',
             _user!.id.toString(),
             Icons.badge,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Sync option
+          Text(
+            'Configuración',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.sync,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Sincronizar datos Online'),
+              subtitle: const Text('Actualizar datos locales con el servidor'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SyncScreen()),
+                );
+              },
+            ),
           ),
         ],
       ),

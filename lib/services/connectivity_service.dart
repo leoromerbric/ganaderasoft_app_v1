@@ -14,8 +14,14 @@ class ConnectivityService {
     _connectionController ??= StreamController<bool>.broadcast();
     _connectivity.onConnectivityChanged.listen((List<ConnectivityResult> results) async {
       final hasNetwork = _hasNetworkConnection(results.isNotEmpty ? results.first : ConnectivityResult.none);
-      final isServerReachable = hasNetwork ? await _isServerReachable() : false;
-      _connectionController!.add(isServerReachable);
+      if (hasNetwork) {
+        // Only check server reachability if we have network
+        final isServerReachable = await _isServerReachable();
+        _connectionController!.add(isServerReachable);
+      } else {
+        // No network, definitely not connected
+        _connectionController!.add(false);
+      }
     });
     return _connectionController!.stream;
   }

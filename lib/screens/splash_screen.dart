@@ -33,9 +33,19 @@ class _SplashScreenState extends State<SplashScreen> {
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
         } else {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const LoginScreen()),
-          );
+          // Check if offline authentication is available
+          final hasOfflineAuth = await _authService.isOfflineAuthAvailable();
+          if (hasOfflineAuth) {
+            // If offline data exists, user can potentially authenticate offline
+            // Still go to login screen but they can try their credentials
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          } else {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
+            );
+          }
         }
       }
     } catch (e) {

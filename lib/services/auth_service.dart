@@ -42,13 +42,13 @@ class AuthService {
     return null;
   }
 
-  // Clear stored credentials and offline data
+  // Clear stored credentials but preserve offline data for subsequent authentication
   Future<void> clearCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
     await prefs.remove(AppConstants.userKey);
-    // Clear offline database
-    await DatabaseService.clearAllData();
+    // Note: Offline database data is preserved to allow offline authentication
+    LoggingService.info('Credentials cleared, offline data preserved for future authentication', 'AuthService');
   }
 
   // Check if user is logged in
@@ -57,11 +57,84 @@ class AuthService {
     return token != null && token.isNotEmpty;
   }
 
-  // Login
+  // Check if offline authentication is available (user exists in cache)
+  Future<bool> isOfflineAuthAvailable() async {
+    try {
+      // Check if user data exists in offline database
+      final cachedUser = await DatabaseService.getUserOffline();
+      if (cachedUser != null) {
+        LoggingService.info('Offline authentication available for user: ${cachedUser.email}', 'AuthService');
+        return true;
+      }
+      
+      // Fallback to SharedPreferences
+      final localUser = await getUser();
+      if (localUser != null) {
+        LoggingService.info('Offline authentication available via SharedPreferences for: ${localUser.email}', 'AuthService');
+        return true;
+      }
+      
+      LoggingService.debug('No offline authentication data available', 'AuthService');
+      return false;
+    } catch (e) {
+      LoggingService.error('Error checking offline authentication availability', 'AuthService', e);
+      return false;
+    }
+  }
+
+  // Perform offline authentication using cached credentials
+  Future<LoginResponse> authenticateOffline(String email, String password) async {
+    try {
+      LoggingService.info('Attempting offline authentication for user: $email', 'AuthService');
+      
+      // Get cached user data
+      User? cachedUser = await DatabaseService.getUserOffline();
+      cachedUser ??= await getUser();
+      
+      if (cachedUser == null) {
+        LoggingService.error('No cached user data found for offline authentication', 'AuthService');
+        throw Exception('No hay datos de usuario disponibles para autenticación offline');
+      }
+      
+      // Verify email matches cached user
+      if (cachedUser.email.toLowerCase() != email.toLowerCase()) {
+        LoggingService.warning('Email mismatch in offline authentication attempt', 'AuthService');
+        throw Exception('Los datos almacenados no coinciden con el usuario solicitado');
+      }
+      
+      // For offline authentication, we'll restore the session with cached data
+      // Generate a temporary token to maintain session consistency
+      final tempToken = 'offline_${DateTime.now().millisecondsSinceEpoch}';
+      await saveToken(tempToken);
+      await saveUser(cachedUser);
+      
+      LoggingService.info('Offline authentication successful for user: $email', 'AuthService');
+      
+      return LoginResponse(
+        success: true,
+        message: 'Autenticación offline exitosa',
+        token: tempToken,
+        user: cachedUser,
+      );
+    } catch (e) {
+      LoggingService.error('Offline authentication failed for user: $email', 'AuthService', e);
+      rethrow;
+    }
+  }
+
+  // Login (with offline fallback)
   Future<LoginResponse> login(String email, String password) async {
     try {
       LoggingService.info('Attempting login for user: $email', 'AuthService');
       
+      // First, check if we have connectivity
+      final isConnected = await ConnectivityService.isConnected();
+      
+      if (!isConnected) {
+        LoggingService.info('No connectivity detected - attempting offline authentication', 'AuthService');
+        return await authenticateOffline(email, password);
+      }
+
       final response = await http.post(
         Uri.parse(AppConfig.loginUrl),
         headers: {
@@ -91,8 +164,26 @@ class AuthService {
         LoggingService.error('Login failed with status: ${response.statusCode}', 'AuthService');
         throw Exception('Failed to login: ${response.body}');
       }
+    } on TimeoutException catch (e) {
+      LoggingService.warning('Login timeout - attempting offline authentication', 'AuthService');
+      return await authenticateOffline(email, password);
+    } on SocketException catch (e) {
+      LoggingService.warning('Login socket error - attempting offline authentication', 'AuthService');
+      return await authenticateOffline(email, password);
     } catch (e) {
       LoggingService.error('Login error for user: $email', 'AuthService', e);
+      
+      // If any network-related error, try offline authentication
+      if (_isNetworkError(e)) {
+        LoggingService.info('Network error detected - attempting offline authentication', 'AuthService');
+        try {
+          return await authenticateOffline(email, password);
+        } catch (offlineError) {
+          LoggingService.error('Both online and offline authentication failed', 'AuthService', offlineError);
+          throw Exception('No se pudo autenticar: sin conexión y sin datos offline válidos');
+        }
+      }
+      
       throw Exception('Network error: $e');
     }
   }

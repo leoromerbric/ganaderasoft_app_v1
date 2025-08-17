@@ -7,6 +7,10 @@ class AppConstants {
   static const String tokenKey = 'auth_token';
   static const String userKey = 'user_data';
   
+  // Offline keys
+  static const String offlineUserKey = 'offline_user_data';
+  static const String offlineFincasKey = 'offline_fincas_data';
+  
   // UI constants
   static const double defaultPadding = 16.0;
   static const double defaultBorderRadius = 8.0;
@@ -19,4 +23,7 @@ class AppConstants {
   static const String logoutConfirmMessage = '¿Está seguro que desea cerrar sesión?';
   static const String logoutConfirmButton = 'Cerrar Sesión';
   static const String cancelButton = 'Cancelar';
+  static const String offlineMode = 'Modo Offline';
+  static const String onlineMode = 'Modo Online';
+  static const String dataFromCache = 'Datos cargados desde caché local';
 }

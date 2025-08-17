@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../models/user.dart';
+import 'sync_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -165,6 +166,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             'ID de Usuario',
             _user!.id.toString(),
             Icons.badge,
+          ),
+          
+          const SizedBox(height: 24),
+          
+          // Sync option
+          Text(
+            'Configuración',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+          ),
+          const SizedBox(height: 16),
+          
+          Card(
+            child: ListTile(
+              leading: Icon(
+                Icons.sync,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              title: const Text('Sincronizar datos Online'),
+              subtitle: const Text('Actualizar datos locales con el servidor'),
+              trailing: const Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SyncScreen()),
+                );
+              },
+            ),
           ),
         ],
       ),

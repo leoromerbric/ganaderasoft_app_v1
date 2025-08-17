@@ -5,6 +5,8 @@ import '../config/app_config.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
 import '../constants/app_constants.dart';
+import 'database_service.dart';
+import 'connectivity_service.dart';
 
 class AuthService {
   // Get stored token
@@ -35,11 +37,13 @@ class AuthService {
     return null;
   }
 
-  // Clear stored credentials
+  // Clear stored credentials and offline data
   Future<void> clearCredentials() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
     await prefs.remove(AppConstants.userKey);
+    // Clear offline database
+    await DatabaseService.clearAllData();
   }
 
   // Check if user is logged in
@@ -66,9 +70,12 @@ class AuthService {
       if (response.statusCode == 200) {
         final loginResponse = LoginResponse.fromJson(jsonDecode(response.body));
         
-        // Save token and user data
+        // Save token and user data to SharedPreferences
         await saveToken(loginResponse.token);
         await saveUser(loginResponse.user);
+        
+        // Also save user data to offline database
+        await DatabaseService.saveUserOffline(loginResponse.user);
         
         return loginResponse;
       } else {
@@ -108,9 +115,28 @@ class AuthService {
     }
   }
 
-  // Get user profile
+  // Get user profile (with offline support)
   Future<User> getProfile() async {
     try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+      
+      if (!isConnected) {
+        // Try to get cached user data
+        final cachedUser = await DatabaseService.getUserOffline();
+        if (cachedUser != null) {
+          return cachedUser;
+        }
+        
+        // Fallback to SharedPreferences
+        final localUser = await getUser();
+        if (localUser != null) {
+          return localUser;
+        }
+        
+        throw Exception('No hay datos de usuario disponibles sin conexión');
+      }
+
       final token = await getToken();
       if (token == null) {
         throw Exception('No token found');
@@ -126,18 +152,49 @@ class AuthService {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        return User.fromJson(data['data']['user']);
+        final user = User.fromJson(data['data']['user']);
+        
+        // Save to offline storage
+        await DatabaseService.saveUserOffline(user);
+        
+        return user;
       } else {
         throw Exception('Failed to get profile: ${response.body}');
       }
     } catch (e) {
+      // If network error, try offline data
+      if (e.toString().contains('Network') || e.toString().contains('Failed host lookup')) {
+        final cachedUser = await DatabaseService.getUserOffline();
+        if (cachedUser != null) {
+          return cachedUser;
+        }
+        
+        final localUser = await getUser();
+        if (localUser != null) {
+          return localUser;
+        }
+      }
+      
       throw Exception('Network error: $e');
     }
   }
 
-  // Get fincas list
+  // Get fincas list (with offline support)
   Future<FincasResponse> getFincas() async {
     try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+      
+      if (!isConnected) {
+        // Try to get cached fincas data
+        final cachedFincas = await DatabaseService.getFincasOffline();
+        return FincasResponse(
+          success: true,
+          message: 'Datos cargados desde caché local',
+          fincas: cachedFincas,
+        );
+      }
+
       final token = await getToken();
       if (token == null) {
         throw Exception('No token found');
@@ -152,11 +209,26 @@ class AuthService {
       );
 
       if (response.statusCode == 200) {
-        return FincasResponse.fromJson(jsonDecode(response.body));
+        final fincasResponse = FincasResponse.fromJson(jsonDecode(response.body));
+        
+        // Save to offline storage
+        await DatabaseService.saveFincasOffline(fincasResponse.fincas);
+        
+        return fincasResponse;
       } else {
         throw Exception('Failed to get fincas: ${response.body}');
       }
     } catch (e) {
+      // If network error, try offline data
+      if (e.toString().contains('Network') || e.toString().contains('Failed host lookup')) {
+        final cachedFincas = await DatabaseService.getFincasOffline();
+        return FincasResponse(
+          success: true,
+          message: 'Datos cargados desde caché local (sin conexión)',
+          fincas: cachedFincas,
+        );
+      }
+      
       throw Exception('Network error: $e');
     }
   }

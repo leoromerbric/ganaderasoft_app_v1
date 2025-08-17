@@ -22,8 +22,9 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDatabase,
+      onUpgrade: _upgradeDatabase,
     );
   }
 
@@ -74,6 +75,31 @@ class DatabaseService {
     ''');
     
     LoggingService.info('Database tables created successfully', 'DatabaseService');
+  }
+
+  static Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    LoggingService.info('Upgrading database from version $oldVersion to $newVersion', 'DatabaseService');
+    
+    if (oldVersion < 2) {
+      // Add configuration_items table for version 2
+      await db.execute('''
+        CREATE TABLE configuration_items (
+          id INTEGER NOT NULL,
+          nombre TEXT NOT NULL,
+          descripcion TEXT NOT NULL,
+          activo INTEGER NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          tipo TEXT NOT NULL,
+          is_synced INTEGER NOT NULL DEFAULT 0,
+          local_updated_at INTEGER NOT NULL,
+          PRIMARY KEY (id, tipo)
+        )
+      ''');
+      LoggingService.info('Added configuration_items table', 'DatabaseService');
+    }
+    
+    LoggingService.info('Database upgrade completed', 'DatabaseService');
   }
 
   // User operations

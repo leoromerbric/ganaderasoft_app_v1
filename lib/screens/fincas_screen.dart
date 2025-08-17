@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/logging_service.dart';
 import '../models/finca.dart';
 import '../constants/app_constants.dart';
 
@@ -28,6 +29,7 @@ class _FincasScreenState extends State<FincasScreen> {
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
+    LoggingService.debug('Connectivity check result: $isConnected', 'FincasScreen');
     setState(() {
       _isOffline = !isConnected;
     });
@@ -35,6 +37,8 @@ class _FincasScreenState extends State<FincasScreen> {
 
   Future<void> _loadFincas() async {
     try {
+      LoggingService.info('Loading fincas data...', 'FincasScreen');
+      
       setState(() {
         _isLoading = true;
         _error = null;
@@ -45,12 +49,16 @@ class _FincasScreenState extends State<FincasScreen> {
       await _checkConnectivity();
 
       final fincasResponse = await _authService.getFincas();
+      
+      LoggingService.info('Fincas loaded successfully (${fincasResponse.fincas.length} items)', 'FincasScreen');
+      
       setState(() {
         _fincas = fincasResponse.fincas;
         _isLoading = false;
         _dataSourceMessage = fincasResponse.message;
       });
     } catch (e) {
+      LoggingService.error('Error loading fincas', 'FincasScreen', e);
       setState(() {
         _error = e.toString();
         _isLoading = false;

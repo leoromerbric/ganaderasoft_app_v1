@@ -22,8 +22,9 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _createDatabase,
+      onUpgrade: _upgradeDatabase,
     );
   }
 
@@ -156,6 +157,112 @@ class DatabaseService {
     ''');
     
     LoggingService.info('Database tables created successfully', 'DatabaseService');
+  }
+
+  static Future<void> _upgradeDatabase(Database db, int oldVersion, int newVersion) async {
+    LoggingService.info('Upgrading database from version $oldVersion to $newVersion', 'DatabaseService');
+    
+    if (oldVersion < 2) {
+      // Add configuration tables for version 2
+      await db.execute('''
+        CREATE TABLE estado_salud (
+          estado_id INTEGER PRIMARY KEY,
+          estado_nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE tipo_animal (
+          tipo_animal_id INTEGER PRIMARY KEY,
+          tipo_animal_nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE etapa (
+          etapa_id INTEGER PRIMARY KEY,
+          etapa_nombre TEXT NOT NULL,
+          etapa_edad_ini INTEGER NOT NULL,
+          etapa_edad_fin INTEGER,
+          etapa_fk_tipo_animal_id INTEGER NOT NULL,
+          etapa_sexo TEXT NOT NULL,
+          tipo_animal_data TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE fuente_agua (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE metodo_riego (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE ph_suelo (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          descripcion TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE sexo (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE textura_suelo (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE tipo_explotacion (
+          codigo TEXT PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE tipo_relieve (
+          id INTEGER PRIMARY KEY,
+          valor TEXT NOT NULL,
+          descripcion TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          updated_at INTEGER NOT NULL
+        )
+      ''');
+      
+      LoggingService.info('Configuration tables added successfully', 'DatabaseService');
+    }
   }
 
   // User operations

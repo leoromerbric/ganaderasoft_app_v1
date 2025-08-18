@@ -1,0 +1,126 @@
+Request:
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/rebanos' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 1|gVELY0ROgY7081mNeOLDKJnx3xtZAyjqBbTRYDqi8fa01a1a'
+
+Response:
+{
+    "success": true,
+    "message": "Lista de rebaños",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_Rebano": 6,
+                "id_Finca": 15,
+                "Nombre": "Rebaño 1",
+                "archivado": false,
+                "created_at": "2025-08-18T21:30:56.000000Z",
+                "updated_at": "2025-08-18T21:30:56.000000Z",
+                "finca": {
+                    "id_Finca": 15,
+                    "id_Propietario": 6,
+                    "Nombre": "Finca Offline",
+                    "Explotacion_Tipo": "Bovinos",
+                    "archivado": false,
+                    "created_at": "2025-08-18T00:59:56.000000Z",
+                    "updated_at": "2025-08-18T00:59:56.000000Z",
+                    "propietario": {
+                        "id": 6,
+                        "id_Personal": 17873216,
+                        "Nombre": "Leonel",
+                        "Apellido": "Romero",
+                        "Telefono": "04140659739",
+                        "archivado": false,
+                        "created_at": null,
+                        "updated_at": null
+                    }
+                },
+                "animales": [
+                    {
+                        "id_Animal": 13,
+                        "id_Rebano": 6,
+                        "Nombre": "Animal 1",
+                        "codigo_animal": "ANIMAL-001",
+                        "Sexo": "F",
+                        "fecha_nacimiento": "2025-03-15T00:00:00.000000Z",
+                        "Procedencia": "Finca Origen",
+                        "archivado": false,
+                        "created_at": "2025-08-18T21:35:24.000000Z",
+                        "updated_at": "2025-08-18T21:35:24.000000Z",
+                        "fk_composicion_raza": 70
+                    }
+                ]
+            },
+            {
+                "id_Rebano": 7,
+                "id_Finca": 15,
+                "Nombre": "Rebaño 2",
+                "archivado": false,
+                "created_at": "2025-08-18T21:31:10.000000Z",
+                "updated_at": "2025-08-18T21:31:10.000000Z",
+                "finca": {
+                    "id_Finca": 15,
+                    "id_Propietario": 6,
+                    "Nombre": "Finca Offline",
+                    "Explotacion_Tipo": "Bovinos",
+                    "archivado": false,
+                    "created_at": "2025-08-18T00:59:56.000000Z",
+                    "updated_at": "2025-08-18T00:59:56.000000Z",
+                    "propietario": {
+                        "id": 6,
+                        "id_Personal": 17873216,
+                        "Nombre": "Leonel",
+                        "Apellido": "Romero",
+                        "Telefono": "04140659739",
+                        "archivado": false,
+                        "created_at": null,
+                        "updated_at": null
+                    }
+                },
+                "animales": [
+                    {
+                        "id_Animal": 14,
+                        "id_Rebano": 7,
+                        "Nombre": "Animal 2",
+                        "codigo_animal": "ANIMAL-002",
+                        "Sexo": "F",
+                        "fecha_nacimiento": "2025-01-15T00:00:00.000000Z",
+                        "Procedencia": "Local",
+                        "archivado": false,
+                        "created_at": "2025-08-18T21:36:06.000000Z",
+                        "updated_at": "2025-08-18T21:36:06.000000Z",
+                        "fk_composicion_raza": 71
+                    }
+                ]
+            }
+        ],
+        "first_page_url": "http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/rebanos?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/rebanos?page=1",
+        "links": [
+            {
+                "url": null,
+                "label": "&laquo; Previous",
+                "active": false
+            },
+            {
+                "url": "http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/rebanos?page=1",
+                "label": "1",
+                "active": true
+            },
+            {
+                "url": null,
+                "label": "Next &raquo;",
+                "active": false
+            }
+        ],
+        "next_page_url": null,
+        "path": "http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/rebanos",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 2,
+        "total": 2
+    }
+}

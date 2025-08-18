@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
+import '../models/animal.dart';
 import '../constants/app_constants.dart';
 import 'database_service.dart';
 import 'connectivity_service.dart';
@@ -514,6 +515,264 @@ class AuthService {
         success: false,
         message: 'Error al cargar datos offline',
         fincas: [],
+      );
+    }
+  }
+
+  // Get animales list (with offline support)
+  Future<AnimalesResponse> getAnimales({int? idRebano, int? idFinca}) async {
+    LoggingService.debug('Getting animales list...', 'AuthService');
+
+    try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached animales data',
+          'AuthService',
+        );
+        return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
+      }
+
+      LoggingService.debug(
+        'Connectivity available - fetching animales from server',
+        'AuthService',
+      );
+
+      final token = await getToken();
+      if (token == null) {
+        LoggingService.error(
+          'No token found for animales request',
+          'AuthService',
+        );
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.animalesUrl;
+      Map<String, String> queryParams = {};
+      
+      if (idRebano != null) {
+        queryParams['id_rebano'] = idRebano.toString();
+      }
+      if (idFinca != null) {
+        queryParams['id_finca'] = idFinca.toString();
+      }
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final animalesResponse = AnimalesResponse.fromJson(
+          jsonDecode(response.body),
+        );
+
+        LoggingService.info(
+          'Animales fetched successfully from server (${animalesResponse.animales.length} items)',
+          'AuthService',
+        );
+
+        // Save to offline storage
+        await DatabaseService.saveAnimalesOffline(animalesResponse.animales);
+
+        return animalesResponse;
+      } else {
+        LoggingService.error(
+          'Animales request failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to get animales: ${response.body}');
+      }
+    } on TimeoutException catch (e) {
+      LoggingService.warning(
+        'Animales request timeout - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
+    } on SocketException catch (e) {
+      LoggingService.warning(
+        'Animales request socket error - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
+    } catch (e) {
+      LoggingService.error('Animales request error', 'AuthService', e);
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline animales data',
+          'AuthService',
+        );
+        return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
+      }
+
+      throw Exception('Error getting animales: $e');
+    }
+  }
+
+  // Get rebanos list (with offline support)
+  Future<RebanosResponse> getRebanos({int? idFinca}) async {
+    LoggingService.debug('Getting rebanos list...', 'AuthService');
+
+    try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached rebanos data',
+          'AuthService',
+        );
+        return await _getOfflineRebanos(idFinca: idFinca);
+      }
+
+      LoggingService.debug(
+        'Connectivity available - fetching rebanos from server',
+        'AuthService',
+      );
+
+      final token = await getToken();
+      if (token == null) {
+        LoggingService.error(
+          'No token found for rebanos request',
+          'AuthService',
+        );
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.rebanosUrl;
+      if (idFinca != null) {
+        url += '?id_finca=$idFinca';
+      }
+
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final rebanosResponse = RebanosResponse.fromJson(
+          jsonDecode(response.body),
+        );
+
+        LoggingService.info(
+          'Rebanos fetched successfully from server (${rebanosResponse.rebanos.length} items)',
+          'AuthService',
+        );
+
+        // Save to offline storage
+        await DatabaseService.saveRebanosOffline(rebanosResponse.rebanos);
+
+        return rebanosResponse;
+      } else {
+        LoggingService.error(
+          'Rebanos request failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to get rebanos: ${response.body}');
+      }
+    } on TimeoutException catch (e) {
+      LoggingService.warning(
+        'Rebanos request timeout - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineRebanos(idFinca: idFinca);
+    } on SocketException catch (e) {
+      LoggingService.warning(
+        'Rebanos request socket error - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineRebanos(idFinca: idFinca);
+    } catch (e) {
+      LoggingService.error('Rebanos request error', 'AuthService', e);
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline rebanos data',
+          'AuthService',
+        );
+        return await _getOfflineRebanos(idFinca: idFinca);
+      }
+
+      throw Exception('Error getting rebanos: $e');
+    }
+  }
+
+  /// Get offline animales data
+  Future<AnimalesResponse> _getOfflineAnimales({int? idRebano, int? idFinca}) async {
+    try {
+      final cachedAnimales = await DatabaseService.getAnimalesOffline(
+        idRebano: idRebano,
+        idFinca: idFinca,
+      );
+      LoggingService.info(
+        'Using cached animales data (${cachedAnimales.length} items)',
+        'AuthService',
+      );
+
+      return AnimalesResponse(
+        success: true,
+        message: 'Datos cargados desde caché local (sin conexión)',
+        animales: cachedAnimales,
+      );
+    } catch (e) {
+      LoggingService.error(
+        'Error getting offline animales data',
+        'AuthService',
+        e,
+      );
+      return AnimalesResponse(
+        success: false,
+        message: 'Error al cargar datos offline',
+        animales: [],
+      );
+    }
+  }
+
+  /// Get offline rebanos data
+  Future<RebanosResponse> _getOfflineRebanos({int? idFinca}) async {
+    try {
+      final cachedRebanos = await DatabaseService.getRebanosOffline(
+        idFinca: idFinca,
+      );
+      LoggingService.info(
+        'Using cached rebanos data (${cachedRebanos.length} items)',
+        'AuthService',
+      );
+
+      return RebanosResponse(
+        success: true,
+        message: 'Datos cargados desde caché local (sin conexión)',
+        rebanos: cachedRebanos,
+      );
+    } catch (e) {
+      LoggingService.error(
+        'Error getting offline rebanos data',
+        'AuthService',
+        e,
+      );
+      return RebanosResponse(
+        success: false,
+        message: 'Error al cargar datos offline',
+        rebanos: [],
       );
     }
   }

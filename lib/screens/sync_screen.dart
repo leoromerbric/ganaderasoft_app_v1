@@ -75,176 +75,186 @@ class _SyncScreenState extends State<SyncScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Status card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          _getStatusIcon(),
-                          color: _getStatusColor(),
-                          size: 24,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            _getStatusTitle(),
-                            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: _getStatusColor(),
+      body: Column(
+        children: [
+          // Scrollable content
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Status card
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                _getStatusIcon(),
+                                color: _getStatusColor(),
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  _getStatusTitle(),
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: _getStatusColor(),
+                                      ),
                                 ),
+                              ),
+                            ],
                           ),
-                        ),
-                      ],
+                          if (_currentSyncData.message != null) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              _currentSyncData.message!,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ],
+                          if (_currentSyncData.status == SyncStatus.syncing) ...[
+                            const SizedBox(height: 16),
+                            LinearProgressIndicator(
+                              value: _currentSyncData.progress,
+                              backgroundColor: Colors.grey[300],
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${(_currentSyncData.progress * 100).toInt()}%',
+                              style: Theme.of(context).textTheme.bodySmall,
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
-                    if (_currentSyncData.message != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        _currentSyncData.message!,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    ],
-                    if (_currentSyncData.status == SyncStatus.syncing) ...[
-                      const SizedBox(height: 16),
-                      LinearProgressIndicator(
-                        value: _currentSyncData.progress,
-                        backgroundColor: Colors.grey[300],
-                        valueColor: AlwaysStoppedAnimation<Color>(
-                          Theme.of(context).colorScheme.primary,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                  
+                  // Last sync times
+                  Text(
+                    'Información de Sincronización',
+                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '${(_currentSyncData.progress * 100).toInt()}%',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  _buildSyncInfoCard(
+                    'Datos del Usuario',
+                    _lastSyncTimes['user'],
+                    Icons.person,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Datos de Fincas',
+                    _lastSyncTimes['fincas'],
+                    Icons.agriculture,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Rebaños',
+                    _lastSyncTimes['rebanos'],
+                    Icons.groups,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Animales',
+                    _lastSyncTimes['animales'],
+                    Icons.pets,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Estado de Salud',
+                    _lastSyncTimes['estado_salud'],
+                    Icons.health_and_safety,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Tipo de Animal',
+                    _lastSyncTimes['tipo_animal'],
+                    Icons.category,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Etapas',
+                    _lastSyncTimes['etapas'],
+                    Icons.timeline,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Fuente de Agua',
+                    _lastSyncTimes['fuente_agua'],
+                    Icons.water_drop,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Método de Riego',
+                    _lastSyncTimes['metodo_riego'],
+                    Icons.water,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'pH de Suelo',
+                    _lastSyncTimes['ph_suelo'],
+                    Icons.analytics,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Sexo',
+                    _lastSyncTimes['sexo'],
+                    Icons.person,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Textura de Suelo',
+                    _lastSyncTimes['textura_suelo'],
+                    Icons.terrain,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Tipo de Exposición',
+                    _lastSyncTimes['tipo_explotacion'],
+                    Icons.agriculture,
+                  ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Tipo de Relieve',
+                    _lastSyncTimes['tipo_relieve'],
+                    Icons.landscape,
+                  ),
+                  
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
-            
-            const SizedBox(height: 24),
-            
-            // Last sync times
-            Text(
-              'Información de Sincronización',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 16),
-            
-            _buildSyncInfoCard(
-              'Datos del Usuario',
-              _lastSyncTimes['user'],
-              Icons.person,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Datos de Fincas',
-              _lastSyncTimes['fincas'],
-              Icons.agriculture,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Rebaños',
-              _lastSyncTimes['rebanos'],
-              Icons.groups,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Animales',
-              _lastSyncTimes['animales'],
-              Icons.pets,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Estado de Salud',
-              _lastSyncTimes['estado_salud'],
-              Icons.health_and_safety,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Tipo de Animal',
-              _lastSyncTimes['tipo_animal'],
-              Icons.category,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Etapas',
-              _lastSyncTimes['etapas'],
-              Icons.timeline,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Fuente de Agua',
-              _lastSyncTimes['fuente_agua'],
-              Icons.water_drop,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Método de Riego',
-              _lastSyncTimes['metodo_riego'],
-              Icons.water,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'pH de Suelo',
-              _lastSyncTimes['ph_suelo'],
-              Icons.analytics,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Sexo',
-              _lastSyncTimes['sexo'],
-              Icons.person,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Textura de Suelo',
-              _lastSyncTimes['textura_suelo'],
-              Icons.terrain,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Tipo de Exposición',
-              _lastSyncTimes['tipo_explotacion'],
-              Icons.agriculture,
-            ),
-            const SizedBox(height: 12),
-            
-            _buildSyncInfoCard(
-              'Tipo de Relieve',
-              _lastSyncTimes['tipo_relieve'],
-              Icons.landscape,
-            ),
-            
-            const Spacer(),
-            
-            // Sync button
-            SizedBox(
+          ),
+          
+          // Fixed sync button at bottom
+          Container(
+            padding: const EdgeInsets.all(16.0),
+            child: SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: _currentSyncData.status == SyncStatus.syncing
@@ -277,8 +287,8 @@ class _SyncScreenState extends State<SyncScreen> {
                       ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

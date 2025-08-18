@@ -9,4 +9,6 @@ class AppConfig {
   static String get logoutUrl => '$apiUrl/auth/logout';
   static String get profileUrl => '$apiUrl/profile';
   static String get fincasUrl => '$apiUrl/fincas';
+  static String get animalesUrl => '$apiUrl/animales';
+  static String get rebanosUrl => '$apiUrl/rebanos';
 }

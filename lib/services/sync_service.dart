@@ -6,6 +6,7 @@ import '../services/configuration_service.dart';
 import '../services/logging_service.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
+import '../models/animal.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
@@ -93,6 +94,48 @@ class SyncService {
         return false;
       }
 
+      // Sync rebanos data
+      _syncController.add(SyncData(
+        status: SyncStatus.syncing,
+        message: 'Sincronizando datos de rebaños...',
+        progress: 0.25,
+      ));
+
+      try {
+        LoggingService.debug('Syncing rebanos data...', 'SyncService');
+        final rebanosResponse = await _authService.getRebanos();
+        await DatabaseService.saveRebanosOffline(rebanosResponse.rebanos);
+        LoggingService.info('Rebanos data synchronized successfully (${rebanosResponse.rebanos.length} items)', 'SyncService');
+      } catch (e) {
+        LoggingService.error('Error synchronizing rebanos data', 'SyncService', e);
+        _syncController.add(SyncData(
+          status: SyncStatus.error,
+          message: 'Error al sincronizar rebaños: ${e.toString()}',
+        ));
+        return false;
+      }
+
+      // Sync animales data
+      _syncController.add(SyncData(
+        status: SyncStatus.syncing,
+        message: 'Sincronizando datos de animales...',
+        progress: 0.3,
+      ));
+
+      try {
+        LoggingService.debug('Syncing animales data...', 'SyncService');
+        final animalesResponse = await _authService.getAnimales();
+        await DatabaseService.saveAnimalesOffline(animalesResponse.animales);
+        LoggingService.info('Animales data synchronized successfully (${animalesResponse.animales.length} items)', 'SyncService');
+      } catch (e) {
+        LoggingService.error('Error synchronizing animales data', 'SyncService', e);
+        _syncController.add(SyncData(
+          status: SyncStatus.error,
+          message: 'Error al sincronizar animales: ${e.toString()}',
+        ));
+        return false;
+      }
+
       // Sync configuration data
       await _syncConfigurationData();
 
@@ -122,7 +165,7 @@ class SyncService {
       _syncController.add(SyncData(
         status: SyncStatus.syncing,
         message: 'Sincronizando estados de salud...',
-        progress: 0.3,
+        progress: 0.35,
       ));
       
       final estadosSaludResponse = await ConfigurationService.getEstadosSalud();
@@ -241,6 +284,18 @@ class SyncService {
     final lastSyncTimes = {
       'user': await DatabaseService.getUserLastUpdated(),
       'fincas': await DatabaseService.getFincasLastUpdated(),
+      'rebanos': await DatabaseService.getRebanosLastUpdated(),
+      'animales': await DatabaseService.getAnimalesLastUpdated(),
+      'estado_salud': await DatabaseService.getConfigurationLastUpdated('estado_salud'),
+      'tipo_animal': await DatabaseService.getConfigurationLastUpdated('tipo_animal'),
+      'etapas': await DatabaseService.getConfigurationLastUpdated('etapa'),
+      'fuente_agua': await DatabaseService.getConfigurationLastUpdated('fuente_agua'),
+      'metodo_riego': await DatabaseService.getConfigurationLastUpdated('metodo_riego'),
+      'ph_suelo': await DatabaseService.getConfigurationLastUpdated('ph_suelo'),
+      'sexo': await DatabaseService.getConfigurationLastUpdated('sexo'),
+      'textura_suelo': await DatabaseService.getConfigurationLastUpdated('textura_suelo'),
+      'tipo_explotacion': await DatabaseService.getConfigurationLastUpdated('tipo_explotacion'),
+      'tipo_relieve': await DatabaseService.getConfigurationLastUpdated('tipo_relieve'),
     };
     
     LoggingService.debug('Last sync times retrieved: ${lastSyncTimes.toString()}', 'SyncService');

@@ -156,6 +156,90 @@ class _SyncScreenState extends State<SyncScreen> {
               _lastSyncTimes['fincas'],
               Icons.agriculture,
             ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Rebaños',
+              _lastSyncTimes['rebanos'],
+              Icons.groups,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Animales',
+              _lastSyncTimes['animales'],
+              Icons.pets,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Estado de Salud',
+              _lastSyncTimes['estado_salud'],
+              Icons.health_and_safety,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Tipo de Animal',
+              _lastSyncTimes['tipo_animal'],
+              Icons.category,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Etapas',
+              _lastSyncTimes['etapas'],
+              Icons.timeline,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Fuente de Agua',
+              _lastSyncTimes['fuente_agua'],
+              Icons.water_drop,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Método de Riego',
+              _lastSyncTimes['metodo_riego'],
+              Icons.water,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'pH de Suelo',
+              _lastSyncTimes['ph_suelo'],
+              Icons.analytics,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Sexo',
+              _lastSyncTimes['sexo'],
+              Icons.person,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Textura de Suelo',
+              _lastSyncTimes['textura_suelo'],
+              Icons.terrain,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Tipo de Exposición',
+              _lastSyncTimes['tipo_explotacion'],
+              Icons.agriculture,
+            ),
+            const SizedBox(height: 12),
+            
+            _buildSyncInfoCard(
+              'Tipo de Relieve',
+              _lastSyncTimes['tipo_relieve'],
+              Icons.landscape,
+            ),
             
             const Spacer(),
             

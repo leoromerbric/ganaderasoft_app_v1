@@ -4,6 +4,7 @@ import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import '../models/finca.dart';
 import '../constants/app_constants.dart';
+import 'farm_details_screen.dart';
 
 class FincasScreen extends StatefulWidget {
   const FincasScreen({super.key});
@@ -219,101 +220,118 @@ class _FincasScreenState extends State<FincasScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header
-            Row(
-              children: [
-                Icon(
-                  Icons.agriculture,
-                  color: Theme.of(context).colorScheme.primary,
-                  size: 28,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        finca.nombre,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                      ),
-                      Text(
-                        'ID: ${finca.idFinca}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
-                      ),
-                    ],
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FarmDetailsScreen(finca: finca),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                children: [
+                  Icon(
+                    Icons.agriculture,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 28,
                   ),
-                ),
-                if (finca.archivado)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Archivado',
-                      style: TextStyle(
-                        color: Colors.orange[800],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          finca.nombre,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.bold,
+                              ),
+                        ),
+                        Text(
+                          'ID: ${finca.idFinca}',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                        ),
+                      ],
                     ),
                   ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // Farm details
-            _buildDetailRow(
-              'Tipo de Explotación',
-              finca.explotacionTipo,
-              Icons.category,
-            ),
-            const SizedBox(height: 12),
-
-            if (finca.propietario != null) ...[
-              _buildDetailRow(
-                'Propietario',
-                '${finca.propietario!.nombre} ${finca.propietario!.apellido}',
-                Icons.person,
+                  if (finca.archivado)
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.orange[100],
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Archivado',
+                        style: TextStyle(
+                          color: Colors.orange[800],
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  const SizedBox(width: 8),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 16,
+                    color: Colors.grey[400],
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 16),
+
+              // Farm details
               _buildDetailRow(
-                'Teléfono',
-                finca.propietario!.telefono,
-                Icons.phone,
+                'Tipo de Explotación',
+                finca.explotacionTipo,
+                Icons.category,
               ),
               const SizedBox(height: 12),
-            ],
 
-            // Dates
-            Row(
-              children: [
-                Expanded(
-                  child: _buildDateInfo(
-                    'Creado',
-                    _formatDate(finca.createdAt),
-                  ),
+              if (finca.propietario != null) ...[
+                _buildDetailRow(
+                  'Propietario',
+                  '${finca.propietario!.nombre} ${finca.propietario!.apellido}',
+                  Icons.person,
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildDateInfo(
-                    'Actualizado',
-                    _formatDate(finca.updatedAt),
-                  ),
+                const SizedBox(height: 8),
+                _buildDetailRow(
+                  'Teléfono',
+                  finca.propietario!.telefono,
+                  Icons.phone,
                 ),
+                const SizedBox(height: 12),
               ],
-            ),
-          ],
+
+              // Dates
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildDateInfo(
+                      'Creado',
+                      _formatDate(finca.createdAt),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildDateInfo(
+                      'Actualizado',
+                      _formatDate(finca.updatedAt),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

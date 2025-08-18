@@ -108,10 +108,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: const Text(
                   'Offline',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -156,7 +153,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
                 );
               },
             ),
@@ -178,7 +177,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const ConfigurationDataScreen()),
+                  MaterialPageRoute(
+                    builder: (context) => const ConfigurationDataScreen(),
+                  ),
                 );
               },
             ),
@@ -212,11 +213,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.cloud_off,
-                      color: Colors.orange[800],
-                      size: 20,
-                    ),
+                    Icon(Icons.cloud_off, color: Colors.orange[800], size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -238,7 +235,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Text(
                       '¡Bienvenido a ${AppConstants.appName}!',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(
                             fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.primary,
                           ),
@@ -263,7 +261,9 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Text(
                                   _currentUser!.name,
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 Text(
                                   _currentUser!.typeUser,
@@ -282,9 +282,9 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 24),
             Text(
               'Accesos Rápidos',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -297,30 +297,36 @@ class _HomeScreenState extends State<HomeScreen> {
                     context,
                     'Mi Cuenta',
                     Icons.person,
-                    'Ver y editar perfil',
+                    '',
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ProfileScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ProfileScreen(),
+                      ),
                     ),
                   ),
                   _buildQuickAccessCard(
                     context,
                     'Fincas',
                     Icons.agriculture,
-                    'Gestionar fincas',
+                    '',
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const FincasScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const FincasScreen(),
+                      ),
                     ),
                   ),
                   _buildQuickAccessCard(
                     context,
-                    'Datos de Configuración',
+                    'Datos Maestros',
                     Icons.settings_applications,
-                    'Ver configuraciones del sistema',
+                    '',
                     () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const ConfigurationDataScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const ConfigurationDataScreen(),
+                      ),
                     ),
                   ),
                 ],
@@ -357,9 +363,9 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),

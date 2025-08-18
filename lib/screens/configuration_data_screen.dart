@@ -8,7 +8,8 @@ class ConfigurationDataScreen extends StatefulWidget {
   const ConfigurationDataScreen({super.key});
 
   @override
-  State<ConfigurationDataScreen> createState() => _ConfigurationDataScreenState();
+  State<ConfigurationDataScreen> createState() =>
+      _ConfigurationDataScreenState();
 }
 
 class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
@@ -33,8 +34,8 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
       appBar: AppBar(
         title: Row(
           children: [
-            const Text('Datos de Configuración'),
-            if (_isOffline) ...[ 
+            const Text('Datos Maestros'),
+            if (_isOffline) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -44,10 +45,7 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
                 ),
                 child: const Text(
                   'Offline',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -61,7 +59,7 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (_isOffline) 
+            if (_isOffline)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -89,9 +87,9 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
               ),
             Text(
               'Selecciona el tipo de configuración',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
             Expanded(
@@ -106,70 +104,100 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
                     'Estados de Salud',
                     Icons.health_and_safety,
                     'Ver estados de salud de animales',
-                    () => _navigateToDetailScreen(context, ConfigurationType.estadoSalud),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.estadoSalud,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Tipos de Animal',
                     Icons.pets,
                     'Ver tipos de animales',
-                    () => _navigateToDetailScreen(context, ConfigurationType.tipoAnimal),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.tipoAnimal,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Etapas',
                     Icons.timeline,
                     'Ver etapas de desarrollo',
-                    () => _navigateToDetailScreen(context, ConfigurationType.etapa),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.etapa,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Fuente de Agua',
                     Icons.water_drop,
                     'Ver fuentes de agua',
-                    () => _navigateToDetailScreen(context, ConfigurationType.fuenteAgua),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.fuenteAgua,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Método de Riego',
                     Icons.water,
                     'Ver métodos de riego',
-                    () => _navigateToDetailScreen(context, ConfigurationType.metodoRiego),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.metodoRiego,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'pH de Suelo',
                     Icons.analytics,
                     'Ver niveles de pH',
-                    () => _navigateToDetailScreen(context, ConfigurationType.phSuelo),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.phSuelo,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Sexo',
                     Icons.person,
                     'Ver tipos de sexo',
-                    () => _navigateToDetailScreen(context, ConfigurationType.sexo),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.sexo,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Textura de Suelo',
                     Icons.terrain,
                     'Ver texturas de suelo',
-                    () => _navigateToDetailScreen(context, ConfigurationType.texturaSuelo),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.texturaSuelo,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Tipo de Explotación',
                     Icons.agriculture,
                     'Ver tipos de explotación',
-                    () => _navigateToDetailScreen(context, ConfigurationType.tipoExplotacion),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.tipoExplotacion,
+                    ),
                   ),
                   _buildConfigurationCard(
                     context,
                     'Tipo de Relieve',
                     Icons.landscape,
                     'Ver tipos de relieve',
-                    () => _navigateToDetailScreen(context, ConfigurationType.tipoRelieve),
+                    () => _navigateToDetailScreen(
+                      context,
+                      ConfigurationType.tipoRelieve,
+                    ),
                   ),
                 ],
               ),
@@ -205,9 +233,9 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
               const SizedBox(height: 8),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
@@ -231,7 +259,8 @@ class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ConfigurationDetailScreen(configurationType: type),
+        builder: (context) =>
+            ConfigurationDetailScreen(configurationType: type),
       ),
     );
   }
@@ -253,13 +282,11 @@ enum ConfigurationType {
 class ConfigurationDetailScreen extends StatefulWidget {
   final ConfigurationType configurationType;
 
-  const ConfigurationDetailScreen({
-    super.key,
-    required this.configurationType,
-  });
+  const ConfigurationDetailScreen({super.key, required this.configurationType});
 
   @override
-  State<ConfigurationDetailScreen> createState() => _ConfigurationDetailScreenState();
+  State<ConfigurationDetailScreen> createState() =>
+      _ConfigurationDetailScreenState();
 }
 
 class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
@@ -368,7 +395,7 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
         title: Row(
           children: [
             Text(_title),
-            if (_isOffline) ...[ 
+            if (_isOffline) ...[
               const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -378,10 +405,7 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
                 ),
                 child: const Text(
                   'Offline',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -392,13 +416,15 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
       ),
       body: Column(
         children: [
-          if (_isOffline) 
+          if (_isOffline)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Colors.orange.shade100,
-                border: Border(bottom: BorderSide(color: Colors.orange.shade300)),
+                border: Border(
+                  bottom: BorderSide(color: Colors.orange.shade300),
+                ),
               ),
               child: Row(
                 children: [
@@ -416,9 +442,7 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
                 ],
               ),
             ),
-          Expanded(
-            child: _buildContent(),
-          ),
+          Expanded(child: _buildContent()),
         ],
       ),
     );
@@ -443,11 +467,7 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red.shade400,
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red.shade400),
             const SizedBox(height: 16),
             Text(
               _error,
@@ -469,27 +489,17 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.inbox_outlined,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
+            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey.shade400),
             const SizedBox(height: 16),
             Text(
               'No hay datos disponibles',
-              style: TextStyle(
-                color: Colors.grey.shade600,
-                fontSize: 16,
-              ),
+              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
             ),
             const SizedBox(height: 8),
             Text(
               'Intenta sincronizar datos para obtener información actualizada',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey.shade500,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: Colors.grey.shade500, fontSize: 14),
             ),
           ],
         ),
@@ -521,7 +531,8 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
       synced = item.synced ?? false;
     } else if (item is Etapa) {
       title = item.etapaNombre;
-      subtitle = '${item.etapaEdadIni} - ${item.etapaEdadFin ?? "∞"} días | ${item.tipoAnimal.tipoAnimalNombre} (${item.etapaSexo})';
+      subtitle =
+          '${item.etapaEdadIni} - ${item.etapaEdadFin ?? "∞"} días | ${item.tipoAnimal.tipoAnimalNombre} (${item.etapaSexo})';
       synced = item.synced ?? false;
     } else if (item is FuenteAgua) {
       title = item.nombre;
@@ -556,10 +567,7 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       child: ListTile(
-        title: Text(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w600)),
         subtitle: Text(subtitle),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
@@ -570,7 +578,9 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
                 color: synced ? Colors.green.shade100 : Colors.orange.shade100,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: synced ? Colors.green.shade300 : Colors.orange.shade300,
+                  color: synced
+                      ? Colors.green.shade300
+                      : Colors.orange.shade300,
                 ),
               ),
               child: Row(
@@ -579,14 +589,18 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
                   Icon(
                     synced ? Icons.cloud_done : Icons.cloud_off,
                     size: 16,
-                    color: synced ? Colors.green.shade700 : Colors.orange.shade700,
+                    color: synced
+                        ? Colors.green.shade700
+                        : Colors.orange.shade700,
                   ),
                   const SizedBox(width: 4),
                   Text(
                     synced ? 'Sincronizado' : 'Local',
                     style: TextStyle(
                       fontSize: 12,
-                      color: synced ? Colors.green.shade700 : Colors.orange.shade700,
+                      color: synced
+                          ? Colors.green.shade700
+                          : Colors.orange.shade700,
                       fontWeight: FontWeight.w500,
                     ),
                   ),

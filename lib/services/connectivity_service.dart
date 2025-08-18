@@ -89,13 +89,13 @@ class ConnectivityService {
       // Try to reach the server with a short timeout
       final response = await http
           .head(
-            Uri.parse(AppConfig.baseUrl),
+            Uri.parse(AppConfig.apiUrl),
             headers: {'Accept': 'application/json'},
           )
           .timeout(_serverCheckTimeout);
 
       // Accept any response from the server (even 404, as long as server responds)
-      final isReachable = response.statusCode < 500;
+      final isReachable = response.statusCode < 1000;
       LoggingService.debug(
         'Server ping result: ${response.statusCode} (reachable: $isReachable)',
         'ConnectivityService',

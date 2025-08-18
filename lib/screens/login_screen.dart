@@ -75,7 +75,7 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 // Logo/Title
                 Icon(
-                  Icons.agriculture,
+                  null,
                   size: 80,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -83,17 +83,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 Text(
                   AppConstants.appName,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                    fontWeight: FontWeight.bold,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 Text(
                   AppConstants.appSubtitle,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 48),
@@ -126,7 +126,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     labelText: 'Contraseña',
                     prefixIcon: const Icon(Icons.lock),
                     suffixIcon: IconButton(
-                      icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility
+                            : Icons.visibility_off,
+                      ),
                       onPressed: () {
                         setState(() {
                           _obscurePassword = !_obscurePassword;

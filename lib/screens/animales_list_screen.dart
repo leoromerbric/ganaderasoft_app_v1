@@ -4,6 +4,7 @@ import '../models/animal.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
+import 'create_animal_screen.dart';
 
 class AnimalesListScreen extends StatefulWidget {
   final Finca finca;
@@ -307,6 +308,37 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
                     ),
                   ],
                 ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (_rebanos.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('No hay rebaños disponibles. Crea un rebaño primero.'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            return;
+          }
+
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateAnimalScreen(
+                finca: widget.finca,
+                rebanos: _rebanos,
+                selectedRebano: _selectedRebano,
+              ),
+            ),
+          );
+
+          if (result != null) {
+            // Refresh the list
+            _loadAnimales();
+          }
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Crear Animal',
+      ),
     );
   }
 

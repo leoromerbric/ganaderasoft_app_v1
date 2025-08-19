@@ -388,6 +388,103 @@ class PaginatedData<T> {
   }
 }
 
+// ComposicionRaza model for breed composition data
+class ComposicionRaza {
+  final int idComposicion;
+  final String nombre;
+  final String siglas;
+  final String pelaje;
+  final String proposito;
+  final String tipoRaza;
+  final String origen;
+  final String caracteristicaEspecial;
+  final String proporcionRaza;
+  final String? createdAt;
+  final String? updatedAt;
+  final int? fkIdFinca;
+  final int? fkTipoAnimalId;
+  final bool? synced;
+
+  ComposicionRaza({
+    required this.idComposicion,
+    required this.nombre,
+    required this.siglas,
+    required this.pelaje,
+    required this.proposito,
+    required this.tipoRaza,
+    required this.origen,
+    required this.caracteristicaEspecial,
+    required this.proporcionRaza,
+    this.createdAt,
+    this.updatedAt,
+    this.fkIdFinca,
+    this.fkTipoAnimalId,
+    this.synced = false,
+  });
+
+  factory ComposicionRaza.fromJson(Map<String, dynamic> json) {
+    return ComposicionRaza(
+      idComposicion: json['id_Composicion'],
+      nombre: json['Nombre'],
+      siglas: json['Siglas'],
+      pelaje: json['Pelaje'],
+      proposito: json['Proposito'],
+      tipoRaza: json['Tipo_Raza'],
+      origen: json['Origen'],
+      caracteristicaEspecial: json['Caracteristica_Especial'],
+      proporcionRaza: json['Proporcion_Raza'],
+      createdAt: json['created_at'],
+      updatedAt: json['updated_at'],
+      fkIdFinca: json['fk_id_Finca'],
+      fkTipoAnimalId: json['fk_tipo_animal_id'],
+      synced: json['synced'] ?? false,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_Composicion': idComposicion,
+      'Nombre': nombre,
+      'Siglas': siglas,
+      'Pelaje': pelaje,
+      'Proposito': proposito,
+      'Tipo_Raza': tipoRaza,
+      'Origen': origen,
+      'Caracteristica_Especial': caracteristicaEspecial,
+      'Proporcion_Raza': proporcionRaza,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'fk_id_Finca': fkIdFinca,
+      'fk_tipo_animal_id': fkTipoAnimalId,
+      'synced': synced,
+    };
+  }
+}
+
+// Response wrapper for ComposicionRaza
+class ComposicionRazaResponse {
+  final bool success;
+  final String message;
+  final PaginatedData<ComposicionRaza> data;
+
+  ComposicionRazaResponse({
+    required this.success,
+    required this.message,
+    required this.data,
+  });
+
+  factory ComposicionRazaResponse.fromJson(Map<String, dynamic> json) {
+    return ComposicionRazaResponse(
+      success: json['success'],
+      message: json['message'],
+      data: PaginatedData.fromJson(
+        json,
+        (item) => ComposicionRaza.fromJson(item),
+      ),
+    );
+  }
+}
+
 // Simple response wrapper for non-paginated APIs
 class SimpleConfigurationResponse<T> {
   final bool success;

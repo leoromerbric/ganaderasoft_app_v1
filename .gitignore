@@ -46,3 +46,4 @@ app.*.map.json
 
 # Manual verification files
 manual_verification_create_animal.md
+flutter_sdk/

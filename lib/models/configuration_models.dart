@@ -478,7 +478,7 @@ class ComposicionRazaResponse {
       success: json['success'],
       message: json['message'],
       data: PaginatedData.fromJson(
-        json,
+        json['data'],
         (item) => ComposicionRaza.fromJson(item),
       ),
     );

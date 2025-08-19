@@ -11,4 +11,5 @@ class AppConfig {
   static String get fincasUrl => '$apiUrl/fincas';
   static String get animalesUrl => '$apiUrl/animales';
   static String get rebanosUrl => '$apiUrl/rebanos';
+  static String get composicionRazaUrl => '$apiUrl/composicion-raza';
 }

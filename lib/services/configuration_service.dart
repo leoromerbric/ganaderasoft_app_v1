@@ -1,12 +1,17 @@
 import 'dart:convert';
+import 'dart:async';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import '../config/app_config.dart';
 import '../models/configuration_models.dart';
 import 'auth_service.dart';
+import 'connectivity_service.dart';
+import 'database_service.dart';
 import 'logging_service.dart';
 
 class ConfigurationService {
   static final AuthService _authService = AuthService();
+  static const Duration _httpTimeout = Duration(seconds: 10);
 
   // Get headers with authentication
   static Future<Map<String, String>> _getHeaders() async {
@@ -373,5 +378,126 @@ class ConfigurationService {
       );
       rethrow;
     }
+  }
+
+  // Composición Raza (with offline support)
+  static Future<ComposicionRazaResponse> getComposicionRaza() async {
+    LoggingService.debug('Getting composicion raza list...', 'ConfigurationService');
+
+    try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached composicion raza data',
+          'ConfigurationService',
+        );
+        return await _getOfflineComposicionRaza();
+      }
+
+      LoggingService.debug(
+        'Connectivity available - fetching composicion raza from server',
+        'ConfigurationService',
+      );
+
+      final headers = await _getHeaders();
+      final response = await http.get(
+        Uri.parse(AppConfig.composicionRazaUrl),
+        headers: headers,
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(response.body);
+        final composicionRazaResponse = ComposicionRazaResponse.fromJson(jsonData);
+
+        LoggingService.info(
+          'Composicion raza fetched successfully from server (${composicionRazaResponse.data.data.length} items)',
+          'ConfigurationService',
+        );
+
+        // Save to offline storage
+        await DatabaseService.saveComposicionRazaOffline(composicionRazaResponse.data.data);
+
+        return composicionRazaResponse;
+      } else {
+        LoggingService.error(
+          'Composicion raza request failed with status: ${response.statusCode}',
+          'ConfigurationService',
+        );
+        throw Exception('Failed to load composicion raza: ${response.statusCode}');
+      }
+    } on TimeoutException catch (e) {
+      LoggingService.warning(
+        'Composicion raza request timeout - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineComposicionRaza();
+    } on SocketException catch (e) {
+      LoggingService.warning(
+        'Composicion raza request socket error - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineComposicionRaza();
+    } catch (e) {
+      LoggingService.error('Composicion raza request error', 'ConfigurationService', e);
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline composicion raza data',
+          'ConfigurationService',
+        );
+        return await _getOfflineComposicionRaza();
+      }
+
+      rethrow;
+    }
+  }
+
+  // Get offline composicion raza data
+  static Future<ComposicionRazaResponse> _getOfflineComposicionRaza() async {
+    try {
+      LoggingService.debug('Getting composicion raza from offline storage', 'ConfigurationService');
+      
+      final composicionRaza = await DatabaseService.getComposicionRazaOffline();
+      
+      if (composicionRaza.isEmpty) {
+        LoggingService.warning(
+          'No composicion raza data found in offline storage',
+          'ConfigurationService',
+        );
+        throw Exception('No hay datos de composicion raza disponibles offline');
+      }
+
+      LoggingService.info(
+        '${composicionRaza.length} composicion raza items retrieved from offline storage',
+        'ConfigurationService',
+      );
+
+      // Create a mock paginated response
+      return ComposicionRazaResponse(
+        success: true,
+        message: 'Datos de composicion raza obtenidos desde almacenamiento local',
+        data: PaginatedData<ComposicionRaza>(
+          currentPage: 1,
+          data: composicionRaza,
+          total: composicionRaza.length,
+          perPage: composicionRaza.length,
+        ),
+      );
+    } catch (e) {
+      LoggingService.error('Error getting offline composicion raza data', 'ConfigurationService', e);
+      rethrow;
+    }
+  }
+
+  // Helper method to check if error is network-related
+  static bool _isNetworkError(dynamic error) {
+    return error is SocketException ||
+           error is TimeoutException ||
+           error.toString().contains('connection') ||
+           error.toString().contains('network') ||
+           error.toString().contains('timeout');
   }
 }

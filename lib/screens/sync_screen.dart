@@ -244,6 +244,13 @@ class _SyncScreenState extends State<SyncScreen> {
                     _lastSyncTimes['tipo_relieve'],
                     Icons.landscape,
                   ),
+                  const SizedBox(height: 12),
+                  
+                  _buildSyncInfoCard(
+                    'Composición de Raza',
+                    _lastSyncTimes['composicion_raza'],
+                    Icons.pets,
+                  ),
                   
                   const SizedBox(height: 24),
                 ],

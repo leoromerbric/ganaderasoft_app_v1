@@ -747,6 +747,172 @@ class AuthService {
     }
   }
 
+  // Create Animal
+  Future<Animal> createAnimal({
+    required int idRebano,
+    required String nombre,
+    required String codigoAnimal,
+    required String sexo,
+    required String fechaNacimiento,
+    required String procedencia,
+    required int fkComposicionRaza,
+    required int estadoId,
+    required int etapaId,
+  }) async {
+    LoggingService.debug('Creating animal: $nombre', 'AuthService');
+
+    try {
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final requestData = {
+        'id_Rebano': idRebano,
+        'Nombre': nombre,
+        'codigo_animal': codigoAnimal,
+        'Sexo': sexo,
+        'fecha_nacimiento': fechaNacimiento,
+        'Procedencia': procedencia,
+        'fk_composicion_raza': fkComposicionRaza,
+        'estado_inicial': {
+          'estado_id': estadoId,
+          'fecha_ini': fechaNacimiento,
+        },
+        'etapa_inicial': {
+          'etapa_id': etapaId,
+          'fecha_ini': fechaNacimiento,
+        },
+      };
+
+      final response = await http
+          .post(
+            Uri.parse(AppConfig.animalesUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(requestData),
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = jsonDecode(response.body);
+        
+        if (jsonData['success'] == true) {
+          final animal = Animal.fromJson(jsonData['data']);
+          
+          LoggingService.info(
+            'Animal created successfully: ${animal.nombre}',
+            'AuthService',
+          );
+
+          // Save to offline storage
+          await DatabaseService.saveAnimalesOffline([animal]);
+
+          return animal;
+        } else {
+          throw Exception('Server returned error: ${jsonData['message']}');
+        }
+      } else {
+        LoggingService.error(
+          'Animal creation failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to create animal: ${response.body}');
+      }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Animal creation timeout - saving locally for later sync',
+        'AuthService',
+      );
+      throw Exception('Timeout al crear animal. Se guardará localmente para sincronizar más tarde.');
+    } on SocketException {
+      LoggingService.warning(
+        'Animal creation socket error - saving locally for later sync',
+        'AuthService',
+      );
+      throw Exception('Sin conexión. El animal se guardará localmente para sincronizar más tarde.');
+    } catch (e) {
+      LoggingService.error('Animal creation error', 'AuthService', e);
+      throw Exception('Error al crear animal: $e');
+    }
+  }
+
+  // Create Rebano
+  Future<Rebano> createRebano({
+    required int idFinca,
+    required String nombre,
+  }) async {
+    LoggingService.debug('Creating rebano: $nombre', 'AuthService');
+
+    try {
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final requestData = {
+        'id_Finca': idFinca,
+        'Nombre': nombre,
+      };
+
+      final response = await http
+          .post(
+            Uri.parse(AppConfig.rebanosUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(requestData),
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = jsonDecode(response.body);
+        
+        if (jsonData['success'] == true) {
+          final rebano = Rebano.fromJson(jsonData['data']);
+          
+          LoggingService.info(
+            'Rebano created successfully: ${rebano.nombre}',
+            'AuthService',
+          );
+
+          // Save to offline storage
+          await DatabaseService.saveRebanosOffline([rebano]);
+
+          return rebano;
+        } else {
+          throw Exception('Server returned error: ${jsonData['message']}');
+        }
+      } else {
+        LoggingService.error(
+          'Rebano creation failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to create rebano: ${response.body}');
+      }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Rebano creation timeout - saving locally for later sync',
+        'AuthService',
+      );
+      throw Exception('Timeout al crear rebaño. Se guardará localmente para sincronizar más tarde.');
+    } on SocketException {
+      LoggingService.warning(
+        'Rebano creation socket error - saving locally for later sync',
+        'AuthService',
+      );
+      throw Exception('Sin conexión. El rebaño se guardará localmente para sincronizar más tarde.');
+    } catch (e) {
+      LoggingService.error('Rebano creation error', 'AuthService', e);
+      throw Exception('Error al crear rebaño: $e');
+    }
+  }
+
   /// Get offline rebanos data
   Future<RebanosResponse> _getOfflineRebanos({int? idFinca}) async {
     try {

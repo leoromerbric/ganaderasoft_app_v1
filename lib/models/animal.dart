@@ -1,54 +1,5 @@
 import 'finca.dart';
-
-class ComposicionRaza {
-  final int idComposicion;
-  final String nombre;
-  final String siglas;
-  final String pelaje;
-  final String proposito;
-  final String tipoRaza;
-  final String origen;
-  final String caracteristicaEspecial;
-  final String proporcionRaza;
-  final String? createdAt;
-  final String? updatedAt;
-  final int? fkIdFinca;
-  final int? fkTipoAnimalId;
-
-  ComposicionRaza({
-    required this.idComposicion,
-    required this.nombre,
-    required this.siglas,
-    required this.pelaje,
-    required this.proposito,
-    required this.tipoRaza,
-    required this.origen,
-    required this.caracteristicaEspecial,
-    required this.proporcionRaza,
-    this.createdAt,
-    this.updatedAt,
-    this.fkIdFinca,
-    this.fkTipoAnimalId,
-  });
-
-  factory ComposicionRaza.fromJson(Map<String, dynamic> json) {
-    return ComposicionRaza(
-      idComposicion: json['id_Composicion'],
-      nombre: json['Nombre'],
-      siglas: json['Siglas'],
-      pelaje: json['Pelaje'],
-      proposito: json['Proposito'],
-      tipoRaza: json['Tipo_Raza'],
-      origen: json['Origen'],
-      caracteristicaEspecial: json['Caracteristica_Especial'],
-      proporcionRaza: json['Proporcion_Raza'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-      fkIdFinca: json['fk_id_Finca'],
-      fkTipoAnimalId: json['fk_tipo_animal_id'],
-    );
-  }
-}
+import 'configuration_models.dart';
 
 class Animal {
   final int idAnimal;

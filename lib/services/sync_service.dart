@@ -264,12 +264,23 @@ class SyncService {
       _syncController.add(SyncData(
         status: SyncStatus.syncing,
         message: 'Sincronizando tipos de relieve...',
-        progress: 0.9,
+        progress: 0.85,
       ));
       
       final tipoRelieve = await ConfigurationService.getTipoRelieve();
       await DatabaseService.saveTipoRelieveOffline(tipoRelieve);
       LoggingService.info('Tipo relieve synchronized: ${tipoRelieve.length} items', 'SyncService');
+
+      // Composición Raza
+      _syncController.add(SyncData(
+        status: SyncStatus.syncing,
+        message: 'Sincronizando composición de raza...',
+        progress: 0.9,
+      ));
+      
+      final composicionRazaResponse = await ConfigurationService.getComposicionRaza();
+      await DatabaseService.saveComposicionRazaOffline(composicionRazaResponse.data.data);
+      LoggingService.info('Composición raza synchronized: ${composicionRazaResponse.data.data.length} items', 'SyncService');
 
       LoggingService.info('Configuration data synchronization completed successfully', 'SyncService');
     } catch (e) {
@@ -296,6 +307,7 @@ class SyncService {
       'textura_suelo': await DatabaseService.getConfigurationLastUpdated('textura_suelo'),
       'tipo_explotacion': await DatabaseService.getConfigurationLastUpdated('tipo_explotacion'),
       'tipo_relieve': await DatabaseService.getConfigurationLastUpdated('tipo_relieve'),
+      'composicion_raza': await DatabaseService.getConfigurationLastUpdated('composicion_raza'),
     };
     
     LoggingService.debug('Last sync times retrieved: ${lastSyncTimes.toString()}', 'SyncService');

@@ -23,7 +23,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -154,6 +154,26 @@ class DatabaseService {
         descripcion TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
         updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    await db.execute('''
+      CREATE TABLE composicion_raza (
+        id_composicion INTEGER PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        siglas TEXT NOT NULL,
+        pelaje TEXT NOT NULL,
+        proposito TEXT NOT NULL,
+        tipo_raza TEXT NOT NULL,
+        origen TEXT NOT NULL,
+        caracteristica_especial TEXT NOT NULL,
+        proporcion_raza TEXT NOT NULL,
+        created_at TEXT,
+        updated_at TEXT,
+        fk_id_finca INTEGER,
+        fk_tipo_animal_id INTEGER,
+        synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL
       )
     ''');
     
@@ -300,6 +320,31 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Animals and rebanos tables added successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 4) {
+      // Add composicion_raza table for version 4
+      await db.execute('''
+        CREATE TABLE composicion_raza (
+          id_composicion INTEGER PRIMARY KEY,
+          nombre TEXT NOT NULL,
+          siglas TEXT NOT NULL,
+          pelaje TEXT NOT NULL,
+          proposito TEXT NOT NULL,
+          tipo_raza TEXT NOT NULL,
+          origen TEXT NOT NULL,
+          caracteristica_especial TEXT NOT NULL,
+          proporcion_raza TEXT NOT NULL,
+          created_at TEXT,
+          updated_at TEXT,
+          fk_id_finca INTEGER,
+          fk_tipo_animal_id INTEGER,
+          synced INTEGER DEFAULT 0,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+      
+      LoggingService.info('Composicion raza table added successfully', 'DatabaseService');
     }
   }
 
@@ -891,6 +936,77 @@ class DatabaseService {
       ),
       'valor',
     );
+  }
+
+  // ComposicionRaza
+  static Future<void> saveComposicionRazaOffline(List<ComposicionRaza> items) async {
+    try {
+      LoggingService.debug('Saving ${items.length} composicion raza offline', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+
+      batch.delete('composicion_raza');
+
+      for (final item in items) {
+        batch.insert('composicion_raza', {
+          'id_composicion': item.idComposicion,
+          'nombre': item.nombre,
+          'siglas': item.siglas,
+          'pelaje': item.pelaje,
+          'proposito': item.proposito,
+          'tipo_raza': item.tipoRaza,
+          'origen': item.origen,
+          'caracteristica_especial': item.caracteristicaEspecial,
+          'proporcion_raza': item.proporcionRaza,
+          'created_at': item.createdAt,
+          'updated_at': item.updatedAt,
+          'fk_id_finca': item.fkIdFinca,
+          'fk_tipo_animal_id': item.fkTipoAnimalId,
+          'synced': item.synced == true ? 1 : 0,
+          'local_updated_at': currentTime,
+        });
+      }
+
+      await batch.commit();
+      LoggingService.info('${items.length} composicion raza saved offline successfully', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving composicion raza offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<ComposicionRaza>> getComposicionRazaOffline() async {
+    try {
+      LoggingService.debug('Retrieving composicion raza from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final maps = await db.query('composicion_raza', orderBy: 'nombre');
+
+      final items = maps.map((map) => ComposicionRaza(
+        idComposicion: map['id_composicion'] as int,
+        nombre: map['nombre'] as String,
+        siglas: map['siglas'] as String,
+        pelaje: map['pelaje'] as String,
+        proposito: map['proposito'] as String,
+        tipoRaza: map['tipo_raza'] as String,
+        origen: map['origen'] as String,
+        caracteristicaEspecial: map['caracteristica_especial'] as String,
+        proporcionRaza: map['proporcion_raza'] as String,
+        createdAt: map['created_at'] as String?,
+        updatedAt: map['updated_at'] as String?,
+        fkIdFinca: map['fk_id_finca'] as int?,
+        fkTipoAnimalId: map['fk_tipo_animal_id'] as int?,
+        synced: (map['synced'] as int) == 1,
+      )).toList();
+      
+      LoggingService.info('${items.length} composicion raza retrieved from offline storage', 'DatabaseService');
+      return items;
+    } catch (e) {
+      LoggingService.error('Error retrieving composicion raza from offline storage', 'DatabaseService', e);
+      return [];
+    }
   }
 
   // Configuration last update times

@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import 'animales_list_screen.dart';
+import 'create_rebano_screen.dart';
 
 class RebanosListScreen extends StatefulWidget {
   final Finca finca;
@@ -212,6 +213,25 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
                         Expanded(child: _buildRebanosList()),
                       ],
                     ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CreateRebanoScreen(
+                finca: widget.finca,
+              ),
+            ),
+          );
+
+          if (result != null) {
+            // Refresh the list
+            _loadRebanos();
+          }
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Crear Rebaño',
+      ),
     );
   }
 

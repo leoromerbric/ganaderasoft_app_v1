@@ -157,6 +157,40 @@ class DatabaseService {
       )
     ''');
 
+    // Create rebanos table
+    await db.execute('''
+      CREATE TABLE rebanos (
+        id_rebano INTEGER PRIMARY KEY,
+        id_finca INTEGER NOT NULL,
+        nombre TEXT NOT NULL,
+        archivado INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        finca_data TEXT,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Create animales table
+    await db.execute('''
+      CREATE TABLE animales (
+        id_animal INTEGER PRIMARY KEY,
+        id_rebano INTEGER NOT NULL,
+        nombre TEXT NOT NULL,
+        codigo_animal TEXT NOT NULL,
+        sexo TEXT NOT NULL,
+        fecha_nacimiento TEXT NOT NULL,
+        procedencia TEXT NOT NULL,
+        archivado INTEGER NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        fk_composicion_raza INTEGER NOT NULL,
+        rebano_data TEXT,
+        composicion_raza_data TEXT,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
     await db.execute('''
       CREATE TABLE composicion_raza (
         id_composicion INTEGER PRIMARY KEY,

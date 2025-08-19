@@ -521,7 +521,7 @@ class AuthService {
 
   // Get animales list (with offline support)
   Future<AnimalesResponse> getAnimales({int? idRebano, int? idFinca}) async {
-    LoggingService.debug('Getting animales list for finca: $idFinca, rebano: $idRebano', 'AuthService');
+    LoggingService.debug('Getting animales list...', 'AuthService');
 
     try {
       // Check connectivity first
@@ -719,13 +719,12 @@ class AuthService {
   /// Get offline animales data
   Future<AnimalesResponse> _getOfflineAnimales({int? idRebano, int? idFinca}) async {
     try {
-      LoggingService.debug('Getting offline animales for finca: $idFinca, rebano: $idRebano', 'AuthService');
       final cachedAnimales = await DatabaseService.getAnimalesOffline(
         idRebano: idRebano,
         idFinca: idFinca,
       );
       LoggingService.info(
-        'Using cached animales data (${cachedAnimales.length} items) for finca: $idFinca, rebano: $idRebano',
+        'Using cached animales data (${cachedAnimales.length} items)',
         'AuthService',
       );
 

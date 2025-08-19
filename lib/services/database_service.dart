@@ -1098,7 +1098,7 @@ class DatabaseService {
 
   static Future<List<Animal>> getAnimalesOffline({int? idRebano, int? idFinca}) async {
     try {
-      LoggingService.debug('Retrieving animales from offline storage for finca: $idFinca, rebano: $idRebano', 'DatabaseService');
+      LoggingService.debug('Retrieving animales from offline storage', 'DatabaseService');
       
       final db = await database;
       String whereClause = '';
@@ -1107,7 +1107,6 @@ class DatabaseService {
       if (idRebano != null) {
         whereClause = 'id_rebano = ?';
         whereArgs = [idRebano];
-        LoggingService.debug('Using rebano filter: id_rebano = $idRebano', 'DatabaseService');
       } else if (idFinca != null) {
         // When filtering by finca, we need to join with rebanos table
         final rebanosInFinca = await getRebanosOffline(idFinca: idFinca);
@@ -1116,7 +1115,6 @@ class DatabaseService {
         final rebanoIds = rebanosInFinca.map((r) => r.idRebano).toList();
         whereClause = 'id_rebano IN (${rebanoIds.map((_) => '?').join(',')})';
         whereArgs = rebanoIds;
-        LoggingService.debug('Using finca filter: rebano IDs = $rebanoIds', 'DatabaseService');
       }
       
       final List<Map<String, dynamic>> maps = await db.query(

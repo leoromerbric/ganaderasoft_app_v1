@@ -1,0 +1,39 @@
+Request:
+{
+    "id_Finca": 15,
+    "Nombre": "Rebaño 3"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Rebaño creado exitosamente",
+    "data": {
+        "id_Finca": 15,
+        "Nombre": "Rebaño 3",
+        "archivado": false,
+        "updated_at": "2025-08-19T00:45:14.000000Z",
+        "created_at": "2025-08-19T00:45:14.000000Z",
+        "id_Rebano": 8,
+        "finca": {
+            "id_Finca": 15,
+            "id_Propietario": 6,
+            "Nombre": "Finca Romero SPA",
+            "Explotacion_Tipo": "Bovinos",
+            "archivado": false,
+            "created_at": "2025-08-18T00:59:56.000000Z",
+            "updated_at": "2025-08-18T00:59:56.000000Z",
+            "propietario": {
+                "id": 6,
+                "id_Personal": 17873216,
+                "Nombre": "Leonel",
+                "Apellido": "Romero",
+                "Telefono": "04140659739",
+                "archivado": false,
+                "created_at": null,
+                "updated_at": null
+            }
+        },
+        "animales": []
+    }
+}

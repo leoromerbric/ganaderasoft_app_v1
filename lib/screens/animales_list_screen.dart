@@ -31,11 +31,13 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
   bool _isOffline = false;
   String? _dataSourceMessage;
   Rebano? _selectedRebano;
+  List<Rebano> _rebanos = [];
 
   @override
   void initState() {
     super.initState();
     _selectedRebano = widget.selectedRebano;
+    _rebanos = widget.rebanos;
     _checkConnectivity();
     _loadAnimales();
   }

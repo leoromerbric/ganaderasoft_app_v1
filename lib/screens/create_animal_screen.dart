@@ -32,6 +32,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   final _nombreController = TextEditingController();
   final _codigoAnimalController = TextEditingController();
   final _fechaNacimientoController = TextEditingController();
+  final _procedenciaController = TextEditingController();
   
   // Form data
   String _procedencia = 'Local';
@@ -52,13 +53,13 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   List<EstadoSalud> _estadosSalud = [];
   List<Etapa> _etapas = [];
   final List<String> _sexoOptions = ['M', 'F'];
-  final List<String> _procedenciaOptions = ['Local', 'Comprado', 'Intercambio'];
 
   @override
   void initState() {
     super.initState();
     _rebanos = widget.rebanos;
     _selectedRebano = widget.selectedRebano;
+    _procedenciaController.text = _procedencia; // Initialize controller with default value
     _checkConnectivity();
     _loadConfigurationData();
   }
@@ -68,6 +69,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     _nombreController.dispose();
     _codigoAnimalController.dispose();
     _fechaNacimientoController.dispose();
+    _procedenciaController.dispose();
     super.dispose();
   }
 
@@ -185,7 +187,6 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
       initialDate: DateTime.now(),
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
-      locale: const Locale('es', 'ES'),
     );
     
     if (picked != null) {
@@ -270,7 +271,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         codigoAnimal: _codigoAnimalController.text.trim(),
         sexo: _selectedSexo!,
         fechaNacimiento: _fechaNacimientoController.text,
-        procedencia: _procedencia,
+        procedencia: _procedenciaController.text.trim(),
         fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
         estadoId: _selectedEstadoSalud!.estadoId,
         etapaId: _selectedEtapa!.etapaId,
@@ -537,22 +538,17 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
-                    DropdownButtonFormField<String>(
-                      value: _procedencia,
+                    TextFormField(
+                      controller: _procedenciaController,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
-                        hintText: 'Selecciona la procedencia',
+                        hintText: 'Ingresa la procedencia del animal',
                       ),
-                      items: _procedenciaOptions.map((procedencia) {
-                        return DropdownMenuItem<String>(
-                          value: procedencia,
-                          child: Text(procedencia),
-                        );
-                      }).toList(),
-                      onChanged: (String? value) {
-                        setState(() {
-                          _procedencia = value!;
-                        });
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'Por favor ingresa la procedencia';
+                        }
+                        return null;
                       },
                     ),
                     const SizedBox(height: 16),

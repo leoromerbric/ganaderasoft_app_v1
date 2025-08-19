@@ -1,0 +1,108 @@
+Request:
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/animales' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 1|gVELY0ROgY7081mNeOLDKJnx3xtZAyjqBbTRYDqi8fa01a1a' \
+--data '{
+    "id_Rebano": 7,
+    "Nombre": "Animal 3",
+    "codigo_animal": "ANIMAL-003",
+    "Sexo": "M",
+    "fecha_nacimiento": "2025-01-17",
+    "Procedencia": "Local",
+    "fk_composicion_raza": 72,
+    "estado_inicial": {
+        "estado_id": 15,
+        "fecha_ini": "2025-01-17"
+    },
+    "etapa_inicial": {
+        "etapa_id": 15,
+        "fecha_ini": "2025-01-17"
+    }
+}'
+
+Response:
+{
+    "success": true,
+    "message": "Animal creado exitosamente",
+    "data": {
+        "id_Rebano": 7,
+        "Nombre": "Animal 3",
+        "codigo_animal": "ANIMAL-003",
+        "Sexo": "M",
+        "fecha_nacimiento": "2025-01-17T00:00:00.000000Z",
+        "Procedencia": "Local",
+        "fk_composicion_raza": 72,
+        "archivado": false,
+        "updated_at": "2025-08-18T22:54:29.000000Z",
+        "created_at": "2025-08-18T22:54:29.000000Z",
+        "id_Animal": 15,
+        "rebano": {
+            "id_Rebano": 7,
+            "id_Finca": 15,
+            "Nombre": "Rebaño 2",
+            "archivado": false,
+            "created_at": "2025-08-18T21:31:10.000000Z",
+            "updated_at": "2025-08-18T21:31:10.000000Z",
+            "finca": {
+                "id_Finca": 15,
+                "id_Propietario": 6,
+                "Nombre": "Finca Romero SPA",
+                "Explotacion_Tipo": "Bovinos",
+                "archivado": false,
+                "created_at": "2025-08-18T00:59:56.000000Z",
+                "updated_at": "2025-08-18T00:59:56.000000Z",
+                "propietario": {
+                    "id": 6,
+                    "id_Personal": 17873216,
+                    "Nombre": "Leonel",
+                    "Apellido": "Romero",
+                    "Telefono": "04140659739",
+                    "archivado": false,
+                    "created_at": null,
+                    "updated_at": null
+                }
+            }
+        },
+        "composicion_raza": {
+            "id_Composicion": 72,
+            "Nombre": "Aberdeen Angus",
+            "Siglas": "ANG",
+            "Pelaje": "Negro o Rojo",
+            "Proposito": "Carne",
+            "Tipo_Raza": "Bos Taurus",
+            "Origen": "Escocia",
+            "Caracteristica_Especial": "longevidad",
+            "Proporcion_Raza": "Grande",
+            "created_at": null,
+            "updated_at": null,
+            "fk_id_Finca": null,
+            "fk_tipo_animal_id": null
+        },
+        "estado_actual": {
+            "esan_id": 15,
+            "esan_fecha_ini": "2025-01-17T00:00:00.000000Z",
+            "esan_fecha_fin": null,
+            "esan_fk_estado_id": 15,
+            "esan_fk_id_animal": 15,
+            "estado_salud": {
+                "estado_id": 15,
+                "estado_nombre": "Sano"
+            }
+        },
+        "etapa_actual": {
+            "etan_etapa_id": 15,
+            "etan_animal_id": 15,
+            "etan_fecha_ini": "2025-01-17T00:00:00.000000Z",
+            "etan_fecha_fin": null,
+            "etapa": {
+                "etapa_id": 15,
+                "etapa_nombre": "Becerro",
+                "etapa_edad_ini": 0,
+                "etapa_edad_fin": 365,
+                "etapa_fk_tipo_animal_id": 3,
+                "etapa_sexo": "M"
+            }
+        }
+    }
+}

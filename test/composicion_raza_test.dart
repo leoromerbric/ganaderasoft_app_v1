@@ -112,5 +112,135 @@ void main() {
       expect(item.fkTipoAnimalId, equals(3));
       expect(item.synced, isTrue);
     });
+
+    test('should handle null fkIdFinca and fkTipoAnimalId fields correctly', () async {
+      // Create test data with null foreign key fields (like API data)
+      final composicion = ComposicionRaza(
+        idComposicion: 100,
+        nombre: 'API Breed',
+        siglas: 'API',
+        pelaje: 'API Color',
+        proposito: 'API Purpose',
+        tipoRaza: 'API Type',
+        origen: 'API Origin',
+        caracteristicaEspecial: 'API Characteristic',
+        proporcionRaza: 'API Proportion',
+        createdAt: null,
+        updatedAt: null,
+        fkIdFinca: null, // These fields can be null from API
+        fkTipoAnimalId: null, // These fields can be null from API
+        synced: false,
+      );
+
+      // Save data
+      await DatabaseService.saveComposicionRazaOffline([composicion]);
+
+      // Retrieve data - this should not throw an error
+      final retrieved = await DatabaseService.getComposicionRazaOffline();
+
+      // Verify all fields including null ones
+      expect(retrieved, hasLength(1));
+      final item = retrieved.first;
+      expect(item.idComposicion, equals(100));
+      expect(item.nombre, equals('API Breed'));
+      expect(item.fkIdFinca, isNull); // Should be null
+      expect(item.fkTipoAnimalId, isNull); // Should be null
+      expect(item.createdAt, isNull);
+      expect(item.updatedAt, isNull);
+      expect(item.synced, isFalse);
+    });
+
+    test('should handle mixed data with some null and some non-null foreign keys', () async {
+      // Create test data with mixed scenarios (like real API scenarios)
+      final composicionList = [
+        ComposicionRaza(
+          idComposicion: 101,
+          nombre: 'Aberdeen Angus',
+          siglas: 'ANG',
+          pelaje: 'Negro o Rojo',
+          proposito: 'Carne',
+          tipoRaza: 'Bos Taurus',
+          origen: 'Escocia',
+          caracteristicaEspecial: 'longevidad',
+          proporcionRaza: 'Grande',
+          createdAt: null,
+          updatedAt: null,
+          fkIdFinca: null, // Null like API data
+          fkTipoAnimalId: null, // Null like API data
+          synced: false,
+        ),
+        ComposicionRaza(
+          idComposicion: 102,
+          nombre: 'Local Breed',
+          siglas: 'LOC',
+          pelaje: 'Mixed',
+          proposito: 'Local',
+          tipoRaza: 'Local Type',
+          origen: 'Local',
+          caracteristicaEspecial: 'Hardy',
+          proporcionRaza: 'Medium',
+          createdAt: '2025-01-01T00:00:00.000000Z',
+          updatedAt: '2025-01-02T00:00:00.000000Z',
+          fkIdFinca: 15, // Has values
+          fkTipoAnimalId: 3, // Has values
+          synced: true,
+        ),
+      ];
+
+      // Save mixed data
+      await DatabaseService.saveComposicionRazaOffline(composicionList);
+
+      // Retrieve data - this should not throw an error
+      final retrieved = await DatabaseService.getComposicionRazaOffline();
+
+      // Verify mixed data handling
+      expect(retrieved, hasLength(2));
+      
+      // First item (sorted by name: Aberdeen comes first)
+      final firstItem = retrieved[0];
+      expect(firstItem.nombre, equals('Aberdeen Angus'));
+      expect(firstItem.fkIdFinca, isNull);
+      expect(firstItem.fkTipoAnimalId, isNull);
+      expect(firstItem.synced, isFalse);
+      
+      // Second item
+      final secondItem = retrieved[1];
+      expect(secondItem.nombre, equals('Local Breed'));
+      expect(secondItem.fkIdFinca, equals(15));
+      expect(secondItem.fkTipoAnimalId, equals(3));
+      expect(secondItem.synced, isTrue);
+    });
+
+    test('should handle JSON with null values correctly (fromJson test)', () async {
+      // Test the ComposicionRaza.fromJson method with null values like API response
+      final jsonData = {
+        'id_Composicion': 70,
+        'Nombre': 'Shortorn',
+        'Siglas': 'SHO',
+        'Pelaje': 'Rojo-Blanco',
+        'Proposito': 'Doble',
+        'Tipo_Raza': 'Bos Taurus',
+        'Origen': 'Noroeste Inglaterra',
+        'Caracteristica_Especial': 'Adaptabilidad',
+        'Proporcion_Raza': 'Grande',
+        'created_at': null,
+        'updated_at': null,
+        'fk_id_Finca': null,
+        'fk_tipo_animal_id': null,
+        'synced': false,
+      };
+
+      // This should not throw an error
+      final composicion = ComposicionRaza.fromJson(jsonData);
+
+      // Verify all fields
+      expect(composicion.idComposicion, equals(70));
+      expect(composicion.nombre, equals('Shortorn'));
+      expect(composicion.fkIdFinca, isNull);
+      expect(composicion.fkTipoAnimalId, isNull);
+      expect(composicion.createdAt, isNull);
+      expect(composicion.updatedAt, isNull);
+      expect(composicion.synced, isFalse);
+    });
   });
 }

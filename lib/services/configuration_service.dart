@@ -382,7 +382,10 @@ class ConfigurationService {
 
   // Composición Raza (with offline support)
   static Future<ComposicionRazaResponse> getComposicionRaza() async {
-    LoggingService.debug('Getting composicion raza list...', 'ConfigurationService');
+    LoggingService.debug(
+      'Getting composicion raza list...',
+      'ConfigurationService',
+    );
 
     try {
       // Check connectivity first
@@ -402,14 +405,16 @@ class ConfigurationService {
       );
 
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse(AppConfig.composicionRazaUrl),
-        headers: headers,
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(Uri.parse(AppConfig.composicionRazaUrl), headers: headers)
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        final composicionRazaResponse = ComposicionRazaResponse.fromJson(jsonData);
+
+        final composicionRazaResponse = ComposicionRazaResponse.fromJson(
+          jsonData,
+        );
 
         LoggingService.info(
           'Composicion raza fetched successfully from server (${composicionRazaResponse.data.data.length} items)',
@@ -417,7 +422,9 @@ class ConfigurationService {
         );
 
         // Save to offline storage
-        await DatabaseService.saveComposicionRazaOffline(composicionRazaResponse.data.data);
+        await DatabaseService.saveComposicionRazaOffline(
+          composicionRazaResponse.data.data,
+        );
 
         return composicionRazaResponse;
       } else {
@@ -425,7 +432,9 @@ class ConfigurationService {
           'Composicion raza request failed with status: ${response.statusCode}',
           'ConfigurationService',
         );
-        throw Exception('Failed to load composicion raza: ${response.statusCode}');
+        throw Exception(
+          'Failed to load composicion raza: ${response.statusCode}',
+        );
       }
     } on TimeoutException catch (e) {
       LoggingService.warning(
@@ -440,7 +449,12 @@ class ConfigurationService {
       );
       return await _getOfflineComposicionRaza();
     } catch (e) {
-      LoggingService.error('Composicion raza request error', 'ConfigurationService', e);
+      LoggingService.error(e.toString(), 'ConfigurationService', e);
+      LoggingService.error(
+        'Composicion raza request error',
+        'ConfigurationService',
+        e,
+      );
 
       // If any network-related error, try offline data
       if (_isNetworkError(e)) {
@@ -458,10 +472,13 @@ class ConfigurationService {
   // Get offline composicion raza data
   static Future<ComposicionRazaResponse> _getOfflineComposicionRaza() async {
     try {
-      LoggingService.debug('Getting composicion raza from offline storage', 'ConfigurationService');
-      
+      LoggingService.debug(
+        'Getting composicion raza from offline storage',
+        'ConfigurationService',
+      );
+
       final composicionRaza = await DatabaseService.getComposicionRazaOffline();
-      
+
       if (composicionRaza.isEmpty) {
         LoggingService.warning(
           'No composicion raza data found in offline storage',
@@ -478,7 +495,8 @@ class ConfigurationService {
       // Create a mock paginated response
       return ComposicionRazaResponse(
         success: true,
-        message: 'Datos de composicion raza obtenidos desde almacenamiento local',
+        message:
+            'Datos de composicion raza obtenidos desde almacenamiento local',
         data: PaginatedData<ComposicionRaza>(
           currentPage: 1,
           data: composicionRaza,
@@ -487,7 +505,11 @@ class ConfigurationService {
         ),
       );
     } catch (e) {
-      LoggingService.error('Error getting offline composicion raza data', 'ConfigurationService', e);
+      LoggingService.error(
+        'Error getting offline composicion raza data',
+        'ConfigurationService',
+        e,
+      );
       rethrow;
     }
   }
@@ -495,9 +517,9 @@ class ConfigurationService {
   // Helper method to check if error is network-related
   static bool _isNetworkError(dynamic error) {
     return error is SocketException ||
-           error is TimeoutException ||
-           error.toString().contains('connection') ||
-           error.toString().contains('network') ||
-           error.toString().contains('timeout');
+        error is TimeoutException ||
+        error.toString().contains('connection') ||
+        error.toString().contains('network') ||
+        error.toString().contains('timeout');
   }
 }

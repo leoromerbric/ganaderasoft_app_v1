@@ -477,11 +477,33 @@ class ComposicionRazaResponse {
     return ComposicionRazaResponse(
       success: json['success'],
       message: json['message'],
-      data: PaginatedData.fromJson(
+      data: _createPaginatedDataFromComposicionRazaResponse(json),
+    );
+  }
+
+  // Helper method to handle the specific structure of composicion-raza API
+  static PaginatedData<ComposicionRaza> _createPaginatedDataFromComposicionRazaResponse(
+    Map<String, dynamic> json,
+  ) {
+    // Check if data is a List (composicion-raza API format) or Map (standard format)
+    if (json['data'] is List) {
+      // Handle composicion-raza specific format with separate pagination object
+      final dataList = json['data'] as List;
+      final pagination = json['pagination'] as Map<String, dynamic>?;
+      
+      return PaginatedData<ComposicionRaza>(
+        currentPage: pagination?['current_page'] ?? 1,
+        data: dataList.map((item) => ComposicionRaza.fromJson(item)).toList(),
+        total: pagination?['total'] ?? dataList.length,
+        perPage: pagination?['per_page'] ?? dataList.length,
+      );
+    } else {
+      // Handle standard paginated format
+      return PaginatedData.fromJson(
         json['data'],
         (item) => ComposicionRaza.fromJson(item),
-      ),
-    );
+      );
+    }
   }
 }
 

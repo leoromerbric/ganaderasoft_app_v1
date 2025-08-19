@@ -67,9 +67,17 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
       
       setState(() {
         _animales = animalesResponse.animales;
-        _filteredAnimales = _animales;
         _isLoading = false;
         _dataSourceMessage = animalesResponse.message;
+        
+        // Apply rebano filter if one is selected
+        if (_selectedRebano != null) {
+          _filteredAnimales = _animales.where((animal) => 
+            animal.idRebano == _selectedRebano!.idRebano
+          ).toList();
+        } else {
+          _filteredAnimales = _animales;
+        }
       });
     } catch (e) {
       LoggingService.error('Error loading animales', 'AnimalesListScreen', e);

@@ -694,7 +694,7 @@ class DatabaseService {
           etapaId: map['etapa_id'] as int,
           etapaNombre: map['etapa_nombre'] as String,
           etapaEdadIni: map['etapa_edad_ini'] as int,
-          etapaEdadFin: map['etapa_edad_fin'] as int?,
+          etapaEdadFin: map['etapa_edad_fin'] != null ? map['etapa_edad_fin'] as int : null,
           etapaFkTipoAnimalId: map['etapa_fk_tipo_animal_id'] as int,
           etapaSexo: map['etapa_sexo'] as String,
           tipoAnimal: TipoAnimal.fromJson(tipoAnimalData),

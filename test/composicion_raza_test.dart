@@ -112,5 +112,42 @@ void main() {
       expect(item.fkTipoAnimalId, equals(3));
       expect(item.synced, isTrue);
     });
+
+    test('should handle null fkIdFinca and fkTipoAnimalId fields correctly', () async {
+      // Create test data with null foreign key fields (like API data)
+      final composicion = ComposicionRaza(
+        idComposicion: 100,
+        nombre: 'API Breed',
+        siglas: 'API',
+        pelaje: 'API Color',
+        proposito: 'API Purpose',
+        tipoRaza: 'API Type',
+        origen: 'API Origin',
+        caracteristicaEspecial: 'API Characteristic',
+        proporcionRaza: 'API Proportion',
+        createdAt: null,
+        updatedAt: null,
+        fkIdFinca: null, // These fields can be null from API
+        fkTipoAnimalId: null, // These fields can be null from API
+        synced: false,
+      );
+
+      // Save data
+      await DatabaseService.saveComposicionRazaOffline([composicion]);
+
+      // Retrieve data - this should not throw an error
+      final retrieved = await DatabaseService.getComposicionRazaOffline();
+
+      // Verify all fields including null ones
+      expect(retrieved, hasLength(1));
+      final item = retrieved.first;
+      expect(item.idComposicion, equals(100));
+      expect(item.nombre, equals('API Breed'));
+      expect(item.fkIdFinca, isNull); // Should be null
+      expect(item.fkTipoAnimalId, isNull); // Should be null
+      expect(item.createdAt, isNull);
+      expect(item.updatedAt, isNull);
+      expect(item.synced, isFalse);
+    });
   });
 }

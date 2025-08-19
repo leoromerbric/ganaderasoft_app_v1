@@ -996,8 +996,8 @@ class DatabaseService {
         proporcionRaza: map['proporcion_raza'] as String,
         createdAt: map['created_at'] as String?,
         updatedAt: map['updated_at'] as String?,
-        fkIdFinca: map['fk_id_finca'] as int?,
-        fkTipoAnimalId: map['fk_tipo_animal_id'] as int?,
+        fkIdFinca: map['fk_id_finca'] != null ? map['fk_id_finca'] as int : null,
+        fkTipoAnimalId: map['fk_tipo_animal_id'] != null ? map['fk_tipo_animal_id'] as int : null,
         synced: (map['synced'] as int) == 1,
       )).toList();
       

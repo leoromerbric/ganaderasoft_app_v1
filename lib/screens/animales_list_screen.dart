@@ -48,7 +48,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
 
   Future<void> _loadAnimales() async {
     try {
-      LoggingService.info('Loading animales for finca ${widget.finca.idFinca}', 'AnimalesListScreen');
+      LoggingService.info('Loading animales for finca ${widget.finca.idFinca}, rebano ${_selectedRebano?.idRebano}', 'AnimalesListScreen');
       
       setState(() {
         _isLoading = true;
@@ -67,9 +67,19 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
       
       setState(() {
         _animales = animalesResponse.animales;
-        _filteredAnimales = _animales;
         _isLoading = false;
         _dataSourceMessage = animalesResponse.message;
+        
+        // Apply rebano filter if one is selected
+        if (_selectedRebano != null) {
+          _filteredAnimales = _animales.where((animal) => 
+            animal.idRebano == _selectedRebano!.idRebano
+          ).toList();
+          LoggingService.info('Applied rebano filter: ${_filteredAnimales.length} animals from rebano ${_selectedRebano!.idRebano} out of ${_animales.length} total', 'AnimalesListScreen');
+        } else {
+          _filteredAnimales = _animales;
+          LoggingService.info('No rebano filter applied: showing all ${_animales.length} animals', 'AnimalesListScreen');
+        }
       });
     } catch (e) {
       LoggingService.error('Error loading animales', 'AnimalesListScreen', e);

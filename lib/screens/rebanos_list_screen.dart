@@ -10,10 +10,7 @@ import 'create_rebano_screen.dart';
 class RebanosListScreen extends StatefulWidget {
   final Finca finca;
 
-  const RebanosListScreen({
-    super.key,
-    required this.finca,
-  });
+  const RebanosListScreen({super.key, required this.finca});
 
   @override
   State<RebanosListScreen> createState() => _RebanosListScreenState();
@@ -43,8 +40,11 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
 
   Future<void> _loadRebanos() async {
     try {
-      LoggingService.info('Loading rebanos for finca ${widget.finca.idFinca}', 'RebanosListScreen');
-      
+      LoggingService.info(
+        'Loading rebanos for finca ${widget.finca.idFinca}',
+        'RebanosListScreen',
+      );
+
       setState(() {
         _isLoading = true;
         _error = null;
@@ -56,9 +56,12 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
       final rebanosResponse = await _authService.getRebanos(
         idFinca: widget.finca.idFinca,
       );
-      
-      LoggingService.info('Rebanos loaded successfully (${rebanosResponse.rebanos.length} items)', 'RebanosListScreen');
-      
+
+      LoggingService.info(
+        'Rebanos loaded successfully (${rebanosResponse.rebanos.length} items)',
+        'RebanosListScreen',
+      );
+
       setState(() {
         _rebanos = rebanosResponse.rebanos;
         _isLoading = false;
@@ -92,9 +95,9 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
             const Text('Rebaños'),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -121,106 +124,102 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.grey[400],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar rebaños',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        _error!,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _loadRebanos,
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar rebaños',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                )
-              : _rebanos.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.groups,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No hay rebaños registrados',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Los rebaños de esta finca aparecerán aquí cuando sean registrados',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                  const SizedBox(height: 8),
+                  Text(
+                    _error!,
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _loadRebanos,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            )
+          : _rebanos.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.groups, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No hay rebaños registrados',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Los rebaños de esta finca aparecerán aquí cuando sean registrados',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                // Data source info banner
+                if (_dataSourceMessage != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.all(16).copyWith(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: _isOffline ? Colors.orange[50] : Colors.green[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: _isOffline
+                            ? Colors.orange[200]!
+                            : Colors.green[200]!,
+                        width: 1,
                       ),
-                    )
-                  : Column(
+                    ),
+                    child: Row(
                       children: [
-                        // Data source info banner
-                        if (_dataSourceMessage != null)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.all(16).copyWith(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: _isOffline ? Colors.orange[50] : Colors.green[50],
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: _isOffline ? Colors.orange[200]! : Colors.green[200]!,
-                                width: 1,
-                              ),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                                  size: 16,
-                                  color: _isOffline ? Colors.orange[700] : Colors.green[700],
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _dataSourceMessage!,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: _isOffline ? Colors.orange[800] : Colors.green[800],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        Icon(
+                          _isOffline ? Icons.cloud_off : Icons.cloud_done,
+                          size: 16,
+                          color: _isOffline
+                              ? Colors.orange[700]
+                              : Colors.green[700],
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _dataSourceMessage!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        Expanded(child: _buildRebanosList()),
+                        ),
                       ],
                     ),
+                  ),
+                Expanded(child: _buildRebanosList()),
+              ],
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreateRebanoScreen(
-                finca: widget.finca,
-              ),
+              builder: (context) => CreateRebanoScreen(finca: widget.finca),
             ),
           );
 
@@ -229,8 +228,9 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
             _loadRebanos();
           }
         },
-        child: const Icon(Icons.add),
         tooltip: 'Crear Rebaño',
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -301,9 +301,14 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
               // Animal count
               if (rebano.animales != null && rebano.animales!.isNotEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -355,10 +360,7 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          date,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(date, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

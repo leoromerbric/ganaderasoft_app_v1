@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/finca.dart';
-import '../models/animal.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
@@ -8,10 +7,7 @@ import '../services/logging_service.dart';
 class CreateRebanoScreen extends StatefulWidget {
   final Finca finca;
 
-  const CreateRebanoScreen({
-    super.key,
-    required this.finca,
-  });
+  const CreateRebanoScreen({super.key, required this.finca});
 
   @override
   State<CreateRebanoScreen> createState() => _CreateRebanoScreenState();
@@ -21,7 +17,7 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
   final _nombreController = TextEditingController();
-  
+
   bool _isLoading = false;
   bool _isOffline = false;
 
@@ -95,9 +91,9 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
             const Text('Crear Rebaño'),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -113,11 +109,7 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.cloud_off,
-                    size: 16,
-                    color: Colors.orange[700],
-                  ),
+                  Icon(Icons.cloud_off, size: 16, color: Colors.orange[700]),
                   const SizedBox(width: 4),
                   Text(
                     'Sin conexión',
@@ -147,17 +139,11 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                   decoration: BoxDecoration(
                     color: Colors.orange[50],
                     borderRadius: BorderRadius.circular(8),
-                    border: Border.all(
-                      color: Colors.orange[200]!,
-                      width: 1,
-                    ),
+                    border: Border.all(color: Colors.orange[200]!, width: 1),
                   ),
                   child: Row(
                     children: [
-                      Icon(
-                        Icons.info_outline,
-                        color: Colors.orange[700],
-                      ),
+                      Icon(Icons.info_outline, color: Colors.orange[700]),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Text(
@@ -178,9 +164,8 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                     children: [
                       Text(
                         'Finca',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Row(
@@ -210,9 +195,8 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                           const SizedBox(width: 8),
                           Text(
                             widget.finca.explotacionTipo,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
-                            ),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Colors.grey[600]),
                           ),
                         ],
                       ),
@@ -225,9 +209,9 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
               // Nombre del Rebaño
               Text(
                 'Nombre del Rebaño *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -256,6 +240,7 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _createRebano,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
@@ -266,7 +251,10 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                         )
                       : const Text(
                           'Crear Rebaño',
-                          style: TextStyle(fontSize: 16),
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 38, 39, 37),
+                          ),
                         ),
                 ),
               ),
@@ -283,17 +271,15 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.info_outline,
-                            color: Colors.blue[700],
-                          ),
+                          Icon(Icons.info_outline, color: Colors.blue[700]),
                           const SizedBox(width: 8),
                           Text(
                             'Información',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                            ),
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
                           ),
                         ],
                       ),

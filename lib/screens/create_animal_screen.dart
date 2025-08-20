@@ -27,13 +27,13 @@ class CreateAnimalScreen extends StatefulWidget {
 class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   final _formKey = GlobalKey<FormState>();
   final _authService = AuthService();
-  
+
   // Form controllers
   final _nombreController = TextEditingController();
   final _codigoAnimalController = TextEditingController();
   final _fechaNacimientoController = TextEditingController();
   final _procedenciaController = TextEditingController();
-  
+
   // Form data
   String _procedencia = 'Local';
   Rebano? _selectedRebano;
@@ -41,12 +41,12 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   ComposicionRaza? _selectedComposicionRaza;
   EstadoSalud? _selectedEstadoSalud;
   Etapa? _selectedEtapa;
-  
+
   // Loading states
   bool _isLoading = false;
   bool _isLoadingData = true;
   bool _isOffline = false;
-  
+
   // Data lists
   List<Rebano> _rebanos = [];
   List<ComposicionRaza> _composicionRaza = [];
@@ -59,7 +59,8 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     super.initState();
     _rebanos = widget.rebanos;
     _selectedRebano = widget.selectedRebano;
-    _procedenciaController.text = _procedencia; // Initialize controller with default value
+    _procedenciaController.text =
+        _procedencia; // Initialize controller with default value
     _checkConnectivity();
     _loadConfigurationData();
   }
@@ -97,7 +98,11 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         _isLoadingData = false;
       });
     } catch (e) {
-      LoggingService.error('Error loading configuration data', 'CreateAnimalScreen', e);
+      LoggingService.error(
+        'Error loading configuration data',
+        'CreateAnimalScreen',
+        e,
+      );
       setState(() {
         _isLoadingData = false;
       });
@@ -115,7 +120,8 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   Future<void> _loadComposicionRaza() async {
     try {
       if (_isOffline) {
-        final composicionRaza = await DatabaseService.getComposicionRazaOffline();
+        final composicionRaza =
+            await DatabaseService.getComposicionRazaOffline();
         setState(() {
           _composicionRaza = composicionRaza;
         });
@@ -126,7 +132,11 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         });
       }
     } catch (e) {
-      LoggingService.error('Error loading composicion raza', 'CreateAnimalScreen', e);
+      LoggingService.error(
+        'Error loading composicion raza',
+        'CreateAnimalScreen',
+        e,
+      );
       // Try offline fallback
       final composicionRaza = await DatabaseService.getComposicionRazaOffline();
       setState(() {
@@ -149,7 +159,11 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         });
       }
     } catch (e) {
-      LoggingService.error('Error loading estados salud', 'CreateAnimalScreen', e);
+      LoggingService.error(
+        'Error loading estados salud',
+        'CreateAnimalScreen',
+        e,
+      );
       // Try offline fallback
       final estadosSalud = await DatabaseService.getEstadosSaludOffline();
       setState(() {
@@ -188,7 +202,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
       firstDate: DateTime(2000),
       lastDate: DateTime.now(),
     );
-    
+
     if (picked != null) {
       setState(() {
         _fechaNacimientoController.text = _formatDateForInput(picked);
@@ -313,9 +327,9 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
             const Text('Crear Animal'),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Colors.grey[600],
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -331,11 +345,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    Icons.cloud_off,
-                    size: 16,
-                    color: Colors.orange[700],
-                  ),
+                  Icon(Icons.cloud_off, size: 16, color: Colors.orange[700]),
                   const SizedBox(width: 4),
                   Text(
                     'Sin conexión',
@@ -374,10 +384,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                         ),
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: Colors.orange[700],
-                            ),
+                            Icon(Icons.info_outline, color: Colors.orange[700]),
                             const SizedBox(width: 12),
                             Expanded(
                               child: Text(
@@ -492,7 +499,8 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       onChanged: (String? value) {
                         setState(() {
                           _selectedSexo = value;
-                          _selectedEtapa = null; // Reset etapa when sexo changes
+                          _selectedEtapa =
+                              null; // Reset etapa when sexo changes
                         });
                       },
                       validator: (value) {
@@ -570,7 +578,9 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       items: _composicionRaza.map((composicion) {
                         return DropdownMenuItem<ComposicionRaza>(
                           value: composicion,
-                          child: Text('${composicion.nombre} (${composicion.siglas})'),
+                          child: Text(
+                            '${composicion.nombre} (${composicion.siglas})',
+                          ),
                         );
                       }).toList(),
                       onChanged: (ComposicionRaza? value) {
@@ -638,7 +648,9 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       items: _getFilteredEtapas().map((etapa) {
                         return DropdownMenuItem<Etapa>(
                           value: etapa,
-                          child: Text('${etapa.etapaNombre} (${etapa.etapaEdadIni}-${etapa.etapaEdadFin ?? "∞"} días)'),
+                          child: Text(
+                            '${etapa.etapaNombre} (${etapa.etapaEdadIni}-${etapa.etapaEdadFin ?? "∞"} días)',
+                          ),
                         );
                       }).toList(),
                       onChanged: (Etapa? value) {
@@ -661,17 +673,28 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _createAnimal,
                         style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            192,
+                            212,
+                            59,
+                          ),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: _isLoading
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text(
                                 'Crear Animal',
-                                style: TextStyle(fontSize: 16),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color.fromARGB(255, 38, 39, 37),
+                                ),
                               ),
                       ),
                     ),

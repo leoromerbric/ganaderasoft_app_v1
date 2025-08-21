@@ -26,7 +26,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     try {
       final isLoggedIn = await _authService.isLoggedIn();
-      
+
       if (mounted) {
         if (isLoggedIn) {
           Navigator.of(context).pushReplacement(
@@ -69,17 +69,7 @@ class _SplashScreenState extends State<SplashScreen> {
             // Logo
             Container(
               padding: const EdgeInsets.all(32),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
+
               child: Image.asset(
                 'lib/media/ganadera_logo_v1.png',
                 width: 80,
@@ -88,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            
+
             // App name
             const Text(
               AppConstants.appName,
@@ -99,17 +89,14 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            
+
             // Subtitle
             const Text(
               AppConstants.appSubtitle,
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.white70,
-              ),
+              style: TextStyle(fontSize: 16, color: Colors.white70),
             ),
             const SizedBox(height: 48),
-            
+
             // Loading indicator
             const CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),

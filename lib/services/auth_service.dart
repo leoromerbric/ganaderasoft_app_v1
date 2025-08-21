@@ -35,6 +35,47 @@ class AuthService {
     await prefs.setString(AppConstants.tokenKey, token);
   }
 
+  // Save original JWT token during offline mode
+  Future<void> _saveOriginalToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(AppConstants.originalTokenKey, token);
+  }
+
+  // Get original JWT token
+  Future<String?> _getOriginalToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(AppConstants.originalTokenKey);
+  }
+
+  // Clear original token
+  Future<void> _clearOriginalToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(AppConstants.originalTokenKey);
+  }
+
+  // Check if current token is a temporary offline token
+  bool _isOfflineToken(String? token) {
+    return token != null && token.startsWith('offline_');
+  }
+
+  // Restore original JWT token when connectivity is restored
+  Future<void> _restoreOriginalTokenIfNeeded() async {
+    final currentToken = await getToken();
+    
+    // Only restore if current token is a temporary offline token
+    if (_isOfflineToken(currentToken)) {
+      final originalToken = await _getOriginalToken();
+      if (originalToken != null) {
+        LoggingService.info(
+          'Restoring original JWT token after connectivity restoration',
+          'AuthService',
+        );
+        await saveToken(originalToken);
+        await _clearOriginalToken();
+      }
+    }
+  }
+
   // Save user data to storage
   Future<void> saveUser(User user) async {
     final prefs = await SharedPreferences.getInstance();
@@ -56,6 +97,7 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
     await prefs.remove(AppConstants.userKey);
+    await prefs.remove(AppConstants.originalTokenKey); // Also clear preserved original token
     // Note: Offline database data is preserved to allow offline authentication
     LoggingService.info(
       'Credentials cleared, offline data preserved for future authentication',
@@ -172,6 +214,16 @@ class AuthService {
       );
 
       // For offline authentication, we'll restore the session with cached data
+      // Preserve the original JWT token before switching to temporary offline token
+      final currentToken = await getToken();
+      if (currentToken != null && !_isOfflineToken(currentToken)) {
+        LoggingService.info(
+          'Preserving original JWT token during offline authentication',
+          'AuthService',
+        );
+        await _saveOriginalToken(currentToken);
+      }
+      
       // Generate a temporary token to maintain session consistency
       final tempToken = 'offline_${DateTime.now().millisecondsSinceEpoch}';
       await saveToken(tempToken);
@@ -348,6 +400,9 @@ class AuthService {
         return await _getOfflineProfile();
       }
 
+      // Restore original token if we have connectivity and are using offline token
+      await _restoreOriginalTokenIfNeeded();
+
       LoggingService.debug(
         'Connectivity available - fetching profile from server',
         'AuthService',
@@ -435,6 +490,9 @@ class AuthService {
         );
         return await _getOfflineFincas();
       }
+
+      // Restore original token if we have connectivity and are using offline token
+      await _restoreOriginalTokenIfNeeded();
 
       LoggingService.debug(
         'Connectivity available - fetching fincas from server',
@@ -579,6 +637,9 @@ class AuthService {
         return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
       }
 
+      // Restore original token if we have connectivity and are using offline token
+      await _restoreOriginalTokenIfNeeded();
+
       LoggingService.debug(
         'Connectivity available - fetching animales from server',
         'AuthService',
@@ -681,6 +742,9 @@ class AuthService {
         );
         return await _getOfflineRebanos(idFinca: idFinca);
       }
+
+      // Restore original token if we have connectivity and are using offline token
+      await _restoreOriginalTokenIfNeeded();
 
       LoggingService.debug(
         'Connectivity available - fetching rebanos from server',
@@ -806,6 +870,12 @@ class AuthService {
     LoggingService.debug('Creating animal: $nombre', 'AuthService');
 
     try {
+      // Restore original token if we have connectivity and are using offline token
+      final isConnected = await ConnectivityService.isConnected();
+      if (isConnected) {
+        await _restoreOriginalTokenIfNeeded();
+      }
+      
       final token = await getToken();
       if (token == null) {
         throw Exception('No authentication token found');
@@ -892,6 +962,12 @@ class AuthService {
     LoggingService.debug('Creating rebano: $nombre', 'AuthService');
 
     try {
+      // Restore original token if we have connectivity and are using offline token
+      final isConnected = await ConnectivityService.isConnected();
+      if (isConnected) {
+        await _restoreOriginalTokenIfNeeded();
+      }
+      
       final token = await getToken();
       if (token == null) {
         throw Exception('No authentication token found');

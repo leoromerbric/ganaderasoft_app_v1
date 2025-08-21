@@ -23,7 +23,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -40,6 +40,7 @@ class DatabaseService {
         email TEXT NOT NULL,
         type_user TEXT NOT NULL,
         image TEXT NOT NULL,
+        password_hash TEXT,
         updated_at INTEGER NOT NULL
       )
     ''');
@@ -380,24 +381,40 @@ class DatabaseService {
       
       LoggingService.info('Composicion raza table added successfully', 'DatabaseService');
     }
+
+    if (oldVersion < 5) {
+      // Add password_hash column to users table for version 5
+      await db.execute('''
+        ALTER TABLE users ADD COLUMN password_hash TEXT
+      ''');
+      
+      LoggingService.info('Password hash column added to users table successfully', 'DatabaseService');
+    }
   }
 
   // User operations
-  static Future<void> saveUserOffline(User user) async {
+  static Future<void> saveUserOffline(User user, {String? passwordHash}) async {
     try {
       LoggingService.debug('Saving user offline: ${user.email}', 'DatabaseService');
       
       final db = await database;
+      final Map<String, dynamic> userData = {
+        'id': user.id,
+        'name': user.name,
+        'email': user.email,
+        'type_user': user.typeUser,
+        'image': user.image,
+        'updated_at': DateTime.now().millisecondsSinceEpoch,
+      };
+      
+      // Add password hash if provided
+      if (passwordHash != null) {
+        userData['password_hash'] = passwordHash;
+      }
+      
       await db.insert(
         'users',
-        {
-          'id': user.id,
-          'name': user.name,
-          'email': user.email,
-          'type_user': user.typeUser,
-          'image': user.image,
-          'updated_at': DateTime.now().millisecondsSinceEpoch,
-        },
+        userData,
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
       
@@ -454,6 +471,33 @@ class DatabaseService {
       return DateTime.fromMillisecondsSinceEpoch(maps.first['updated_at']);
     } catch (e) {
       LoggingService.error('Error getting user last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  static Future<String?> getUserPasswordHash(String email) async {
+    try {
+      LoggingService.debug('Retrieving password hash for user: $email', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'users',
+        columns: ['password_hash'],
+        where: 'email = ?',
+        whereArgs: [email.toLowerCase()],
+        orderBy: 'updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty || maps.first['password_hash'] == null) {
+        LoggingService.debug('No password hash found for user: $email', 'DatabaseService');
+        return null;
+      }
+
+      LoggingService.debug('Password hash found for user: $email', 'DatabaseService');
+      return maps.first['password_hash'];
+    } catch (e) {
+      LoggingService.error('Error retrieving password hash for user: $email', 'DatabaseService', e);
       return null;
     }
   }

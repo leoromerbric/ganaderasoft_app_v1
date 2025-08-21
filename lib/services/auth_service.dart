@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:async';
 import 'dart:io';
+import 'package:crypto/crypto.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/app_config.dart';
@@ -14,6 +15,13 @@ import 'logging_service.dart';
 
 class AuthService {
   static const Duration _httpTimeout = Duration(seconds: 10);
+
+  // Hash password for secure storage
+  String _hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final digest = sha256.convert(bytes);
+    return digest.toString();
+  }
 
   // Get stored token
   Future<String?> getToken() async {
@@ -135,6 +143,34 @@ class AuthService {
         );
       }
 
+      // Verify password hash for offline authentication
+      final storedPasswordHash = await DatabaseService.getUserPasswordHash(email);
+      if (storedPasswordHash == null) {
+        LoggingService.error(
+          'No password hash found for offline authentication',
+          'AuthService',
+        );
+        throw Exception(
+          'No hay credenciales almacenadas para autenticación offline',
+        );
+      }
+
+      final providedPasswordHash = _hashPassword(password);
+      if (storedPasswordHash != providedPasswordHash) {
+        LoggingService.warning(
+          'Password verification failed in offline authentication',
+          'AuthService',
+        );
+        throw Exception(
+          'Credenciales incorrectas',
+        );
+      }
+
+      LoggingService.info(
+        'Password verified successfully for offline authentication: $email',
+        'AuthService',
+      );
+
       // For offline authentication, we'll restore the session with cached data
       // Generate a temporary token to maintain session consistency
       final tempToken = 'offline_${DateTime.now().millisecondsSinceEpoch}';
@@ -195,12 +231,20 @@ class AuthService {
 
         LoggingService.info('Login successful for user: $email', 'AuthService');
 
+        // Hash the password for offline authentication
+        final passwordHash = _hashPassword(password);
+
         // Save token and user data to SharedPreferences
         await saveToken(loginResponse.token);
         await saveUser(loginResponse.user);
 
-        // Also save user data to offline database
-        await DatabaseService.saveUserOffline(loginResponse.user);
+        // Also save user data with password hash to offline database
+        await DatabaseService.saveUserOffline(loginResponse.user, passwordHash: passwordHash);
+
+        LoggingService.info(
+          'User credentials saved for offline authentication: $email',
+          'AuthService',
+        );
 
         return loginResponse;
       } else {

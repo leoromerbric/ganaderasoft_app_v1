@@ -200,6 +200,48 @@ class _SyncScreenState extends State<SyncScreen> {
                   const SizedBox(height: 12),
 
                   _buildSyncInfoCard(
+                    'Cambios de Animales',
+                    _lastSyncTimes['cambios_animal'],
+                    Icons.change_circle,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Lactancia',
+                    _lastSyncTimes['lactancia'],
+                    Icons.water_drop,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Registro Lechero',
+                    _lastSyncTimes['registro_lechero'],
+                    Icons.local_drink,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Peso Corporal',
+                    _lastSyncTimes['peso_corporal'],
+                    Icons.monitor_weight,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Medidas Corporales',
+                    _lastSyncTimes['medidas_corporales'],
+                    Icons.straighten,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Personal de Finca',
+                    _lastSyncTimes['personal_finca'],
+                    Icons.people,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
                     'Fuente de Agua',
                     _lastSyncTimes['fuente_agua'],
                     Icons.water_drop,

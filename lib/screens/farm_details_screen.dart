@@ -6,6 +6,7 @@ import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import 'animales_list_screen.dart';
 import 'rebanos_list_screen.dart';
+import 'cambios_animal_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -247,6 +248,130 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                         ),
                       ),
                     ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Farm Management Section
+              Text(
+                'Gestión Avanzada',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Farm Management Navigation Cards
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Cambios de Animales',
+                          Icons.change_circle,
+                          'Historial de cambios',
+                          false,
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => CambiosAnimalListScreen(finca: widget.finca),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Lactancia',
+                          Icons.water_drop,
+                          'Control de lactancia',
+                          false,
+                          () {
+                            // TODO: Navigate to lactancia screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pantalla de lactancia próximamente')),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Registro Lechero',
+                          Icons.local_drink,
+                          'Producción de leche',
+                          false,
+                          () {
+                            // TODO: Navigate to registro lechero screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pantalla de registro lechero próximamente')),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Peso Corporal',
+                          Icons.monitor_weight,
+                          'Control de peso',
+                          false,
+                          () {
+                            // TODO: Navigate to peso corporal screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pantalla de peso corporal próximamente')),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Medidas Corporales',
+                          Icons.straighten,
+                          'Medidas del animal',
+                          false,
+                          () {
+                            // TODO: Navigate to medidas corporales screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pantalla de medidas corporales próximamente')),
+                            );
+                          },
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildNavigationCard(
+                          context,
+                          'Personal de Finca',
+                          Icons.people,
+                          'Empleados y roles',
+                          false,
+                          () {
+                            // TODO: Navigate to personal finca screen
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Pantalla de personal próximamente')),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

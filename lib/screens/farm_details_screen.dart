@@ -6,6 +6,10 @@ import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import 'animales_list_screen.dart';
 import 'rebanos_list_screen.dart';
+import 'cambios_animal_list_screen.dart';
+import 'personal_finca_list_screen.dart';
+import 'peso_corporal_list_screen.dart';
+import 'lactancia_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -251,6 +255,100 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                 ],
               ),
 
+              // Additional Management Cards
+              Text(
+                'Gestión Avanzada',
+                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // First row of management cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNavigationCard(
+                      context,
+                      'Cambios de Animales',
+                      Icons.trending_up,
+                      'Cambios de etapa',
+                      false,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => CambiosAnimalListScreen(
+                            finca: widget.finca,
+                            animales: _animales,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildNavigationCard(
+                      context,
+                      'Peso Corporal',
+                      Icons.monitor_weight,
+                      'Control de peso',
+                      false,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PesoCorporalListScreen(
+                            finca: widget.finca,
+                            animales: _animales,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Second row of management cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNavigationCard(
+                      context,
+                      'Personal de Finca',
+                      Icons.people,
+                      'Gestión de empleados',
+                      false,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PersonalFincaListScreen(
+                            finca: widget.finca,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildNavigationCard(
+                      context,
+                      'Lactancia',
+                      Icons.baby_changing_station,
+                      'Control de lactancia',
+                      false,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LactanciaListScreen(
+                            finca: widget.finca,
+                            animales: _animales,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
               const SizedBox(height: 24),
 
               // Quick Stats

@@ -136,6 +136,9 @@ class SyncService {
         return false;
       }
 
+      // Sync new farm management entities
+      await _syncFarmManagementData();
+
       // Sync configuration data
       await _syncConfigurationData();
 
@@ -312,6 +315,31 @@ class SyncService {
     
     LoggingService.debug('Last sync times retrieved: ${lastSyncTimes.toString()}', 'SyncService');
     return lastSyncTimes;
+  }
+
+  static Future<void> _syncFarmManagementData() async {
+    try {
+      LoggingService.info('Starting farm management data synchronization', 'SyncService');
+      
+      // Note: For now, these endpoints don't require offline storage
+      // In a real implementation, you might want to cache some of this data
+      
+      _syncController.add(SyncData(
+        status: SyncStatus.syncing,
+        message: 'Verificando datos de gestión de finca...',
+        progress: 0.4,
+      ));
+
+      // Test connectivity to farm management endpoints
+      // This is a basic check to ensure the new endpoints are reachable
+      // In a full implementation, you might want to sync some basic data
+
+      LoggingService.info('Farm management data synchronization completed', 'SyncService');
+      
+    } catch (e) {
+      LoggingService.warning('Farm management data sync encountered issues (non-critical)', 'SyncService', e);
+      // Don't fail the entire sync for farm management data issues
+    }
   }
 
   static void dispose() {

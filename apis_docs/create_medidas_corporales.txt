@@ -1,0 +1,36 @@
+Request:
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/medidas-corporales' \
+--header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data '{
+    "Altura_HC": 125.5,
+    "Altura_HG": 130.2,
+    "Perimetro_PT": 180.0,
+    "Perimetro_PCA": 65.5,
+    "Longitud_LC": 155.0,
+    "Longitud_LG": 45.0,
+    "Anchura_AG": 35.5,
+    "medida_etapa_anid": 13,
+    "medida_etapa_etid": 15
+}'
+
+Response:
+{
+    "success": true,
+    "message": "Medidas corporales registradas exitosamente",
+    "data": {
+        "Altura_HC": 125.5,
+        "Altura_HG": 130.2,
+        "Perimetro_PT": 180,
+        "Perimetro_PCA": 65.5,
+        "Longitud_LC": 155,
+        "Longitud_LG": 45,
+        "Anchura_AG": 35.5,
+        "medida_etapa_anid": 13,
+        "medida_etapa_etid": 15,
+        "updated_at": "2025-08-24T18:35:11.000000Z",
+        "created_at": "2025-08-24T18:35:11.000000Z",
+        "id_Medida": 8
+    }
+}

@@ -8,6 +8,7 @@ import '../config/app_config.dart';
 import '../models/user.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
+import '../models/farm_management_models.dart';
 import '../constants/app_constants.dart';
 import 'database_service.dart';
 import 'connectivity_service.dart';
@@ -1060,6 +1061,522 @@ class AuthService {
         message: 'Error al cargar datos offline',
         rebanos: [],
       );
+    }
+  }
+
+  // Cambios Animal API methods
+  Future<CambiosAnimalResponse> getCambiosAnimal({
+    int? animalId,
+    int? etapaId,
+    String? etapaCambio,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    LoggingService.debug('Getting cambios animal list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached cambios animal data', 'AuthService');
+        return CambiosAnimalResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.cambiosAnimalUrl;
+      Map<String, String> queryParams = {};
+      
+      if (animalId != null) queryParams['animal_id'] = animalId.toString();
+      if (etapaId != null) queryParams['etapa_id'] = etapaId.toString();
+      if (etapaCambio != null) queryParams['etapa_cambio'] = etapaCambio;
+      if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
+      if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final cambiosResponse = CambiosAnimalResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Cambios animal fetched successfully (${cambiosResponse.data.length} items)', 'AuthService');
+        return cambiosResponse;
+      } else {
+        throw Exception('Failed to get cambios animal: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting cambios animal', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return CambiosAnimalResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<CambiosAnimal> createCambiosAnimal(CambiosAnimal cambios) async {
+    LoggingService.debug('Creating cambios animal...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.cambiosAnimalUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(cambios.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Cambios animal created successfully', 'AuthService');
+      return CambiosAnimal.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create cambios animal: ${response.body}', 'AuthService');
+      throw Exception('Failed to create cambios animal: ${response.body}');
+    }
+  }
+
+  // Lactancia API methods
+  Future<LactanciaResponse> getLactancia({
+    int? animalId,
+    int? activa,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    LoggingService.debug('Getting lactancia list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached lactancia data', 'AuthService');
+        return LactanciaResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.lactanciaUrl;
+      Map<String, String> queryParams = {};
+      
+      if (animalId != null) queryParams['animal_id'] = animalId.toString();
+      if (activa != null) queryParams['activa'] = activa.toString();
+      if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
+      if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final lactanciaResponse = LactanciaResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Lactancia fetched successfully (${lactanciaResponse.data.length} items)', 'AuthService');
+        return lactanciaResponse;
+      } else {
+        throw Exception('Failed to get lactancia: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting lactancia', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return LactanciaResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<Lactancia> createLactancia(Lactancia lactancia) async {
+    LoggingService.debug('Creating lactancia...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.lactanciaUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(lactancia.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Lactancia created successfully', 'AuthService');
+      return Lactancia.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create lactancia: ${response.body}', 'AuthService');
+      throw Exception('Failed to create lactancia: ${response.body}');
+    }
+  }
+
+  // Registro Lechero API methods
+  Future<RegistroLecheroResponse> getRegistroLechero({
+    int? lactanciaId,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    LoggingService.debug('Getting registro lechero list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached registro lechero data', 'AuthService');
+        return RegistroLecheroResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.registroLecheroUrl;
+      Map<String, String> queryParams = {};
+      
+      if (lactanciaId != null) queryParams['lactancia_id'] = lactanciaId.toString();
+      if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
+      if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final lecheroResponse = RegistroLecheroResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Registro lechero fetched successfully (${lecheroResponse.data.length} items)', 'AuthService');
+        return lecheroResponse;
+      } else {
+        throw Exception('Failed to get registro lechero: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting registro lechero', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return RegistroLecheroResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<RegistroLechero> createRegistroLechero(RegistroLechero registro) async {
+    LoggingService.debug('Creating registro lechero...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.registroLecheroUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(registro.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Registro lechero created successfully', 'AuthService');
+      return RegistroLechero.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create registro lechero: ${response.body}', 'AuthService');
+      throw Exception('Failed to create registro lechero: ${response.body}');
+    }
+  }
+
+  // Peso Corporal API methods
+  Future<PesoCorporalResponse> getPesoCorporal({
+    int? animalId,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    LoggingService.debug('Getting peso corporal list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached peso corporal data', 'AuthService');
+        return PesoCorporalResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.pesoCorporalUrl;
+      Map<String, String> queryParams = {};
+      
+      if (animalId != null) queryParams['animal_id'] = animalId.toString();
+      if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
+      if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final pesoResponse = PesoCorporalResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Peso corporal fetched successfully (${pesoResponse.data.length} items)', 'AuthService');
+        return pesoResponse;
+      } else {
+        throw Exception('Failed to get peso corporal: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting peso corporal', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return PesoCorporalResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<PesoCorporal> createPesoCorporal(PesoCorporal peso) async {
+    LoggingService.debug('Creating peso corporal...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.pesoCorporalUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(peso.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Peso corporal created successfully', 'AuthService');
+      return PesoCorporal.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create peso corporal: ${response.body}', 'AuthService');
+      throw Exception('Failed to create peso corporal: ${response.body}');
+    }
+  }
+
+  // Medidas Corporales API methods
+  Future<MedidasCorporalesResponse> getMedidasCorporales({
+    int? animalId,
+    int? etapaId,
+  }) async {
+    LoggingService.debug('Getting medidas corporales list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached medidas corporales data', 'AuthService');
+        return MedidasCorporalesResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.medidasCorporalesUrl;
+      Map<String, String> queryParams = {};
+      
+      if (animalId != null) queryParams['animal_id'] = animalId.toString();
+      if (etapaId != null) queryParams['etapa_id'] = etapaId.toString();
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final medidasResponse = MedidasCorporalesResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Medidas corporales fetched successfully (${medidasResponse.data.length} items)', 'AuthService');
+        return medidasResponse;
+      } else {
+        throw Exception('Failed to get medidas corporales: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting medidas corporales', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return MedidasCorporalesResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<MedidasCorporales> createMedidasCorporales(MedidasCorporales medidas) async {
+    LoggingService.debug('Creating medidas corporales...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.medidasCorporalesUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(medidas.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Medidas corporales created successfully', 'AuthService');
+      return MedidasCorporales.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create medidas corporales: ${response.body}', 'AuthService');
+      throw Exception('Failed to create medidas corporales: ${response.body}');
+    }
+  }
+
+  // Personal Finca API methods
+  Future<PersonalFincaResponse> getPersonalFinca({
+    int? idFinca,
+  }) async {
+    LoggingService.debug('Getting personal finca list...', 'AuthService');
+
+    try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info('No connectivity - using cached personal finca data', 'AuthService');
+        return PersonalFincaResponse(success: true, message: 'Datos offline', data: []);
+      }
+
+      await _restoreOriginalTokenIfNeeded();
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+
+      String url = AppConfig.personalFincaUrl;
+      Map<String, String> queryParams = {};
+      
+      if (idFinca != null) queryParams['id_finca'] = idFinca.toString();
+      
+      if (queryParams.isNotEmpty) {
+        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+      }
+
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+      ).timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final personalResponse = PersonalFincaResponse.fromJson(jsonDecode(response.body));
+        LoggingService.info('Personal finca fetched successfully (${personalResponse.data.length} items)', 'AuthService');
+        return personalResponse;
+      } else {
+        throw Exception('Failed to get personal finca: ${response.body}');
+      }
+    } catch (e) {
+      LoggingService.error('Error getting personal finca', 'AuthService', e);
+      if (_isNetworkError(e)) {
+        return PersonalFincaResponse(success: true, message: 'Datos offline', data: []);
+      }
+      rethrow;
+    }
+  }
+
+  Future<PersonalFinca> createPersonalFinca(PersonalFinca personal) async {
+    LoggingService.debug('Creating personal finca...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http.post(
+      Uri.parse(AppConfig.personalFincaUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(personal.toJson()),
+    ).timeout(_httpTimeout);
+
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      LoggingService.info('Personal finca created successfully', 'AuthService');
+      return PersonalFinca.fromJson(responseData['data']);
+    } else {
+      LoggingService.error('Failed to create personal finca: ${response.body}', 'AuthService');
+      throw Exception('Failed to create personal finca: ${response.body}');
     }
   }
 

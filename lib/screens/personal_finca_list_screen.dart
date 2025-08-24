@@ -243,14 +243,10 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
             Row(
               children: [
                 CircleAvatar(
-                  backgroundColor: personal.activo 
-                      ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
-                      : Colors.grey[300],
+                  backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   child: Icon(
                     Icons.person,
-                    color: personal.activo 
-                        ? Theme.of(context).colorScheme.primary
-                        : Colors.grey[600],
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -275,7 +271,7 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
-                          personal.cargo,
+                          personal.tipoTrabajador,
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.primary,
                             fontWeight: FontWeight.w500,
@@ -286,44 +282,16 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                     ],
                   ),
                 ),
-                if (!personal.activo)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.red[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      'Inactivo',
-                      style: TextStyle(
-                        color: Colors.red[800],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
               ],
             ),
             const SizedBox(height: 16),
 
             // Contact info
+            _buildDetailRow('Cédula', personal.cedula.toString(), Icons.badge),
+            const SizedBox(height: 8),
             _buildDetailRow('Teléfono', personal.telefono, Icons.phone),
-            if (personal.email != null && personal.email!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _buildDetailRow('Email', personal.email!, Icons.email),
-            ],
             const SizedBox(height: 8),
-            _buildDetailRow('Fecha de Ingreso', _formatDate(personal.fechaIngreso), Icons.calendar_today),
-            const SizedBox(height: 8),
-            _buildDetailRow('Salario', _formatSalary(personal.salario), Icons.attach_money),
-            
-            if (personal.observaciones != null && personal.observaciones!.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              _buildDetailRow('Observaciones', personal.observaciones!, Icons.note),
-            ],
+            _buildDetailRow('Email', personal.correo, Icons.email),
           ],
         ),
       ),

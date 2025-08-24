@@ -5,175 +5,137 @@ import 'finca.dart';
 // Cambio Animal Model
 class CambioAnimal {
   final int idCambio;
-  final int idAnimal;
   final String fechaCambio;
-  final String tipoCambio;
-  final String valorAnterior;
-  final String valorNuevo;
-  final String? observaciones;
+  final String etapaCambio;
+  final double peso;
+  final double altura;
+  final String comentario;
   final String createdAt;
   final String updatedAt;
-  final Animal? animal;
+  final int cambiosEtapaAnid;
+  final int cambiosEtapaEtid;
 
   CambioAnimal({
     required this.idCambio,
-    required this.idAnimal,
     required this.fechaCambio,
-    required this.tipoCambio,
-    required this.valorAnterior,
-    required this.valorNuevo,
-    this.observaciones,
+    required this.etapaCambio,
+    required this.peso,
+    required this.altura,
+    required this.comentario,
     required this.createdAt,
     required this.updatedAt,
-    this.animal,
+    required this.cambiosEtapaAnid,
+    required this.cambiosEtapaEtid,
   });
 
   factory CambioAnimal.fromJson(Map<String, dynamic> json) {
     return CambioAnimal(
-      idCambio: json['id_cambio'],
-      idAnimal: json['id_animal'],
-      fechaCambio: json['fecha_cambio'],
-      tipoCambio: json['tipo_cambio'],
-      valorAnterior: json['valor_anterior'],
-      valorNuevo: json['valor_nuevo'],
-      observaciones: json['observaciones'],
+      idCambio: json['id_Cambio'],
+      fechaCambio: json['Fecha_Cambio'],
+      etapaCambio: json['Etapa_Cambio'],
+      peso: (json['Peso'] ?? 0.0).toDouble(),
+      altura: (json['Altura'] ?? 0.0).toDouble(),
+      comentario: json['Comentario'] ?? '',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      animal: json['animal'] != null ? Animal.fromJson(json['animal']) : null,
+      cambiosEtapaAnid: json['cambios_etapa_anid'],
+      cambiosEtapaEtid: json['cambios_etapa_etid'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_cambio': idCambio,
-      'id_animal': idAnimal,
-      'fecha_cambio': fechaCambio,
-      'tipo_cambio': tipoCambio,
-      'valor_anterior': valorAnterior,
-      'valor_nuevo': valorNuevo,
-      'observaciones': observaciones,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'Fecha_Cambio': fechaCambio,
+      'Etapa_Cambio': etapaCambio,
+      'Peso': peso,
+      'Altura': altura,
+      'Comentario': comentario,
+      'cambios_etapa_anid': cambiosEtapaAnid,
+      'cambios_etapa_etid': cambiosEtapaEtid,
     };
   }
 }
 
 // Lactancia Model
 class Lactancia {
-  final int idLactancia;
-  final int idAnimal;
-  final String fechaInicio;
-  final String? fechaFin;
-  final int numeroLactancia;
-  final int diasLactancia;
-  final double produccionDiariaPromedio;
-  final String? observaciones;
-  final bool activa;
+  final int lactanciaId;
+  final String lactanciaFechaInicio;
+  final String? lactanciaFechaFin;
+  final String? lactanciaSecado;
   final String createdAt;
   final String updatedAt;
-  final Animal? animal;
+  final int lactanciaEtapaAnid;
+  final int lactanciaEtapaEtid;
 
   Lactancia({
-    required this.idLactancia,
-    required this.idAnimal,
-    required this.fechaInicio,
-    this.fechaFin,
-    required this.numeroLactancia,
-    required this.diasLactancia,
-    required this.produccionDiariaPromedio,
-    this.observaciones,
-    required this.activa,
+    required this.lactanciaId,
+    required this.lactanciaFechaInicio,
+    this.lactanciaFechaFin,
+    this.lactanciaSecado,
     required this.createdAt,
     required this.updatedAt,
-    this.animal,
+    required this.lactanciaEtapaAnid,
+    required this.lactanciaEtapaEtid,
   });
 
   factory Lactancia.fromJson(Map<String, dynamic> json) {
     return Lactancia(
-      idLactancia: json['id_lactancia'],
-      idAnimal: json['id_animal'],
-      fechaInicio: json['fecha_inicio'],
-      fechaFin: json['fecha_fin'],
-      numeroLactancia: json['numero_lactancia'],
-      diasLactancia: json['dias_lactancia'],
-      produccionDiariaPromedio: (json['produccion_diaria_promedio'] ?? 0.0).toDouble(),
-      observaciones: json['observaciones'],
-      activa: json['activa'] ?? true,
+      lactanciaId: json['lactancia_id'],
+      lactanciaFechaInicio: json['lactancia_fecha_inicio'],
+      lactanciaFechaFin: json['Lactancia_fecha_fin'],
+      lactanciaSecado: json['lactancia_secado'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      animal: json['animal'] != null ? Animal.fromJson(json['animal']) : null,
+      lactanciaEtapaAnid: json['lactancia_etapa_anid'],
+      lactanciaEtapaEtid: json['lactancia_etapa_etid'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_lactancia': idLactancia,
-      'id_animal': idAnimal,
-      'fecha_inicio': fechaInicio,
-      'fecha_fin': fechaFin,
-      'numero_lactancia': numeroLactancia,
-      'dias_lactancia': diasLactancia,
-      'produccion_diaria_promedio': produccionDiariaPromedio,
-      'observaciones': observaciones,
-      'activa': activa,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'lactancia_fecha_inicio': lactanciaFechaInicio,
+      'Lactancia_fecha_fin': lactanciaFechaFin,
+      'lactancia_secado': lactanciaSecado,
+      'lactancia_etapa_anid': lactanciaEtapaAnid,
+      'lactancia_etapa_etid': lactanciaEtapaEtid,
     };
   }
 }
 
 // Registro Lechero Model
 class RegistroLechero {
-  final int idRegistro;
-  final int idAnimal;
-  final String fechaRegistro;
-  final double cantidadManana;
-  final double cantidadTarde;
-  final double cantidadTotal;
-  final String? observaciones;
+  final int lecheId;
+  final String lecheFechaPesaje;
+  final String lechePesajeTotal;
   final String createdAt;
   final String updatedAt;
-  final Animal? animal;
+  final int lecheLactanciaId;
 
   RegistroLechero({
-    required this.idRegistro,
-    required this.idAnimal,
-    required this.fechaRegistro,
-    required this.cantidadManana,
-    required this.cantidadTarde,
-    required this.cantidadTotal,
-    this.observaciones,
+    required this.lecheId,
+    required this.lecheFechaPesaje,
+    required this.lechePesajeTotal,
     required this.createdAt,
     required this.updatedAt,
-    this.animal,
+    required this.lecheLactanciaId,
   });
 
   factory RegistroLechero.fromJson(Map<String, dynamic> json) {
     return RegistroLechero(
-      idRegistro: json['id_registro'],
-      idAnimal: json['id_animal'],
-      fechaRegistro: json['fecha_registro'],
-      cantidadManana: (json['cantidad_manana'] ?? 0.0).toDouble(),
-      cantidadTarde: (json['cantidad_tarde'] ?? 0.0).toDouble(),
-      cantidadTotal: (json['cantidad_total'] ?? 0.0).toDouble(),
-      observaciones: json['observaciones'],
+      lecheId: json['leche_id'],
+      lecheFechaPesaje: json['leche_fecha_pesaje'],
+      lechePesajeTotal: json['leche_pesaje_Total'].toString(),
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      animal: json['animal'] != null ? Animal.fromJson(json['animal']) : null,
+      lecheLactanciaId: json['leche_lactancia_id'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_registro': idRegistro,
-      'id_animal': idAnimal,
-      'fecha_registro': fechaRegistro,
-      'cantidad_manana': cantidadManana,
-      'cantidad_tarde': cantidadTarde,
-      'cantidad_total': cantidadTotal,
-      'observaciones': observaciones,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'leche_fecha_pesaje': lecheFechaPesaje,
+      'leche_pesaje_Total': double.tryParse(lechePesajeTotal) ?? 0.0,
+      'leche_lactancia_id': lecheLactanciaId,
     };
   }
 }
@@ -181,51 +143,45 @@ class RegistroLechero {
 // Peso Corporal Model
 class PesoCorporal {
   final int idPeso;
-  final int idAnimal;
-  final String fechaRegistro;
-  final double pesoKg;
-  final String metodoMedicion;
-  final String? observaciones;
+  final String fechaPeso;
+  final double peso;
+  final String comentario;
   final String createdAt;
   final String updatedAt;
-  final Animal? animal;
+  final int pesoEtapaAnid;
+  final int pesoEtapaEtid;
 
   PesoCorporal({
     required this.idPeso,
-    required this.idAnimal,
-    required this.fechaRegistro,
-    required this.pesoKg,
-    required this.metodoMedicion,
-    this.observaciones,
+    required this.fechaPeso,
+    required this.peso,
+    required this.comentario,
     required this.createdAt,
     required this.updatedAt,
-    this.animal,
+    required this.pesoEtapaAnid,
+    required this.pesoEtapaEtid,
   });
 
   factory PesoCorporal.fromJson(Map<String, dynamic> json) {
     return PesoCorporal(
-      idPeso: json['id_peso'],
-      idAnimal: json['id_animal'],
-      fechaRegistro: json['fecha_registro'],
-      pesoKg: (json['peso_kg'] ?? 0.0).toDouble(),
-      metodoMedicion: json['metodo_medicion'],
-      observaciones: json['observaciones'],
+      idPeso: json['id_Peso'],
+      fechaPeso: json['Fecha_Peso'],
+      peso: (json['Peso'] ?? 0.0).toDouble(),
+      comentario: json['Comentario'] ?? '',
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      animal: json['animal'] != null ? Animal.fromJson(json['animal']) : null,
+      pesoEtapaAnid: json['peso_etapa_anid'],
+      pesoEtapaEtid: json['peso_etapa_etid'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_peso': idPeso,
-      'id_animal': idAnimal,
-      'fecha_registro': fechaRegistro,
-      'peso_kg': pesoKg,
-      'metodo_medicion': metodoMedicion,
-      'observaciones': observaciones,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'Fecha_Peso': fechaPeso,
+      'Peso': peso,
+      'Comentario': comentario,
+      'peso_etapa_anid': pesoEtapaAnid,
+      'peso_etapa_etid': pesoEtapaEtid,
     };
   }
 }
@@ -233,92 +189,88 @@ class PesoCorporal {
 // Medidas Corporales Model
 class MedidasCorporales {
   final int idMedida;
-  final int idAnimal;
-  final String fechaRegistro;
-  final double alturaCruzCm;
-  final double largoCuerpoCm;
-  final double perimetroToracicoCm;
-  final double anchoCaderaCm;
-  final String? observaciones;
+  final double alturaHC;
+  final double alturaHG;
+  final double perimetroPT;
+  final double perimetroPCA;
+  final double longitudLC;
+  final double longitudLG;
+  final double anchuraAG;
   final String createdAt;
   final String updatedAt;
-  final Animal? animal;
+  final int medidaEtapaAnid;
+  final int medidaEtapaEtid;
 
   MedidasCorporales({
     required this.idMedida,
-    required this.idAnimal,
-    required this.fechaRegistro,
-    required this.alturaCruzCm,
-    required this.largoCuerpoCm,
-    required this.perimetroToracicoCm,
-    required this.anchoCaderaCm,
-    this.observaciones,
+    required this.alturaHC,
+    required this.alturaHG,
+    required this.perimetroPT,
+    required this.perimetroPCA,
+    required this.longitudLC,
+    required this.longitudLG,
+    required this.anchuraAG,
     required this.createdAt,
     required this.updatedAt,
-    this.animal,
+    required this.medidaEtapaAnid,
+    required this.medidaEtapaEtid,
   });
 
   factory MedidasCorporales.fromJson(Map<String, dynamic> json) {
     return MedidasCorporales(
-      idMedida: json['id_medida'],
-      idAnimal: json['id_animal'],
-      fechaRegistro: json['fecha_registro'],
-      alturaCruzCm: (json['altura_cruz_cm'] ?? 0.0).toDouble(),
-      largoCuerpoCm: (json['largo_cuerpo_cm'] ?? 0.0).toDouble(),
-      perimetroToracicoCm: (json['perimetro_toracico_cm'] ?? 0.0).toDouble(),
-      anchoCaderaCm: (json['ancho_cadera_cm'] ?? 0.0).toDouble(),
-      observaciones: json['observaciones'],
+      idMedida: json['id_Medida'],
+      alturaHC: (json['Altura_HC'] ?? 0.0).toDouble(),
+      alturaHG: (json['Altura_HG'] ?? 0.0).toDouble(),
+      perimetroPT: (json['Perimetro_PT'] ?? 0.0).toDouble(),
+      perimetroPCA: (json['Perimetro_PCA'] ?? 0.0).toDouble(),
+      longitudLC: (json['Longitud_LC'] ?? 0.0).toDouble(),
+      longitudLG: (json['Longitud_LG'] ?? 0.0).toDouble(),
+      anchuraAG: (json['Anchura_AG'] ?? 0.0).toDouble(),
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
-      animal: json['animal'] != null ? Animal.fromJson(json['animal']) : null,
+      medidaEtapaAnid: json['medida_etapa_anid'],
+      medidaEtapaEtid: json['medida_etapa_etid'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'id_medida': idMedida,
-      'id_animal': idAnimal,
-      'fecha_registro': fechaRegistro,
-      'altura_cruz_cm': alturaCruzCm,
-      'largo_cuerpo_cm': largoCuerpoCm,
-      'perimetro_toracico_cm': perimetroToracicoCm,
-      'ancho_cadera_cm': anchoCaderaCm,
-      'observaciones': observaciones,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'Altura_HC': alturaHC,
+      'Altura_HG': alturaHG,
+      'Perimetro_PT': perimetroPT,
+      'Perimetro_PCA': perimetroPCA,
+      'Longitud_LC': longitudLC,
+      'Longitud_LG': longitudLG,
+      'Anchura_AG': anchuraAG,
+      'medida_etapa_anid': medidaEtapaAnid,
+      'medida_etapa_etid': medidaEtapaEtid,
     };
   }
 }
 
 // Personal Finca Model
 class PersonalFinca {
-  final int idPersonal;
+  final int idTecnico;
   final int idFinca;
+  final int cedula;
   final String nombre;
   final String apellido;
-  final String cargo;
   final String telefono;
-  final String? email;
-  final String fechaIngreso;
-  final double salario;
-  final bool activo;
-  final String? observaciones;
+  final String correo;
+  final String tipoTrabajador;
   final String createdAt;
   final String updatedAt;
   final Finca? finca;
 
   PersonalFinca({
-    required this.idPersonal,
+    required this.idTecnico,
     required this.idFinca,
+    required this.cedula,
     required this.nombre,
     required this.apellido,
-    required this.cargo,
     required this.telefono,
-    this.email,
-    required this.fechaIngreso,
-    required this.salario,
-    required this.activo,
-    this.observaciones,
+    required this.correo,
+    required this.tipoTrabajador,
     required this.createdAt,
     required this.updatedAt,
     this.finca,
@@ -326,17 +278,14 @@ class PersonalFinca {
 
   factory PersonalFinca.fromJson(Map<String, dynamic> json) {
     return PersonalFinca(
-      idPersonal: json['id_personal'],
-      idFinca: json['id_finca'],
-      nombre: json['nombre'],
-      apellido: json['apellido'],
-      cargo: json['cargo'],
-      telefono: json['telefono'],
-      email: json['email'],
-      fechaIngreso: json['fecha_ingreso'],
-      salario: (json['salario'] ?? 0.0).toDouble(),
-      activo: json['activo'] ?? true,
-      observaciones: json['observaciones'],
+      idTecnico: json['id_Tecnico'],
+      idFinca: json['id_Finca'],
+      cedula: json['Cedula'],
+      nombre: json['Nombre'],
+      apellido: json['Apellido'],
+      telefono: json['Telefono'],
+      correo: json['Correo'],
+      tipoTrabajador: json['Tipo_Trabajador'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       finca: json['finca'] != null ? Finca.fromJson(json['finca']) : null,
@@ -345,19 +294,13 @@ class PersonalFinca {
 
   Map<String, dynamic> toJson() {
     return {
-      'id_personal': idPersonal,
-      'id_finca': idFinca,
-      'nombre': nombre,
-      'apellido': apellido,
-      'cargo': cargo,
-      'telefono': telefono,
-      'email': email,
-      'fecha_ingreso': fechaIngreso,
-      'salario': salario,
-      'activo': activo,
-      'observaciones': observaciones,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
+      'id_Finca': idFinca,
+      'Cedula': cedula,
+      'Nombre': nombre,
+      'Apellido': apellido,
+      'Telefono': telefono,
+      'Correo': correo,
+      'Tipo_Trabajador': tipoTrabajador,
     };
   }
 }
@@ -375,7 +318,7 @@ class CambioAnimalResponse {
   });
 
   factory CambioAnimalResponse.fromJson(Map<String, dynamic> json) {
-    var cambiosData = json['data']['data'] as List;
+    var cambiosData = json['data'] as List;
     List<CambioAnimal> cambiosList = cambiosData.map((i) => CambioAnimal.fromJson(i)).toList();
     
     return CambioAnimalResponse(
@@ -398,7 +341,7 @@ class LactanciaResponse {
   });
 
   factory LactanciaResponse.fromJson(Map<String, dynamic> json) {
-    var lactanciasData = json['data']['data'] as List;
+    var lactanciasData = json['data'] as List;
     List<Lactancia> lactanciasList = lactanciasData.map((i) => Lactancia.fromJson(i)).toList();
     
     return LactanciaResponse(
@@ -421,7 +364,7 @@ class RegistroLecheroResponse {
   });
 
   factory RegistroLecheroResponse.fromJson(Map<String, dynamic> json) {
-    var registrosData = json['data']['data'] as List;
+    var registrosData = json['data'] as List;
     List<RegistroLechero> registrosList = registrosData.map((i) => RegistroLechero.fromJson(i)).toList();
     
     return RegistroLecheroResponse(
@@ -444,7 +387,7 @@ class PesoCorporalResponse {
   });
 
   factory PesoCorporalResponse.fromJson(Map<String, dynamic> json) {
-    var pesosData = json['data']['data'] as List;
+    var pesosData = json['data'] as List;
     List<PesoCorporal> pesosList = pesosData.map((i) => PesoCorporal.fromJson(i)).toList();
     
     return PesoCorporalResponse(
@@ -467,7 +410,7 @@ class MedidasCorporalesResponse {
   });
 
   factory MedidasCorporalesResponse.fromJson(Map<String, dynamic> json) {
-    var medidasData = json['data']['data'] as List;
+    var medidasData = json['data'] as List;
     List<MedidasCorporales> medidasList = medidasData.map((i) => MedidasCorporales.fromJson(i)).toList();
     
     return MedidasCorporalesResponse(
@@ -490,7 +433,7 @@ class PersonalFincaResponse {
   });
 
   factory PersonalFincaResponse.fromJson(Map<String, dynamic> json) {
-    var personalData = json['data']['data'] as List;
+    var personalData = json['data'] as List;
     List<PersonalFinca> personalList = personalData.map((i) => PersonalFinca.fromJson(i)).toList();
     
     return PersonalFincaResponse(

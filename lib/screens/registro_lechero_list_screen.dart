@@ -4,67 +4,61 @@ import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
-import 'create_cambio_animal_screen.dart';
+import 'create_registro_lechero_screen.dart';
 
-class CambiosAnimalListScreen extends StatefulWidget {
+class RegistroLecheroListScreen extends StatefulWidget {
   final Finca finca;
 
-  const CambiosAnimalListScreen({
+  const RegistroLecheroListScreen({
     super.key,
     required this.finca,
   });
 
   @override
-  State<CambiosAnimalListScreen> createState() => _CambiosAnimalListScreenState();
+  State<RegistroLecheroListScreen> createState() => _RegistroLecheroListScreenState();
 }
 
-class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
-  final _authService = AuthService();
-  List<CambioAnimal> _cambiosAnimal = [];
+class _RegistroLecheroListScreenState extends State<RegistroLecheroListScreen> {
+  final AuthService _authService = AuthService();
+  
   bool _isLoading = true;
-  String? _error;
   bool _isOffline = false;
+  String? _error;
   String? _dataSourceMessage;
+  List<RegistroLechero> _registrosLecheros = [];
 
   @override
   void initState() {
     super.initState();
     _checkConnectivity();
-    _loadCambiosAnimal();
+    _loadRegistrosLecheros();
   }
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
     setState(() {
       _isOffline = !isConnected;
+      _dataSourceMessage = _isOffline
+          ? 'Mostrando datos guardados localmente'
+          : 'Mostrando datos sincronizados';
     });
   }
 
-  Future<void> _loadCambiosAnimal() async {
+  Future<void> _loadRegistrosLecheros() async {
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
     try {
-      final cambiosResponse = await _authService.getCambiosAnimal(
-        fincaId: widget.finca.idFinca,
-      );
-
+      // This would need to be implemented in AuthService
+      // For now, create an empty response
       setState(() {
-        _cambiosAnimal = cambiosResponse.cambiosAnimal;
+        _registrosLecheros = [];
         _isLoading = false;
-        _dataSourceMessage = _isOffline 
-            ? 'Datos desde caché local (sin conexión)'
-            : 'Datos actualizados desde el servidor';
       });
-
-      LoggingService.info(
-        'Cambios animal loaded successfully (${_cambiosAnimal.length} items)',
-        'CambiosAnimalListScreen',
-      );
     } catch (e) {
-      LoggingService.error('Error loading cambios animal', 'CambiosAnimalListScreen', e);
+      LoggingService.error('Error loading registros lecheros', 'RegistroLecheroListScreen', e);
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -72,12 +66,12 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
     }
   }
 
-  String _formatDate(String dateString) {
+  String _formatDate(String dateStr) {
     try {
-      final date = DateTime.parse(dateString);
+      final date = DateTime.parse(dateStr);
       return '${date.day}/${date.month}/${date.year}';
     } catch (e) {
-      return dateString;
+      return dateStr;
     }
   }
 
@@ -85,18 +79,52 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Cambios de Animales'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Registro Lechero'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (_isOffline)
+            Container(
+              margin: const EdgeInsets.all(8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.cloud_off, size: 16, color: Colors.orange[700]),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Sin conexión',
+                    style: TextStyle(
+                      color: Colors.orange[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+        ],
       ),
       body: Column(
         children: [
-          // Status indicator
           if (_dataSourceMessage != null)
             Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              color: _isOffline ? Colors.orange[100] : Colors.green[100],
+              color: _isOffline ? Colors.orange[50] : Colors.green[50],
               child: Row(
                 children: [
                   Icon(
@@ -122,7 +150,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                 ],
               ),
             ),
-          Expanded(child: _buildCambiosAnimalList()),
+          Expanded(child: _buildRegistrosLecherosList()),
         ],
       ),
       floatingActionButton: FloatingActionButton(
@@ -130,23 +158,23 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreateCambioAnimalScreen(finca: widget.finca),
+              builder: (context) => CreateRegistroLecheroScreen(finca: widget.finca),
             ),
           );
 
           if (result != null) {
             // Refresh the list
-            _loadCambiosAnimal();
+            _loadRegistrosLecheros();
           }
         },
-        tooltip: 'Registrar Cambio',
+        tooltip: 'Registrar Producción de Leche',
         backgroundColor: const Color.fromARGB(255, 192, 212, 59),
         child: const Icon(Icons.add),
       ),
     );
   }
 
-  Widget _buildCambiosAnimalList() {
+  Widget _buildRegistrosLecherosList() {
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -161,25 +189,22 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red[400],
+              color: Colors.red[300],
             ),
             const SizedBox(height: 16),
             Text(
-              'Error al cargar los cambios',
+              'Error al cargar registros lecheros',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                _error!,
-                textAlign: TextAlign.center,
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
+            Text(
+              _error!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             ElevatedButton(
-              onPressed: _loadCambiosAnimal,
+              onPressed: _loadRegistrosLecheros,
               child: const Text('Reintentar'),
             ),
           ],
@@ -187,24 +212,24 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
       );
     }
 
-    if (_cambiosAnimal.isEmpty) {
+    if (_registrosLecheros.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.change_circle_outlined,
+              Icons.local_drink,
               size: 64,
               color: Colors.grey[400],
             ),
             const SizedBox(height: 16),
             Text(
-              'No hay cambios registrados',
+              'No hay registros lecheros',
               style: Theme.of(context).textTheme.titleLarge,
             ),
             const SizedBox(height: 8),
             Text(
-              'Los cambios de animales aparecerán aquí cuando sean registrados',
+              'Los registros de producción de leche aparecerán aquí cuando sean registrados',
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
@@ -214,19 +239,19 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: _loadCambiosAnimal,
+      onRefresh: _loadRegistrosLecheros,
       child: ListView.builder(
         padding: const EdgeInsets.all(16.0),
-        itemCount: _cambiosAnimal.length,
+        itemCount: _registrosLecheros.length,
         itemBuilder: (context, index) {
-          final cambio = _cambiosAnimal[index];
-          return _buildCambioCard(cambio);
+          final registro = _registrosLecheros[index];
+          return _buildRegistroCard(registro);
         },
       ),
     );
   }
 
-  Widget _buildCambioCard(CambioAnimal cambio) {
+  Widget _buildRegistroCard(RegistroLechero registro) {
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 2,
@@ -239,21 +264,21 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             Row(
               children: [
                 Icon(
-                  Icons.change_circle,
+                  Icons.local_drink,
                   color: Theme.of(context).colorScheme.primary,
                   size: 24,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    cambio.etapaCambio,
+                    'Registro #${registro.lecheId}',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
                 Text(
-                  _formatDate(cambio.fechaCambio),
+                  _formatDate(registro.lecheFechaPesaje),
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Colors.grey[600],
                   ),
@@ -262,7 +287,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Animal info placeholder - removed since model doesn't include animal info
+            // Lactancia info
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8,
@@ -273,7 +298,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                'Animal ID: ${cambio.cambiosEtapaAnid} - Etapa ID: ${cambio.cambiosEtapaEtid}',
+                'Lactancia ID: ${registro.lecheLactanciaId}',
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.primary,
                   fontWeight: FontWeight.w500,
@@ -283,12 +308,10 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             ),
             const SizedBox(height: 12),
 
-            // Change details
-            _buildDetailRow('Peso', '${cambio.peso} kg'),
+            // Production details
+            _buildDetailRow('Fecha de Pesaje', _formatDate(registro.lecheFechaPesaje)),
             const SizedBox(height: 8),
-            _buildDetailRow('Altura', '${cambio.altura} cm'),
-            const SizedBox(height: 8),
-            _buildDetailRow('Comentario', cambio.comentario),
+            _buildDetailRow('Cantidad Total', '${registro.lechePesajeTotal} L'),
           ],
         ),
       ),
@@ -300,7 +323,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          width: 100,
+          width: 120,
           child: Text(
             label,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(

@@ -8,6 +8,10 @@ import 'animales_list_screen.dart';
 import 'rebanos_list_screen.dart';
 import 'cambios_animal_list_screen.dart';
 import 'personal_finca_list_screen.dart';
+import 'lactancia_list_screen.dart';
+import 'registro_lechero_list_screen.dart';
+import 'peso_corporal_list_screen.dart';
+import 'medidas_corporales_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -289,15 +293,15 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                         child: _buildNavigationCard(
                           context,
                           'Lactancia',
-                          Icons.water_drop,
+                          Icons.pregnant_woman,
                           'Control de lactancia',
                           false,
-                          () {
-                            // TODO: Navigate to lactancia screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pantalla de lactancia próximamente')),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => LactanciaListScreen(finca: widget.finca),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -312,12 +316,12 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                           Icons.local_drink,
                           'Producción de leche',
                           false,
-                          () {
-                            // TODO: Navigate to registro lechero screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pantalla de registro lechero próximamente')),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => RegistroLecheroListScreen(finca: widget.finca),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -328,12 +332,12 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                           Icons.monitor_weight,
                           'Control de peso',
                           false,
-                          () {
-                            // TODO: Navigate to peso corporal screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pantalla de peso corporal próximamente')),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PesoCorporalListScreen(finca: widget.finca),
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -348,12 +352,12 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                           Icons.straighten,
                           'Medidas del animal',
                           false,
-                          () {
-                            // TODO: Navigate to medidas corporales screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pantalla de medidas corporales próximamente')),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => MedidasCorporalesListScreen(finca: widget.finca),
+                            ),
+                          ),
                         ),
                       ),
                       const SizedBox(width: 16),

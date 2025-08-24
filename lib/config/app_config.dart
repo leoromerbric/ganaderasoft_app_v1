@@ -16,7 +16,7 @@ class AppConfig {
   // New farm management endpoints
   static String get cambiosAnimalUrl => '$apiUrl/cambios-animal';
   static String get lactanciaUrl => '$apiUrl/lactancia';
-  static String get registroLecheroUrl => '$apiUrl/registro-lechero';
+  static String get registroLecheroUrl => '$apiUrl/leche';
   static String get pesoCorporalUrl => '$apiUrl/peso-corporal';
   static String get medidasCorporalesUrl => '$apiUrl/medidas-corporales';
   static String get personalFincaUrl => '$apiUrl/personal-finca';

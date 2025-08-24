@@ -7,6 +7,7 @@ import '../services/logging_service.dart';
 import 'animales_list_screen.dart';
 import 'rebanos_list_screen.dart';
 import 'cambios_animal_list_screen.dart';
+import 'personal_finca_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -363,12 +364,12 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                           Icons.people,
                           'Empleados y roles',
                           false,
-                          () {
-                            // TODO: Navigate to personal finca screen
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Pantalla de personal próximamente')),
-                            );
-                          },
+                          () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => PersonalFincaListScreen(finca: widget.finca),
+                            ),
+                          ),
                         ),
                       ),
                     ],

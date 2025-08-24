@@ -1,0 +1,37 @@
+GET /api/peso-corporal?finca_id={id}
+
+Response:
+{
+    "success": true,
+    "message": "Registros de peso corporal obtenidos exitosamente",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_peso": 1,
+                "id_animal": 15,
+                "fecha_registro": "2025-01-20T00:00:00.000000Z",
+                "peso_kg": 350.5,
+                "metodo_medicion": "Balanza",
+                "observaciones": "Peso tomado en ayunas",
+                "created_at": "2025-01-20T10:00:00.000000Z",
+                "updated_at": "2025-01-20T10:00:00.000000Z",
+                "animal": {
+                    "id_Animal": 15,
+                    "Nombre": "Bella",
+                    "codigo_animal": "001"
+                }
+            }
+        ],
+        "first_page_url": "http://localhost:8000/api/peso-corporal?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost:8000/api/peso-corporal?page=1",
+        "next_page_url": null,
+        "path": "http://localhost:8000/api/peso-corporal",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 1
+    }
+}

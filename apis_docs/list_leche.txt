@@ -1,0 +1,38 @@
+GET /api/registro-lechero?finca_id={id}
+
+Response:
+{
+    "success": true,
+    "message": "Registros lecheros obtenidos exitosamente",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_registro": 1,
+                "id_animal": 15,
+                "fecha_registro": "2025-01-20T00:00:00.000000Z",
+                "cantidad_manana": 8.5,
+                "cantidad_tarde": 7.0,
+                "cantidad_total": 15.5,
+                "observaciones": "Producción normal",
+                "created_at": "2025-01-20T10:00:00.000000Z",
+                "updated_at": "2025-01-20T10:00:00.000000Z",
+                "animal": {
+                    "id_Animal": 15,
+                    "Nombre": "Bella",
+                    "codigo_animal": "001"
+                }
+            }
+        ],
+        "first_page_url": "http://localhost:8000/api/registro-lechero?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost:8000/api/registro-lechero?page=1",
+        "next_page_url": null,
+        "path": "http://localhost:8000/api/registro-lechero",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 1
+    }
+}

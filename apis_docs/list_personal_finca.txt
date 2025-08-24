@@ -1,0 +1,41 @@
+GET /api/personal-finca?finca_id={id}
+
+Response:
+{
+    "success": true,
+    "message": "Personal de finca obtenido exitosamente",
+    "data": {
+        "current_page": 1,
+        "data": [
+            {
+                "id_personal": 1,
+                "id_finca": 15,
+                "nombre": "Juan",
+                "apellido": "Pérez",
+                "cargo": "Vaquero",
+                "telefono": "04140123456",
+                "email": "juan.perez@email.com",
+                "fecha_ingreso": "2025-01-01T00:00:00.000000Z",
+                "salario": 500.00,
+                "activo": true,
+                "observaciones": "Responsable del ordeño matutino",
+                "created_at": "2025-01-01T10:00:00.000000Z",
+                "updated_at": "2025-01-20T10:00:00.000000Z",
+                "finca": {
+                    "id_Finca": 15,
+                    "Nombre": "Finca Romero SPA"
+                }
+            }
+        ],
+        "first_page_url": "http://localhost:8000/api/personal-finca?page=1",
+        "from": 1,
+        "last_page": 1,
+        "last_page_url": "http://localhost:8000/api/personal-finca?page=1",
+        "next_page_url": null,
+        "path": "http://localhost:8000/api/personal-finca",
+        "per_page": 15,
+        "prev_page_url": null,
+        "to": 1,
+        "total": 1
+    }
+}

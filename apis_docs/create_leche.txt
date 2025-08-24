@@ -1,0 +1,32 @@
+POST /api/registro-lechero
+
+Request:
+{
+    "id_animal": 15,
+    "fecha_registro": "2025-01-20",
+    "cantidad_manana": 8.5,
+    "cantidad_tarde": 7.0,
+    "observaciones": "Producción normal"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Registro lechero creado exitosamente",
+    "data": {
+        "id_registro": 1,
+        "id_animal": 15,
+        "fecha_registro": "2025-01-20T00:00:00.000000Z",
+        "cantidad_manana": 8.5,
+        "cantidad_tarde": 7.0,
+        "cantidad_total": 15.5,
+        "observaciones": "Producción normal",
+        "created_at": "2025-01-20T10:00:00.000000Z",
+        "updated_at": "2025-01-20T10:00:00.000000Z",
+        "animal": {
+            "id_Animal": 15,
+            "Nombre": "Bella",
+            "codigo_animal": "001"
+        }
+    }
+}

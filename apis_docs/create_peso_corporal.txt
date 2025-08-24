@@ -1,0 +1,31 @@
+POST /api/peso-corporal
+
+Request:
+{
+    "id_animal": 15,
+    "fecha_registro": "2025-01-20",
+    "peso_kg": 350.5,
+    "metodo_medicion": "Balanza",
+    "observaciones": "Peso tomado en ayunas"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Registro de peso corporal creado exitosamente",
+    "data": {
+        "id_peso": 1,
+        "id_animal": 15,
+        "fecha_registro": "2025-01-20T00:00:00.000000Z",
+        "peso_kg": 350.5,
+        "metodo_medicion": "Balanza",
+        "observaciones": "Peso tomado en ayunas",
+        "created_at": "2025-01-20T10:00:00.000000Z",
+        "updated_at": "2025-01-20T10:00:00.000000Z",
+        "animal": {
+            "id_Animal": 15,
+            "Nombre": "Bella",
+            "codigo_animal": "001"
+        }
+    }
+}

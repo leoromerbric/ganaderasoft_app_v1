@@ -1,0 +1,33 @@
+POST /api/lactancia
+
+Request:
+{
+    "id_animal": 15,
+    "fecha_inicio": "2025-01-15",
+    "numero_lactancia": 1,
+    "observaciones": "Primera lactancia del animal"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Registro de lactancia creado exitosamente",
+    "data": {
+        "id_lactancia": 1,
+        "id_animal": 15,
+        "fecha_inicio": "2025-01-15T00:00:00.000000Z",
+        "fecha_fin": null,
+        "numero_lactancia": 1,
+        "dias_lactancia": 0,
+        "produccion_diaria_promedio": 0,
+        "observaciones": "Primera lactancia del animal",
+        "activa": true,
+        "created_at": "2025-01-15T10:00:00.000000Z",
+        "updated_at": "2025-01-15T10:00:00.000000Z",
+        "animal": {
+            "id_Animal": 15,
+            "Nombre": "Bella",
+            "codigo_animal": "001"
+        }
+    }
+}

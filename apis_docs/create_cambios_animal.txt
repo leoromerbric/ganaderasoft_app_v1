@@ -1,0 +1,33 @@
+POST /api/cambios-animal
+
+Request:
+{
+    "id_animal": 15,
+    "fecha_cambio": "2025-01-20",
+    "tipo_cambio": "Estado",
+    "valor_anterior": "Sano",
+    "valor_nuevo": "Enfermo",
+    "observaciones": "Animal presenta síntomas de fiebre"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Cambio de animal registrado exitosamente",
+    "data": {
+        "id_cambio": 1,
+        "id_animal": 15,
+        "fecha_cambio": "2025-01-20T00:00:00.000000Z",
+        "tipo_cambio": "Estado",
+        "valor_anterior": "Sano",
+        "valor_nuevo": "Enfermo",
+        "observaciones": "Animal presenta síntomas de fiebre",
+        "created_at": "2025-01-20T10:30:00.000000Z",
+        "updated_at": "2025-01-20T10:30:00.000000Z",
+        "animal": {
+            "id_Animal": 15,
+            "Nombre": "Bella",
+            "codigo_animal": "001"
+        }
+    }
+}

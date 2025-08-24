@@ -1,33 +1,32 @@
-POST /api/cambios-animal
-
 Request:
-{
-    "id_animal": 15,
-    "fecha_cambio": "2025-01-20",
-    "tipo_cambio": "Estado",
-    "valor_anterior": "Sano",
-    "valor_nuevo": "Enfermo",
-    "observaciones": "Animal presenta síntomas de fiebre"
-}
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/cambios-animal' \
+--header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--data '{
+    "Fecha_Cambio": "2025-01-30",
+    "Etapa_Cambio": "Adultez",
+    "Peso": 360.0,
+    "Altura": 120.5,
+    "Comentario": "Transición a etapa Adulto con buen desarrollo",
+    "cambios_etapa_anid": 13,
+    "cambios_etapa_etid": 15
+}'
 
 Response:
 {
     "success": true,
-    "message": "Cambio de animal registrado exitosamente",
+    "message": "Cambios de animal registrados exitosamente",
     "data": {
-        "id_cambio": 1,
-        "id_animal": 15,
-        "fecha_cambio": "2025-01-20T00:00:00.000000Z",
-        "tipo_cambio": "Estado",
-        "valor_anterior": "Sano",
-        "valor_nuevo": "Enfermo",
-        "observaciones": "Animal presenta síntomas de fiebre",
-        "created_at": "2025-01-20T10:30:00.000000Z",
-        "updated_at": "2025-01-20T10:30:00.000000Z",
-        "animal": {
-            "id_Animal": 15,
-            "Nombre": "Bella",
-            "codigo_animal": "001"
-        }
+        "Fecha_Cambio": "2025-01-30T00:00:00.000000Z",
+        "Etapa_Cambio": "Adultez",
+        "Peso": 360,
+        "Altura": 120.5,
+        "Comentario": "Transición a etapa Adulto con buen desarrollo",
+        "cambios_etapa_anid": 13,
+        "cambios_etapa_etid": 15,
+        "updated_at": "2025-08-24T18:44:30.000000Z",
+        "created_at": "2025-08-24T18:44:30.000000Z",
+        "id_Cambio": 3
     }
 }

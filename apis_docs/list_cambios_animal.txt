@@ -1,38 +1,42 @@
-GET /api/cambios-animal?finca_id={id}
+Request:
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/cambios-animal?animal_id=13&etapa_id=15&etapa_cambio=Juvenil&fecha_inicio=2023-01-01&fecha_fin=2025-12-31' \
+--header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8' \
+--header 'Accept: application/json'
 
 Response:
 {
     "success": true,
-    "message": "Cambios de animal obtenidos exitosamente",
-    "data": {
+    "message": "Lista de cambios de animal obtenida exitosamente",
+    "data": [
+        {
+            "id_Cambio": 1,
+            "Fecha_Cambio": "2024-01-15T00:00:00.000000Z",
+            "Etapa_Cambio": "Juvenil",
+            "Peso": 350,
+            "Altura": 120.5,
+            "Comentario": "Transición a etapa juvenil con buen desarrollo",
+            "created_at": "2025-08-24T03:57:42.000000Z",
+            "updated_at": "2025-08-24T03:57:42.000000Z",
+            "cambios_etapa_anid": 13,
+            "cambios_etapa_etid": 15
+        },
+        {
+            "id_Cambio": 2,
+            "Fecha_Cambio": "2024-01-15T00:00:00.000000Z",
+            "Etapa_Cambio": "Juvenil",
+            "Peso": 350,
+            "Altura": 120.5,
+            "Comentario": "Transición a etapa juvenil con buen desarrollo",
+            "created_at": "2025-08-24T03:59:45.000000Z",
+            "updated_at": "2025-08-24T03:59:45.000000Z",
+            "cambios_etapa_anid": 13,
+            "cambios_etapa_etid": 15
+        }
+    ],
+    "pagination": {
         "current_page": 1,
-        "data": [
-            {
-                "id_cambio": 1,
-                "id_animal": 15,
-                "fecha_cambio": "2025-01-20T10:30:00.000000Z",
-                "tipo_cambio": "Estado",
-                "valor_anterior": "Sano",
-                "valor_nuevo": "Enfermo",
-                "observaciones": "Animal presenta síntomas de fiebre",
-                "created_at": "2025-01-20T10:30:00.000000Z",
-                "updated_at": "2025-01-20T10:30:00.000000Z",
-                "animal": {
-                    "id_Animal": 15,
-                    "Nombre": "Bella",
-                    "codigo_animal": "001"
-                }
-            }
-        ],
-        "first_page_url": "http://localhost:8000/api/cambios-animal?page=1",
-        "from": 1,
         "last_page": 1,
-        "last_page_url": "http://localhost:8000/api/cambios-animal?page=1",
-        "next_page_url": null,
-        "path": "http://localhost:8000/api/cambios-animal",
         "per_page": 15,
-        "prev_page_url": null,
-        "to": 1,
-        "total": 1
+        "total": 2
     }
 }

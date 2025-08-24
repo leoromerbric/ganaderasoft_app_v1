@@ -1,0 +1,39 @@
+POST /api/personal-finca
+
+Request:
+{
+    "id_finca": 15,
+    "nombre": "Juan",
+    "apellido": "Pérez",
+    "cargo": "Vaquero",
+    "telefono": "04140123456",
+    "email": "juan.perez@email.com",
+    "fecha_ingreso": "2025-01-01",
+    "salario": 500.00,
+    "observaciones": "Responsable del ordeño matutino"
+}
+
+Response:
+{
+    "success": true,
+    "message": "Personal registrado exitosamente",
+    "data": {
+        "id_personal": 1,
+        "id_finca": 15,
+        "nombre": "Juan",
+        "apellido": "Pérez",
+        "cargo": "Vaquero",
+        "telefono": "04140123456",
+        "email": "juan.perez@email.com",
+        "fecha_ingreso": "2025-01-01T00:00:00.000000Z",
+        "salario": 500.00,
+        "activo": true,
+        "observaciones": "Responsable del ordeño matutino",
+        "created_at": "2025-01-01T10:00:00.000000Z",
+        "updated_at": "2025-01-01T10:00:00.000000Z",
+        "finca": {
+            "id_Finca": 15,
+            "Nombre": "Finca Romero SPA"
+        }
+    }
+}

@@ -1127,12 +1127,13 @@ class AuthService {
   }
 
   Future<CambioAnimal> createCambioAnimal({
-    required int idAnimal,
     required String fechaCambio,
-    required String tipoCambio,
-    required String valorAnterior,
-    required String valorNuevo,
-    String? observaciones,
+    required String etapaCambio,
+    required double peso,
+    required double altura,
+    required String comentario,
+    required int cambiosEtapaAnid,
+    required int cambiosEtapaEtid,
   }) async {
     LoggingService.debug('Creating cambio animal...', 'AuthService');
 
@@ -1148,12 +1149,13 @@ class AuthService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'id_animal': idAnimal,
-            'fecha_cambio': fechaCambio,
-            'tipo_cambio': tipoCambio,
-            'valor_anterior': valorAnterior,
-            'valor_nuevo': valorNuevo,
-            'observaciones': observaciones,
+            'Fecha_Cambio': fechaCambio,
+            'Etapa_Cambio': etapaCambio,
+            'Peso': peso,
+            'Altura': altura,
+            'Comentario': comentario,
+            'cambios_etapa_anid': cambiosEtapaAnid,
+            'cambios_etapa_etid': cambiosEtapaEtid,
           }),
         )
         .timeout(_httpTimeout);
@@ -1223,10 +1225,11 @@ class AuthService {
   }
 
   Future<Lactancia> createLactancia({
-    required int idAnimal,
-    required String fechaInicio,
-    required int numeroLactancia,
-    String? observaciones,
+    required String lactanciaFechaInicio,
+    String? lactanciaFechaFin,
+    String? lactanciaSecado,
+    required int lactanciaEtapaAnid,
+    required int lactanciaEtapaEtid,
   }) async {
     LoggingService.debug('Creating lactancia...', 'AuthService');
 
@@ -1242,10 +1245,11 @@ class AuthService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'id_animal': idAnimal,
-            'fecha_inicio': fechaInicio,
-            'numero_lactancia': numeroLactancia,
-            'observaciones': observaciones,
+            'lactancia_fecha_inicio': lactanciaFechaInicio,
+            'Lactancia_fecha_fin': lactanciaFechaFin,
+            'lactancia_secado': lactanciaSecado,
+            'lactancia_etapa_anid': lactanciaEtapaAnid,
+            'lactancia_etapa_etid': lactanciaEtapaEtid,
           }),
         )
         .timeout(_httpTimeout);
@@ -1315,11 +1319,9 @@ class AuthService {
   }
 
   Future<RegistroLechero> createRegistroLechero({
-    required int idAnimal,
-    required String fechaRegistro,
-    required double cantidadManana,
-    required double cantidadTarde,
-    String? observaciones,
+    required String lecheFechaPesaje,
+    required double lechePesajeTotal,
+    required int lecheLactanciaId,
   }) async {
     LoggingService.debug('Creating registro lechero...', 'AuthService');
 
@@ -1335,11 +1337,9 @@ class AuthService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'id_animal': idAnimal,
-            'fecha_registro': fechaRegistro,
-            'cantidad_manana': cantidadManana,
-            'cantidad_tarde': cantidadTarde,
-            'observaciones': observaciones,
+            'leche_fecha_pesaje': lecheFechaPesaje,
+            'leche_pesaje_Total': lechePesajeTotal,
+            'leche_lactancia_id': lecheLactanciaId,
           }),
         )
         .timeout(_httpTimeout);
@@ -1409,11 +1409,11 @@ class AuthService {
   }
 
   Future<PesoCorporal> createPesoCorporal({
-    required int idAnimal,
-    required String fechaRegistro,
-    required double pesoKg,
-    required String metodoMedicion,
-    String? observaciones,
+    required String fechaPeso,
+    required double peso,
+    required String comentario,
+    required int pesoEtapaAnid,
+    required int pesoEtapaEtid,
   }) async {
     LoggingService.debug('Creating peso corporal...', 'AuthService');
 
@@ -1429,11 +1429,11 @@ class AuthService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'id_animal': idAnimal,
-            'fecha_registro': fechaRegistro,
-            'peso_kg': pesoKg,
-            'metodo_medicion': metodoMedicion,
-            'observaciones': observaciones,
+            'Fecha_Peso': fechaPeso,
+            'Peso': peso,
+            'Comentario': comentario,
+            'peso_etapa_anid': pesoEtapaAnid,
+            'peso_etapa_etid': pesoEtapaEtid,
           }),
         )
         .timeout(_httpTimeout);
@@ -1503,13 +1503,15 @@ class AuthService {
   }
 
   Future<MedidasCorporales> createMedidasCorporales({
-    required int idAnimal,
-    required String fechaRegistro,
-    required double alturaCruzCm,
-    required double largoCuerpoCm,
-    required double perimetroToracicoCm,
-    required double anchoCaderaCm,
-    String? observaciones,
+    required double alturaHC,
+    required double alturaHG,
+    required double perimetroPT,
+    required double perimetroPCA,
+    required double longitudLC,
+    required double longitudLG,
+    required double anchuraAG,
+    required int medidaEtapaAnid,
+    required int medidaEtapaEtid,
   }) async {
     LoggingService.debug('Creating medidas corporales...', 'AuthService');
 
@@ -1525,13 +1527,15 @@ class AuthService {
             'Content-Type': 'application/json',
           },
           body: jsonEncode({
-            'id_animal': idAnimal,
-            'fecha_registro': fechaRegistro,
-            'altura_cruz_cm': alturaCruzCm,
-            'largo_cuerpo_cm': largoCuerpoCm,
-            'perimetro_toracico_cm': perimetroToracicoCm,
-            'ancho_cadera_cm': anchoCaderaCm,
-            'observaciones': observaciones,
+            'Altura_HC': alturaHC,
+            'Altura_HG': alturaHG,
+            'Perimetro_PT': perimetroPT,
+            'Perimetro_PCA': perimetroPCA,
+            'Longitud_LC': longitudLC,
+            'Longitud_LG': longitudLG,
+            'Anchura_AG': anchuraAG,
+            'medida_etapa_anid': medidaEtapaAnid,
+            'medida_etapa_etid': medidaEtapaEtid,
           }),
         )
         .timeout(_httpTimeout);

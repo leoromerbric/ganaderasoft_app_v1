@@ -38,6 +38,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   String _procedencia = 'Local';
   Rebano? _selectedRebano;
   String? _selectedSexo;
+  TipoAnimal? _selectedTipoAnimal;
   ComposicionRaza? _selectedComposicionRaza;
   EstadoSalud? _selectedEstadoSalud;
   Etapa? _selectedEtapa;
@@ -52,6 +53,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   List<ComposicionRaza> _composicionRaza = [];
   List<EstadoSalud> _estadosSalud = [];
   List<Etapa> _etapas = [];
+  List<TipoAnimal> _tiposAnimal = [];
   final List<String> _sexoOptions = ['M', 'F'];
 
   @override
@@ -92,6 +94,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         _loadComposicionRaza(),
         _loadEstadosSalud(),
         _loadEtapas(),
+        _loadTiposAnimal(),
       ]);
 
       setState(() {
@@ -195,6 +198,29 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     }
   }
 
+  Future<void> _loadTiposAnimal() async {
+    try {
+      if (_isOffline) {
+        final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
+        setState(() {
+          _tiposAnimal = tiposAnimal;
+        });
+      } else {
+        final response = await ConfigurationService.getTiposAnimal();
+        setState(() {
+          _tiposAnimal = response.data.data;
+        });
+      }
+    } catch (e) {
+      LoggingService.error('Error loading tipos animal', 'CreateAnimalScreen', e);
+      // Try offline fallback
+      final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
+      setState(() {
+        _tiposAnimal = tiposAnimal;
+      });
+    }
+  }
+
   Future<void> _selectDate() async {
     final DateTime? picked = await showDatePicker(
       context: context,
@@ -215,8 +241,15 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   }
 
   List<Etapa> _getFilteredEtapas() {
-    if (_selectedSexo == null) return _etapas;
-    return _etapas.where((etapa) => etapa.etapaSexo == _selectedSexo).toList();
+    if (_selectedSexo == null || _selectedTipoAnimal == null) return [];
+    
+    // Convert F to H for API filtering
+    String sexoForFiltering = _selectedSexo == 'F' ? 'H' : _selectedSexo!;
+    
+    return _etapas.where((etapa) => 
+      etapa.etapaSexo == sexoForFiltering && 
+      etapa.etapaFkTipoAnimalId == _selectedTipoAnimal!.tipoAnimalId
+    ).toList();
   }
 
   Future<void> _createAnimal() async {
@@ -238,6 +271,26 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Por favor selecciona el sexo'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedSexo == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona el sexo'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    if (_selectedTipoAnimal == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona el tipo de animal'),
           backgroundColor: Colors.red,
         ),
       );
@@ -499,13 +552,52 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       onChanged: (String? value) {
                         setState(() {
                           _selectedSexo = value;
-                          _selectedEtapa =
-                              null; // Reset etapa when sexo changes
+                          _selectedTipoAnimal = null; // Reset tipo animal when sexo changes
+                          _selectedEtapa = null; // Reset etapa when sexo changes
                         });
                       },
                       validator: (value) {
                         if (value == null) {
                           return 'Por favor selecciona el sexo';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tipo Animal
+                    Text(
+                      'Tipo de Animal *',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    DropdownButtonFormField<TipoAnimal>(
+                      value: _selectedTipoAnimal,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        hintText: 'Selecciona el tipo de animal',
+                      ),
+                      items: _selectedSexo == null 
+                        ? [] 
+                        : _tiposAnimal.map((tipoAnimal) {
+                            return DropdownMenuItem<TipoAnimal>(
+                              value: tipoAnimal,
+                              child: Text(tipoAnimal.tipoAnimalNombre),
+                            );
+                          }).toList(),
+                      onChanged: _selectedSexo == null 
+                        ? null 
+                        : (TipoAnimal? value) {
+                            setState(() {
+                              _selectedTipoAnimal = value;
+                              _selectedEtapa = null; // Reset etapa when tipo animal changes
+                            });
+                          },
+                      validator: (value) {
+                        if (value == null) {
+                          return 'Por favor selecciona el tipo de animal';
                         }
                         return null;
                       },

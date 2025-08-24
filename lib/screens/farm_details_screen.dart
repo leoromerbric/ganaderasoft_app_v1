@@ -9,6 +9,7 @@ import 'rebanos_list_screen.dart';
 import 'cambios_animal_list_screen.dart';
 import 'personal_finca_list_screen.dart';
 import 'peso_corporal_list_screen.dart';
+import 'lactancia_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -331,18 +332,19 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                   Expanded(
                     child: _buildNavigationCard(
                       context,
-                      'Más Funciones',
-                      Icons.more_horiz,
-                      'Próximamente',
+                      'Lactancia',
+                      Icons.baby_changing_station,
+                      'Control de lactancia',
                       false,
-                      () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Más funcionalidades próximamente'),
-                            backgroundColor: Colors.blue,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => LactanciaListScreen(
+                            finca: widget.finca,
+                            animales: _animales,
                           ),
-                        );
-                      },
+                        ),
+                      ),
                     ),
                   ),
                 ],

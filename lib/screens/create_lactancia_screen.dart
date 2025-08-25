@@ -80,8 +80,14 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
       final animalDetailResponse = await _authService.getAnimalDetail(animalId);
       setState(() {
         _selectedAnimalDetail = animalDetailResponse.data;
-        // Set current stage as default selection
-        _selectedEtapaAnimal = _selectedAnimalDetail?.etapaActual;
+        // Set current stage as default selection, but find the matching item from the list
+        if (_selectedAnimalDetail?.etapaActual != null) {
+          _selectedEtapaAnimal = _selectedAnimalDetail!.etapaAnimales
+              .where((etapa) => etapa == _selectedAnimalDetail!.etapaActual!)
+              .firstOrNull;
+        } else {
+          _selectedEtapaAnimal = null;
+        }
       });
     } catch (e) {
       LoggingService.error('Error loading animal detail', 'CreateLactanciaScreen', e);

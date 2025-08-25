@@ -206,6 +206,23 @@ class EtapaAnimal {
       'etapa': etapa.toJson(),
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EtapaAnimal &&
+          runtimeType == other.runtimeType &&
+          etanEtapaId == other.etanEtapaId &&
+          etanAnimalId == other.etanAnimalId &&
+          etanFechaIni == other.etanFechaIni &&
+          etanFechaFin == other.etanFechaFin;
+
+  @override
+  int get hashCode =>
+      etanEtapaId.hashCode ^
+      etanAnimalId.hashCode ^
+      etanFechaIni.hashCode ^
+      etanFechaFin.hashCode;
 }
 
 // EstadoAnimal model for animal health status

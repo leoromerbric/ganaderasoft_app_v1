@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
+import '../models/configuration_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
@@ -33,9 +34,12 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
 
   // Form data
   Animal? _selectedAnimal;
+  AnimalDetail? _selectedAnimalDetail;
+  EtapaAnimal? _selectedEtapaAnimal;
 
   // Loading states
   bool _isLoading = false;
+  bool _isLoadingAnimalDetail = false;
   bool _isOffline = false;
 
   @override
@@ -44,6 +48,11 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
     _selectedAnimal = widget.selectedAnimal;
     _fechaPesoController.text = DateTime.now().toIso8601String().split('T')[0];
     _checkConnectivity();
+    
+    // Load animal detail if an animal is pre-selected
+    if (_selectedAnimal != null) {
+      _loadAnimalDetail(_selectedAnimal!.idAnimal);
+    }
   }
 
   @override
@@ -59,6 +68,35 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
     setState(() {
       _isOffline = !isConnected;
     });
+  }
+
+  Future<void> _loadAnimalDetail(int animalId) async {
+    setState(() {
+      _isLoadingAnimalDetail = true;
+    });
+
+    try {
+      final animalDetailResponse = await _authService.getAnimalDetail(animalId);
+      setState(() {
+        _selectedAnimalDetail = animalDetailResponse.data;
+        // Set current stage as default selection
+        _selectedEtapaAnimal = _selectedAnimalDetail?.etapaActual;
+      });
+    } catch (e) {
+      LoggingService.error('Error loading animal detail', 'CreatePesoCorporalScreen', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar detalle del animal: ${e.toString()}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } finally {
+      setState(() {
+        _isLoadingAnimalDetail = false;
+      });
+    }
   }
 
   Future<void> _selectDate() async {
@@ -90,6 +128,16 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
       return;
     }
 
+    if (_selectedEtapaAnimal == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor selecciona la etapa del animal'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
@@ -103,7 +151,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
         createdAt: DateTime.now().toIso8601String(),
         updatedAt: DateTime.now().toIso8601String(),
         pesoEtapaAnid: _selectedAnimal!.idAnimal,
-        pesoEtapaEtid: 1, // Default etapa - in real implementation this should be dynamic
+        pesoEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
       );
 
       LoggingService.info('Creating peso corporal', 'CreatePesoCorporalScreen');
@@ -231,11 +279,56 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                 onChanged: (Animal? value) {
                   setState(() {
                     _selectedAnimal = value;
+                    _selectedAnimalDetail = null;
+                    _selectedEtapaAnimal = null;
                   });
+                  
+                  if (value != null) {
+                    _loadAnimalDetail(value.idAnimal);
+                  }
                 },
                 validator: (value) {
                   if (value == null) {
                     return 'Por favor selecciona un animal';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Etapa selection
+              Text(
+                'Etapa del Animal *',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<EtapaAnimal>(
+                value: _selectedEtapaAnimal,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: _isLoadingAnimalDetail 
+                      ? 'Cargando etapas...' 
+                      : 'Selecciona la etapa del animal',
+                  prefixIcon: const Icon(Icons.timeline),
+                ),
+                items: _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
+                  return DropdownMenuItem<EtapaAnimal>(
+                    value: etapaAnimal,
+                    child: Text(
+                      '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
+                    ),
+                  );
+                }).toList() ?? [],
+                onChanged: _isLoadingAnimalDetail ? null : (EtapaAnimal? value) {
+                  setState(() {
+                    _selectedEtapaAnimal = value;
+                  });
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Por favor selecciona la etapa del animal';
                   }
                   return null;
                 },

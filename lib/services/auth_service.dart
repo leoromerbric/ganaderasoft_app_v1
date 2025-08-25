@@ -735,6 +735,121 @@ class AuthService {
     }
   }
 
+  // Get animal detail with stages (with offline support)
+  Future<AnimalDetailResponse> getAnimalDetail(int animalId) async {
+    LoggingService.debug('Getting animal detail for ID: $animalId', 'AuthService');
+
+    try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached animal detail data',
+          'AuthService',
+        );
+        return await _getOfflineAnimalDetail(animalId);
+      }
+
+      // Restore original token if we have connectivity and are using offline token
+      await _restoreOriginalTokenIfNeeded();
+
+      LoggingService.debug(
+        'Connectivity available - fetching animal detail from server',
+        'AuthService',
+      );
+
+      final token = await getToken();
+      if (token == null) {
+        LoggingService.error(
+          'No token found for animal detail request',
+          'AuthService',
+        );
+        throw Exception('No token found');
+      }
+
+      final url = '${AppConfig.baseUrl}/api/animales/$animalId';
+
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200) {
+        final animalDetailResponse = AnimalDetailResponse.fromJson(jsonDecode(response.body));
+
+        LoggingService.info('Animal detail retrieved successfully', 'AuthService');
+
+        // Cache the animal detail data for offline use
+        await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
+
+        return animalDetailResponse;
+      } else {
+        LoggingService.error(
+          'Animal detail request failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to get animal detail: ${response.body}');
+      }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Animal detail request timeout - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineAnimalDetail(animalId);
+    } on SocketException {
+      LoggingService.warning(
+        'Animal detail request socket error - falling back to offline data',
+        'AuthService',
+      );
+      return await _getOfflineAnimalDetail(animalId);
+    } catch (e) {
+      LoggingService.error('Animal detail request error', 'AuthService', e);
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline animal detail data',
+          'AuthService',
+        );
+        return await _getOfflineAnimalDetail(animalId);
+      }
+
+      throw Exception('Error getting animal detail: $e');
+    }
+  }
+
+  // Get animal detail offline
+  Future<AnimalDetailResponse> _getOfflineAnimalDetail(int animalId) async {
+    try {
+      final cachedAnimalDetail = await DatabaseService.getAnimalDetailOffline(animalId);
+      
+      if (cachedAnimalDetail == null) {
+        throw Exception('No cached animal detail found for ID: $animalId');
+      }
+
+      LoggingService.info(
+        'Using cached animal detail data for ID: $animalId',
+        'AuthService',
+      );
+
+      return AnimalDetailResponse(
+        success: true,
+        message: 'Detalle de animal (datos locales)',
+        data: cachedAnimalDetail,
+      );
+    } catch (e) {
+      LoggingService.error('Error getting offline animal detail', 'AuthService', e);
+      throw Exception('No hay datos locales disponibles para el animal');
+    }
+  }
+
   // Get rebanos list (with offline support)
   Future<RebanosResponse> getRebanos({int? idFinca}) async {
     LoggingService.debug('Getting rebanos list...', 'AuthService');

@@ -23,7 +23,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 5,
+      version: 6,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -389,6 +389,22 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Password hash column added to users table successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 6) {
+      // Add animal_detail table for version 6
+      await db.execute('''
+        CREATE TABLE animal_detail (
+          id_animal INTEGER PRIMARY KEY,
+          animal_data TEXT NOT NULL,
+          etapa_animales_data TEXT NOT NULL,
+          etapa_actual_data TEXT,
+          estados_data TEXT,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+      
+      LoggingService.info('Animal detail table added successfully', 'DatabaseService');
     }
   }
 
@@ -1387,6 +1403,94 @@ class DatabaseService {
       return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
     } catch (e) {
       LoggingService.error('Error getting animales last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  // Animal detail operations
+  static Future<void> saveAnimalDetailOffline(AnimalDetail animalDetail) async {
+    try {
+      LoggingService.debug('Saving animal detail offline: ${animalDetail.idAnimal}', 'DatabaseService');
+      
+      final db = await database;
+      
+      await db.insert(
+        'animal_detail',
+        {
+          'id_animal': animalDetail.idAnimal,
+          'animal_data': jsonEncode(animalDetail.toJson()),
+          'etapa_animales_data': jsonEncode(animalDetail.etapaAnimales.map((e) => e.toJson()).toList()),
+          'etapa_actual_data': animalDetail.etapaActual != null ? jsonEncode(animalDetail.etapaActual!.toJson()) : null,
+          'estados_data': jsonEncode(animalDetail.estados.map((e) => e.toJson()).toList()),
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Animal detail saved offline: ${animalDetail.idAnimal}', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving animal detail offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<AnimalDetail?> getAnimalDetailOffline(int animalId) async {
+    try {
+      LoggingService.debug('Retrieving animal detail offline: $animalId', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'animal_detail',
+        where: 'id_animal = ?',
+        whereArgs: [animalId],
+        limit: 1,
+      );
+
+      if (maps.isEmpty) {
+        LoggingService.debug('No animal detail found offline: $animalId', 'DatabaseService');
+        return null;
+      }
+
+      final map = maps.first;
+      
+      // Decode the JSON data
+      final animalData = jsonDecode(map['animal_data']) as Map<String, dynamic>;
+      final etapaAnimalesData = jsonDecode(map['etapa_animales_data']) as List<dynamic>;
+      final estadosData = jsonDecode(map['estados_data']) as List<dynamic>;
+      final etapaActualData = map['etapa_actual_data'] != null 
+          ? jsonDecode(map['etapa_actual_data']) as Map<String, dynamic>
+          : null;
+
+      // Reconstruct the AnimalDetail object
+      final etapaAnimales = etapaAnimalesData.map((e) => EtapaAnimal.fromJson(e)).toList();
+      final estados = estadosData.map((e) => EstadoAnimal.fromJson(e)).toList();
+      final etapaActual = etapaActualData != null ? EtapaAnimal.fromJson(etapaActualData) : null;
+
+      final animalDetail = AnimalDetail(
+        idAnimal: animalData['id_Animal'],
+        idRebano: animalData['id_Rebano'],
+        nombre: animalData['Nombre'],
+        codigoAnimal: animalData['codigo_animal'],
+        sexo: animalData['Sexo'],
+        fechaNacimiento: animalData['fecha_nacimiento'],
+        procedencia: animalData['Procedencia'],
+        archivado: animalData['archivado'],
+        createdAt: animalData['created_at'],
+        updatedAt: animalData['updated_at'],
+        fkComposicionRaza: animalData['fk_composicion_raza'],
+        rebano: animalData['rebano'] != null ? Rebano.fromJson(animalData['rebano']) : null,
+        composicionRaza: animalData['composicion_raza'] != null 
+            ? ComposicionRaza.fromJson(animalData['composicion_raza']) 
+            : null,
+        estados: estados,
+        etapaAnimales: etapaAnimales,
+        etapaActual: etapaActual,
+      );
+
+      LoggingService.info('Animal detail retrieved from offline storage: $animalId', 'DatabaseService');
+      return animalDetail;
+    } catch (e) {
+      LoggingService.error('Error retrieving animal detail from offline storage', 'DatabaseService', e);
       return null;
     }
   }

@@ -160,8 +160,38 @@ class SyncService {
         LoggingService.debug('Syncing animales data...', 'SyncService');
         final animalesResponse = await _authService.getAnimales();
         await DatabaseService.saveAnimalesOffline(animalesResponse.animales);
+        
+        // Sync animal details for each animal
+        LoggingService.debug('Syncing animal details...', 'SyncService');
+        int totalAnimals = animalesResponse.animales.length;
+        int syncedAnimals = 0;
+        
+        for (final animal in animalesResponse.animales) {
+          try {
+            final animalDetailResponse = await _authService.getAnimalDetail(animal.idAnimal);
+            await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
+            syncedAnimals++;
+            
+            // Update progress for animal detail sync
+            double detailProgress = 0.3 + (0.2 * syncedAnimals / totalAnimals);
+            _syncController.add(
+              SyncData(
+                status: SyncStatus.syncing,
+                message: 'Sincronizando detalles de animales... ($syncedAnimals/$totalAnimals)',
+                progress: detailProgress,
+              ),
+            );
+          } catch (e) {
+            LoggingService.warning(
+              'Failed to sync detail for animal ${animal.idAnimal}: $e',
+              'SyncService',
+            );
+            // Continue with other animals even if one fails
+          }
+        }
+        
         LoggingService.info(
-          'Animales data synchronized successfully (${animalesResponse.animales.length} items)',
+          'Animales data synchronized successfully (${animalesResponse.animales.length} items, $syncedAnimals details)',
           'SyncService',
         );
       } catch (e) {
@@ -226,7 +256,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando estados de salud...',
-          progress: 0.35,
+          progress: 0.55,
         ),
       );
 
@@ -244,7 +274,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando tipos de animal...',
-          progress: 0.4,
+          progress: 0.6,
         ),
       );
 
@@ -262,7 +292,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando etapas...',
-          progress: 0.5,
+          progress: 0.95,
         ),
       );
 
@@ -278,7 +308,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando fuente de agua...',
-          progress: 0.6,
+          progress: 0.98,
         ),
       );
 
@@ -294,7 +324,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando métodos de riego...',
-          progress: 0.65,
+          progress: 0.95,
         ),
       );
 
@@ -310,7 +340,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando pH de suelo...',
-          progress: 0.7,
+          progress: 0.98,
         ),
       );
 
@@ -326,7 +356,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando datos de sexo...',
-          progress: 0.75,
+          progress: 0.95,
         ),
       );
 
@@ -342,7 +372,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando textura de suelo...',
-          progress: 0.8,
+          progress: 0.98,
         ),
       );
 
@@ -358,7 +388,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando tipos de explotación...',
-          progress: 0.85,
+          progress: 0.95,
         ),
       );
 
@@ -374,7 +404,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando tipos de relieve...',
-          progress: 0.85,
+          progress: 0.95,
         ),
       );
 
@@ -390,7 +420,7 @@ class SyncService {
         SyncData(
           status: SyncStatus.syncing,
           message: 'Sincronizando composición de raza...',
-          progress: 0.9,
+          progress: 0.98,
         ),
       );
 

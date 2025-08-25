@@ -25,6 +25,17 @@ class Propietario {
       archivado: json['archivado'],
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'id_Personal': idPersonal,
+      'Nombre': nombre,
+      'Apellido': apellido,
+      'Telefono': telefono,
+      'archivado': archivado,
+    };
+  }
 }
 
 class Finca {
@@ -61,6 +72,19 @@ class Finca {
           ? Propietario.fromJson(json['propietario']) 
           : null,
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id_Finca': idFinca,
+      'id_Propietario': idPropietario,
+      'Nombre': nombre,
+      'Explotacion_Tipo': explotacionTipo,
+      'archivado': archivado,
+      'created_at': createdAt,
+      'updated_at': updatedAt,
+      'propietario': propietario?.toJson(),
+    };
   }
 }
 

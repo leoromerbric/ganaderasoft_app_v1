@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/configuration_models.dart';
 import '../services/database_service.dart';
 import '../services/connectivity_service.dart';
-import '../constants/app_constants.dart';
 
 class ConfigurationDataScreen extends StatefulWidget {
   const ConfigurationDataScreen({super.key});

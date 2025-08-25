@@ -7,11 +7,7 @@ class FuenteAgua {
   final String nombre;
   final bool? synced; // For offline sync status
 
-  FuenteAgua({
-    required this.codigo,
-    required this.nombre,
-    this.synced = false,
-  });
+  FuenteAgua({required this.codigo, required this.nombre, this.synced = false});
 
   factory FuenteAgua.fromJson(Map<String, dynamic> json) {
     return FuenteAgua(
@@ -22,11 +18,7 @@ class FuenteAgua {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'codigo': codigo,
-      'nombre': nombre,
-      'synced': synced,
-    };
+    return {'codigo': codigo, 'nombre': nombre, 'synced': synced};
   }
 }
 
@@ -35,11 +27,7 @@ class Sexo {
   final String nombre;
   final bool? synced;
 
-  Sexo({
-    required this.codigo,
-    required this.nombre,
-    this.synced = false,
-  });
+  Sexo({required this.codigo, required this.nombre, this.synced = false});
 
   factory Sexo.fromJson(Map<String, dynamic> json) {
     return Sexo(
@@ -50,11 +38,7 @@ class Sexo {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'codigo': codigo,
-      'nombre': nombre,
-      'synced': synced,
-    };
+    return {'codigo': codigo, 'nombre': nombre, 'synced': synced};
   }
 }
 
@@ -78,11 +62,7 @@ class MetodoRiego {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'codigo': codigo,
-      'nombre': nombre,
-      'synced': synced,
-    };
+    return {'codigo': codigo, 'nombre': nombre, 'synced': synced};
   }
 }
 
@@ -106,11 +86,7 @@ class TexturaSuelo {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'codigo': codigo,
-      'nombre': nombre,
-      'synced': synced,
-    };
+    return {'codigo': codigo, 'nombre': nombre, 'synced': synced};
   }
 }
 
@@ -134,11 +110,7 @@ class TipoExplotacion {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'codigo': codigo,
-      'nombre': nombre,
-      'synced': synced,
-    };
+    return {'codigo': codigo, 'nombre': nombre, 'synced': synced};
   }
 }
 
@@ -482,15 +454,14 @@ class ComposicionRazaResponse {
   }
 
   // Helper method to handle the specific structure of composicion-raza API
-  static PaginatedData<ComposicionRaza> _createPaginatedDataFromComposicionRazaResponse(
-    Map<String, dynamic> json,
-  ) {
+  static PaginatedData<ComposicionRaza>
+  _createPaginatedDataFromComposicionRazaResponse(Map<String, dynamic> json) {
     // Check if data is a List (composicion-raza API format) or Map (standard format)
     if (json['data'] is List) {
       // Handle composicion-raza specific format with separate pagination object
       final dataList = json['data'] as List;
       final pagination = json['pagination'] as Map<String, dynamic>?;
-      
+
       return PaginatedData<ComposicionRaza>(
         currentPage: pagination?['current_page'] ?? 1,
         data: dataList.map((item) => ComposicionRaza.fromJson(item)).toList(),

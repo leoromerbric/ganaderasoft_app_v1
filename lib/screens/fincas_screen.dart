@@ -3,7 +3,6 @@ import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import '../models/finca.dart';
-import '../constants/app_constants.dart';
 import 'farm_details_screen.dart';
 
 class FincasScreen extends StatefulWidget {
@@ -30,7 +29,10 @@ class _FincasScreenState extends State<FincasScreen> {
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
-    LoggingService.debug('Connectivity check result: $isConnected', 'FincasScreen');
+    LoggingService.debug(
+      'Connectivity check result: $isConnected',
+      'FincasScreen',
+    );
     setState(() {
       _isOffline = !isConnected;
     });
@@ -39,7 +41,7 @@ class _FincasScreenState extends State<FincasScreen> {
   Future<void> _loadFincas() async {
     try {
       LoggingService.info('Loading fincas data...', 'FincasScreen');
-      
+
       setState(() {
         _isLoading = true;
         _error = null;
@@ -50,9 +52,12 @@ class _FincasScreenState extends State<FincasScreen> {
       await _checkConnectivity();
 
       final fincasResponse = await _authService.getFincas();
-      
-      LoggingService.info('Fincas loaded successfully (${fincasResponse.fincas.length} items)', 'FincasScreen');
-      
+
+      LoggingService.info(
+        'Fincas loaded successfully (${fincasResponse.fincas.length} items)',
+        'FincasScreen',
+      );
+
       setState(() {
         _fincas = fincasResponse.fincas;
         _isLoading = false;
@@ -84,10 +89,7 @@ class _FincasScreenState extends State<FincasScreen> {
                 ),
                 child: const Text(
                   'Offline',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -96,109 +98,104 @@ class _FincasScreenState extends State<FincasScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadFincas,
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadFincas),
         ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _error != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 64,
-                        color: Colors.red[300],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Error al cargar las fincas',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: Text(
-                          _error!,
-                          textAlign: TextAlign.center,
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: _loadFincas,
-                        child: const Text('Reintentar'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 64, color: Colors.red[300]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error al cargar las fincas',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
-                )
-              : _fincas.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.agriculture,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No hay fincas registradas',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Las fincas aparecerán aquí cuando sean registradas',
-                            style: Theme.of(context).textTheme.bodyMedium,
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                  const SizedBox(height: 8),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Text(
+                      _error!,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _loadFincas,
+                    child: const Text('Reintentar'),
+                  ),
+                ],
+              ),
+            )
+          : _fincas.isEmpty
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.agriculture, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No hay fincas registradas',
+                    style: Theme.of(context).textTheme.titleLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Las fincas aparecerán aquí cuando sean registradas',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              children: [
+                // Data source info banner
+                if (_dataSourceMessage != null)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(12),
+                    margin: const EdgeInsets.all(16).copyWith(bottom: 8),
+                    decoration: BoxDecoration(
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Colors.green[100],
+                      border: Border.all(
+                        color: _isOffline ? Colors.orange : Colors.green,
+                        width: 1,
                       ),
-                    )
-                  : Column(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(
                       children: [
-                        // Data source info banner
-                        if (_dataSourceMessage != null)
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            margin: const EdgeInsets.all(16).copyWith(bottom: 8),
-                            decoration: BoxDecoration(
-                              color: _isOffline ? Colors.orange[100] : Colors.green[100],
-                              border: Border.all(
-                                color: _isOffline ? Colors.orange : Colors.green,
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                                  color: _isOffline ? Colors.orange[800] : Colors.green[800],
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    _dataSourceMessage!,
-                                    style: TextStyle(
-                                      color: _isOffline ? Colors.orange[800] : Colors.green[800],
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        Icon(
+                          _isOffline ? Icons.cloud_off : Icons.cloud_done,
+                          color: _isOffline
+                              ? Colors.orange[800]
+                              : Colors.green[800],
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _dataSourceMessage!,
+                            style: TextStyle(
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
-                        Expanded(child: _buildFincasList()),
+                        ),
                       ],
                     ),
+                  ),
+                Expanded(child: _buildFincasList()),
+              ],
+            ),
     );
   }
 
@@ -250,14 +247,16 @@ class _FincasScreenState extends State<FincasScreen> {
                       children: [
                         Text(
                           finca.nombre,
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                          style: Theme.of(context).textTheme.titleLarge
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                         Text(
                           'ID: ${finca.idFinca}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSurfaceVariant,
                               ),
                         ),
                       ],
@@ -265,7 +264,10 @@ class _FincasScreenState extends State<FincasScreen> {
                   ),
                   if (finca.archivado)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.orange[100],
                         borderRadius: BorderRadius.circular(12),
@@ -340,23 +342,16 @@ class _FincasScreenState extends State<FincasScreen> {
   Widget _buildDetailRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 20,
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        Icon(icon, size: 20, color: Theme.of(context).colorScheme.primary),
         const SizedBox(width: 8),
         Text(
           '$label: ',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w500,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ],
     );
@@ -369,14 +364,11 @@ class _FincasScreenState extends State<FincasScreen> {
         Text(
           label,
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
-              ),
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-        Text(
-          date,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(date, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }

@@ -35,7 +35,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   final _procedenciaController = TextEditingController();
 
   // Form data
-  String _procedencia = 'Local';
+  final String _procedencia = 'Local';
   Rebano? _selectedRebano;
   String? _selectedSexo;
   TipoAnimal? _selectedTipoAnimal;
@@ -90,7 +90,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
       });
 
       // Load all configuration data
-      final results = await Future.wait([
+      await Future.wait([
         _loadComposicionRaza(),
         _loadEstadosSalud(),
         _loadEtapas(),
@@ -212,7 +212,11 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         });
       }
     } catch (e) {
-      LoggingService.error('Error loading tipos animal', 'CreateAnimalScreen', e);
+      LoggingService.error(
+        'Error loading tipos animal',
+        'CreateAnimalScreen',
+        e,
+      );
       // Try offline fallback
       final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
       setState(() {
@@ -242,14 +246,17 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
 
   List<Etapa> _getFilteredEtapas() {
     if (_selectedSexo == null || _selectedTipoAnimal == null) return [];
-    
+
     // Convert F to H for API filtering
     String sexoForFiltering = _selectedSexo == 'F' ? 'H' : _selectedSexo!;
-    
-    return _etapas.where((etapa) => 
-      etapa.etapaSexo == sexoForFiltering && 
-      etapa.etapaFkTipoAnimalId == _selectedTipoAnimal!.tipoAnimalId
-    ).toList();
+
+    return _etapas
+        .where(
+          (etapa) =>
+              etapa.etapaSexo == sexoForFiltering &&
+              etapa.etapaFkTipoAnimalId == _selectedTipoAnimal!.tipoAnimalId,
+        )
+        .toList();
   }
 
   Future<void> _createAnimal() async {
@@ -552,8 +559,10 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                       onChanged: (String? value) {
                         setState(() {
                           _selectedSexo = value;
-                          _selectedTipoAnimal = null; // Reset tipo animal when sexo changes
-                          _selectedEtapa = null; // Reset etapa when sexo changes
+                          _selectedTipoAnimal =
+                              null; // Reset tipo animal when sexo changes
+                          _selectedEtapa =
+                              null; // Reset etapa when sexo changes
                         });
                       },
                       validator: (value) {
@@ -579,22 +588,23 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el tipo de animal',
                       ),
-                      items: _selectedSexo == null 
-                        ? [] 
-                        : _tiposAnimal.map((tipoAnimal) {
-                            return DropdownMenuItem<TipoAnimal>(
-                              value: tipoAnimal,
-                              child: Text(tipoAnimal.tipoAnimalNombre),
-                            );
-                          }).toList(),
-                      onChanged: _selectedSexo == null 
-                        ? null 
-                        : (TipoAnimal? value) {
-                            setState(() {
-                              _selectedTipoAnimal = value;
-                              _selectedEtapa = null; // Reset etapa when tipo animal changes
-                            });
-                          },
+                      items: _selectedSexo == null
+                          ? []
+                          : _tiposAnimal.map((tipoAnimal) {
+                              return DropdownMenuItem<TipoAnimal>(
+                                value: tipoAnimal,
+                                child: Text(tipoAnimal.tipoAnimalNombre),
+                              );
+                            }).toList(),
+                      onChanged: _selectedSexo == null
+                          ? null
+                          : (TipoAnimal? value) {
+                              setState(() {
+                                _selectedTipoAnimal = value;
+                                _selectedEtapa =
+                                    null; // Reset etapa when tipo animal changes
+                              });
+                            },
                       validator: (value) {
                         if (value == null) {
                           return 'Por favor selecciona el tipo de animal';

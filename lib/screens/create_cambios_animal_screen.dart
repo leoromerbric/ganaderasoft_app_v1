@@ -21,7 +21,8 @@ class CreateCambiosAnimalScreen extends StatefulWidget {
   });
 
   @override
-  State<CreateCambiosAnimalScreen> createState() => _CreateCambiosAnimalScreenState();
+  State<CreateCambiosAnimalScreen> createState() =>
+      _CreateCambiosAnimalScreenState();
 }
 
 class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
@@ -52,7 +53,9 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
     super.initState();
     _animales = widget.animales;
     _selectedAnimal = widget.selectedAnimal;
-    _fechaCambioController.text = DateTime.now().toIso8601String().split('T')[0];
+    _fechaCambioController.text = DateTime.now().toIso8601String().split(
+      'T',
+    )[0];
     _checkConnectivity();
     _loadData();
   }
@@ -82,20 +85,30 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
       // Load etapas
       if (_isOffline) {
         // Use offline data if available
-        LoggingService.info('Loading etapas from offline storage', 'CreateCambiosAnimalScreen');
+        LoggingService.info(
+          'Loading etapas from offline storage',
+          'CreateCambiosAnimalScreen',
+        );
         // For now, set empty list - in real implementation, would load from local DB
         _etapas = [];
       } else {
-        LoggingService.info('Loading etapas from server', 'CreateCambiosAnimalScreen');
+        LoggingService.info(
+          'Loading etapas from server',
+          'CreateCambiosAnimalScreen',
+        );
         final etapasResponse = await ConfigurationService.getEtapas();
-        _etapas = etapasResponse.data.data;
+        _etapas = etapasResponse;
       }
 
       setState(() {
         _isLoadingData = false;
       });
     } catch (e) {
-      LoggingService.error('Error loading data', 'CreateCambiosAnimalScreen', e);
+      LoggingService.error(
+        'Error loading data',
+        'CreateCambiosAnimalScreen',
+        e,
+      );
       setState(() {
         _isLoadingData = false;
       });
@@ -157,20 +170,26 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
       final cambiosAnimal = CambiosAnimal(
         idCambio: 0, // Will be assigned by server
         fechaCambio: _fechaCambioController.text,
-        etapaCambio: _selectedEtapa!.nombre,
+        etapaCambio: _selectedEtapa!.etapaNombre,
         peso: double.parse(_pesoController.text),
         altura: double.parse(_alturaController.text),
         comentario: _comentarioController.text,
         createdAt: DateTime.now().toIso8601String(),
         updatedAt: DateTime.now().toIso8601String(),
         cambiosEtapaAnid: _selectedAnimal!.idAnimal,
-        cambiosEtapaEtid: _selectedEtapa!.idEtapa,
+        cambiosEtapaEtid: _selectedEtapa!.etapaId,
       );
 
-      LoggingService.info('Creating cambios animal', 'CreateCambiosAnimalScreen');
+      LoggingService.info(
+        'Creating cambios animal',
+        'CreateCambiosAnimalScreen',
+      );
       await _authService.createCambiosAnimal(cambiosAnimal);
 
-      LoggingService.info('Cambios animal created successfully', 'CreateCambiosAnimalScreen');
+      LoggingService.info(
+        'Cambios animal created successfully',
+        'CreateCambiosAnimalScreen',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -182,7 +201,11 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      LoggingService.error('Error creating cambios animal', 'CreateCambiosAnimalScreen', e);
+      LoggingService.error(
+        'Error creating cambios animal',
+        'CreateCambiosAnimalScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -251,15 +274,17 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                                 children: [
                                   Text(
                                     widget.finca.nombre,
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
                                   ),
                                   Text(
                                     'Registro de cambio de animal',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Colors.grey[600],
-                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(color: Colors.grey[600]),
                                   ),
                                 ],
                               ),
@@ -287,7 +312,9 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                       items: _animales.map((animal) {
                         return DropdownMenuItem<Animal>(
                           value: animal,
-                          child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                          child: Text(
+                            '${animal.nombre} (${animal.codigoAnimal})',
+                          ),
                         );
                       }).toList(),
                       onChanged: (Animal? value) {
@@ -350,7 +377,7 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                       items: _etapas.map((etapa) {
                         return DropdownMenuItem<Etapa>(
                           value: etapa,
-                          child: Text(etapa.nombre),
+                          child: Text(etapa.etapaNombre),
                         );
                       }).toList(),
                       onChanged: (Etapa? value) {
@@ -460,11 +487,16 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                             ? const SizedBox(
                                 height: 20,
                                 width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Text(
                                 'Registrar Cambio',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                       ),
                     ),

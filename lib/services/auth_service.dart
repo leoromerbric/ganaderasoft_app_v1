@@ -62,7 +62,7 @@ class AuthService {
   // Restore original JWT token when connectivity is restored
   Future<void> _restoreOriginalTokenIfNeeded() async {
     final currentToken = await getToken();
-    
+
     // Only restore if current token is a temporary offline token
     if (_isOfflineToken(currentToken)) {
       final originalToken = await _getOriginalToken();
@@ -98,7 +98,9 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
     await prefs.remove(AppConstants.userKey);
-    await prefs.remove(AppConstants.originalTokenKey); // Also clear preserved original token
+    await prefs.remove(
+      AppConstants.originalTokenKey,
+    ); // Also clear preserved original token
     // Note: Offline database data is preserved to allow offline authentication
     LoggingService.info(
       'Credentials cleared, offline data preserved for future authentication',
@@ -187,7 +189,9 @@ class AuthService {
       }
 
       // Verify password hash for offline authentication
-      final storedPasswordHash = await DatabaseService.getUserPasswordHash(email);
+      final storedPasswordHash = await DatabaseService.getUserPasswordHash(
+        email,
+      );
       if (storedPasswordHash == null) {
         LoggingService.error(
           'No password hash found for offline authentication',
@@ -204,9 +208,7 @@ class AuthService {
           'Password verification failed in offline authentication',
           'AuthService',
         );
-        throw Exception(
-          'Credenciales incorrectas',
-        );
+        throw Exception('Credenciales incorrectas');
       }
 
       LoggingService.info(
@@ -224,7 +226,7 @@ class AuthService {
         );
         await _saveOriginalToken(currentToken);
       }
-      
+
       // Generate a temporary token to maintain session consistency
       final tempToken = 'offline_${DateTime.now().millisecondsSinceEpoch}';
       await saveToken(tempToken);
@@ -292,7 +294,10 @@ class AuthService {
         await saveUser(loginResponse.user);
 
         // Also save user data with password hash to offline database
-        await DatabaseService.saveUserOffline(loginResponse.user, passwordHash: passwordHash);
+        await DatabaseService.saveUserOffline(
+          loginResponse.user,
+          passwordHash: passwordHash,
+        );
 
         LoggingService.info(
           'User credentials saved for offline authentication: $email',
@@ -307,13 +312,13 @@ class AuthService {
         );
         throw Exception('Failed to login: ${response.body}');
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Login timeout - attempting offline authentication',
         'AuthService',
       );
       return await authenticateOffline(email, password);
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Login socket error - attempting offline authentication',
         'AuthService',
@@ -448,13 +453,13 @@ class AuthService {
         );
         throw Exception('Failed to get profile: ${response.body}');
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Profile request timeout - falling back to offline data',
         'AuthService',
       );
       return await _getOfflineProfile();
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Profile request socket error - falling back to offline data',
         'AuthService',
@@ -540,13 +545,13 @@ class AuthService {
         );
         throw Exception('Failed to get fincas: ${response.body}');
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Fincas request timeout - falling back to offline data',
         'AuthService',
       );
       return await _getOfflineFincas();
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Fincas request socket error - falling back to offline data',
         'AuthService',
@@ -657,16 +662,18 @@ class AuthService {
 
       String url = AppConfig.animalesUrl;
       Map<String, String> queryParams = {};
-      
+
       if (idRebano != null) {
         queryParams['id_rebano'] = idRebano.toString();
       }
       if (idFinca != null) {
         queryParams['id_finca'] = idFinca.toString();
       }
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
       final response = await http
@@ -700,13 +707,13 @@ class AuthService {
         );
         throw Exception('Failed to get animales: ${response.body}');
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Animales request timeout - falling back to offline data',
         'AuthService',
       );
       return await _getOfflineAnimales(idRebano: idRebano, idFinca: idFinca);
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Animales request socket error - falling back to offline data',
         'AuthService',
@@ -797,13 +804,13 @@ class AuthService {
         );
         throw Exception('Failed to get rebanos: ${response.body}');
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Rebanos request timeout - falling back to offline data',
         'AuthService',
       );
       return await _getOfflineRebanos(idFinca: idFinca);
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Rebanos request socket error - falling back to offline data',
         'AuthService',
@@ -826,7 +833,10 @@ class AuthService {
   }
 
   /// Get offline animales data
-  Future<AnimalesResponse> _getOfflineAnimales({int? idRebano, int? idFinca}) async {
+  Future<AnimalesResponse> _getOfflineAnimales({
+    int? idRebano,
+    int? idFinca,
+  }) async {
     try {
       final cachedAnimales = await DatabaseService.getAnimalesOffline(
         idRebano: idRebano,
@@ -876,7 +886,7 @@ class AuthService {
       if (isConnected) {
         await _restoreOriginalTokenIfNeeded();
       }
-      
+
       final token = await getToken();
       if (token == null) {
         throw Exception('No authentication token found');
@@ -890,14 +900,8 @@ class AuthService {
         'fecha_nacimiento': fechaNacimiento,
         'Procedencia': procedencia,
         'fk_composicion_raza': fkComposicionRaza,
-        'estado_inicial': {
-          'estado_id': estadoId,
-          'fecha_ini': fechaNacimiento,
-        },
-        'etapa_inicial': {
-          'etapa_id': etapaId,
-          'fecha_ini': fechaNacimiento,
-        },
+        'estado_inicial': {'estado_id': estadoId, 'fecha_ini': fechaNacimiento},
+        'etapa_inicial': {'etapa_id': etapaId, 'fecha_ini': fechaNacimiento},
       };
 
       final response = await http
@@ -914,10 +918,10 @@ class AuthService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = jsonDecode(response.body);
-        
+
         if (jsonData['success'] == true) {
           final animal = Animal.fromJson(jsonData['data']);
-          
+
           LoggingService.info(
             'Animal created successfully: ${animal.nombre}',
             'AuthService',
@@ -942,13 +946,17 @@ class AuthService {
         'Animal creation timeout - saving locally for later sync',
         'AuthService',
       );
-      throw Exception('Timeout al crear animal. Se guardará localmente para sincronizar más tarde.');
+      throw Exception(
+        'Timeout al crear animal. Se guardará localmente para sincronizar más tarde.',
+      );
     } on SocketException {
       LoggingService.warning(
         'Animal creation socket error - saving locally for later sync',
         'AuthService',
       );
-      throw Exception('Sin conexión. El animal se guardará localmente para sincronizar más tarde.');
+      throw Exception(
+        'Sin conexión. El animal se guardará localmente para sincronizar más tarde.',
+      );
     } catch (e) {
       LoggingService.error('Animal creation error', 'AuthService', e);
       throw Exception('Error al crear animal: $e');
@@ -968,16 +976,13 @@ class AuthService {
       if (isConnected) {
         await _restoreOriginalTokenIfNeeded();
       }
-      
+
       final token = await getToken();
       if (token == null) {
         throw Exception('No authentication token found');
       }
 
-      final requestData = {
-        'id_Finca': idFinca,
-        'Nombre': nombre,
-      };
+      final requestData = {'id_Finca': idFinca, 'Nombre': nombre};
 
       final response = await http
           .post(
@@ -993,10 +998,10 @@ class AuthService {
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final jsonData = jsonDecode(response.body);
-        
+
         if (jsonData['success'] == true) {
           final rebano = Rebano.fromJson(jsonData['data']);
-          
+
           LoggingService.info(
             'Rebano created successfully: ${rebano.nombre}',
             'AuthService',
@@ -1021,13 +1026,17 @@ class AuthService {
         'Rebano creation timeout - saving locally for later sync',
         'AuthService',
       );
-      throw Exception('Timeout al crear rebaño. Se guardará localmente para sincronizar más tarde.');
+      throw Exception(
+        'Timeout al crear rebaño. Se guardará localmente para sincronizar más tarde.',
+      );
     } on SocketException {
       LoggingService.warning(
         'Rebano creation socket error - saving locally for later sync',
         'AuthService',
       );
-      throw Exception('Sin conexión. El rebaño se guardará localmente para sincronizar más tarde.');
+      throw Exception(
+        'Sin conexión. El rebaño se guardará localmente para sincronizar más tarde.',
+      );
     } catch (e) {
       LoggingService.error('Rebano creation error', 'AuthService', e);
       throw Exception('Error al crear rebaño: $e');
@@ -1078,8 +1087,15 @@ class AuthService {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached cambios animal data', 'AuthService');
-        return CambiosAnimalResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached cambios animal data',
+          'AuthService',
+        );
+        return CambiosAnimalResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1091,28 +1107,37 @@ class AuthService {
 
       String url = AppConfig.cambiosAnimalUrl;
       Map<String, String> queryParams = {};
-      
+
       if (animalId != null) queryParams['animal_id'] = animalId.toString();
       if (etapaId != null) queryParams['etapa_id'] = etapaId.toString();
       if (etapaCambio != null) queryParams['etapa_cambio'] = etapaCambio;
       if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
       if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final cambiosResponse = CambiosAnimalResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Cambios animal fetched successfully (${cambiosResponse.data.length} items)', 'AuthService');
+        final cambiosResponse = CambiosAnimalResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Cambios animal fetched successfully (${cambiosResponse.data.length} items)',
+          'AuthService',
+        );
         return cambiosResponse;
       } else {
         throw Exception('Failed to get cambios animal: ${response.body}');
@@ -1120,7 +1145,11 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting cambios animal', 'AuthService', e);
       if (_isNetworkError(e)) {
-        return CambiosAnimalResponse(success: true, message: 'Datos offline', data: []);
+        return CambiosAnimalResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
@@ -1134,22 +1163,27 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.cambiosAnimalUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(cambios.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.cambiosAnimalUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(cambios.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       LoggingService.info('Cambios animal created successfully', 'AuthService');
       return CambiosAnimal.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create cambios animal: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create cambios animal: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create cambios animal: ${response.body}');
     }
   }
@@ -1167,8 +1201,15 @@ class AuthService {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached lactancia data', 'AuthService');
-        return LactanciaResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached lactancia data',
+          'AuthService',
+        );
+        return LactanciaResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1180,27 +1221,36 @@ class AuthService {
 
       String url = AppConfig.lactanciaUrl;
       Map<String, String> queryParams = {};
-      
+
       if (animalId != null) queryParams['animal_id'] = animalId.toString();
       if (activa != null) queryParams['activa'] = activa.toString();
       if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
       if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final lactanciaResponse = LactanciaResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Lactancia fetched successfully (${lactanciaResponse.data.length} items)', 'AuthService');
+        final lactanciaResponse = LactanciaResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Lactancia fetched successfully (${lactanciaResponse.data.length} items)',
+          'AuthService',
+        );
         return lactanciaResponse;
       } else {
         throw Exception('Failed to get lactancia: ${response.body}');
@@ -1208,7 +1258,11 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting lactancia', 'AuthService', e);
       if (_isNetworkError(e)) {
-        return LactanciaResponse(success: true, message: 'Datos offline', data: []);
+        return LactanciaResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
@@ -1222,22 +1276,27 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.lactanciaUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(lactancia.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.lactanciaUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(lactancia.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       LoggingService.info('Lactancia created successfully', 'AuthService');
       return Lactancia.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create lactancia: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create lactancia: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create lactancia: ${response.body}');
     }
   }
@@ -1254,8 +1313,15 @@ class AuthService {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached registro lechero data', 'AuthService');
-        return RegistroLecheroResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached registro lechero data',
+          'AuthService',
+        );
+        return RegistroLecheroResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1267,26 +1333,36 @@ class AuthService {
 
       String url = AppConfig.registroLecheroUrl;
       Map<String, String> queryParams = {};
-      
-      if (lactanciaId != null) queryParams['lactancia_id'] = lactanciaId.toString();
+
+      if (lactanciaId != null)
+        queryParams['lactancia_id'] = lactanciaId.toString();
       if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
       if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final lecheroResponse = RegistroLecheroResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Registro lechero fetched successfully (${lecheroResponse.data.length} items)', 'AuthService');
+        final lecheroResponse = RegistroLecheroResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Registro lechero fetched successfully (${lecheroResponse.data.length} items)',
+          'AuthService',
+        );
         return lecheroResponse;
       } else {
         throw Exception('Failed to get registro lechero: ${response.body}');
@@ -1294,13 +1370,19 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting registro lechero', 'AuthService', e);
       if (_isNetworkError(e)) {
-        return RegistroLecheroResponse(success: true, message: 'Datos offline', data: []);
+        return RegistroLecheroResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
   }
 
-  Future<RegistroLechero> createRegistroLechero(RegistroLechero registro) async {
+  Future<RegistroLechero> createRegistroLechero(
+    RegistroLechero registro,
+  ) async {
     LoggingService.debug('Creating registro lechero...', 'AuthService');
 
     final token = await getToken();
@@ -1308,22 +1390,30 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.registroLecheroUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(registro.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.registroLecheroUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(registro.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      LoggingService.info('Registro lechero created successfully', 'AuthService');
+      LoggingService.info(
+        'Registro lechero created successfully',
+        'AuthService',
+      );
       return RegistroLechero.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create registro lechero: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create registro lechero: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create registro lechero: ${response.body}');
     }
   }
@@ -1340,8 +1430,15 @@ class AuthService {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached peso corporal data', 'AuthService');
-        return PesoCorporalResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached peso corporal data',
+          'AuthService',
+        );
+        return PesoCorporalResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1353,26 +1450,35 @@ class AuthService {
 
       String url = AppConfig.pesoCorporalUrl;
       Map<String, String> queryParams = {};
-      
+
       if (animalId != null) queryParams['animal_id'] = animalId.toString();
       if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
       if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final pesoResponse = PesoCorporalResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Peso corporal fetched successfully (${pesoResponse.data.length} items)', 'AuthService');
+        final pesoResponse = PesoCorporalResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Peso corporal fetched successfully (${pesoResponse.data.length} items)',
+          'AuthService',
+        );
         return pesoResponse;
       } else {
         throw Exception('Failed to get peso corporal: ${response.body}');
@@ -1380,7 +1486,11 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting peso corporal', 'AuthService', e);
       if (_isNetworkError(e)) {
-        return PesoCorporalResponse(success: true, message: 'Datos offline', data: []);
+        return PesoCorporalResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
@@ -1394,22 +1504,27 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.pesoCorporalUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(peso.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.pesoCorporalUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(peso.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       LoggingService.info('Peso corporal created successfully', 'AuthService');
       return PesoCorporal.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create peso corporal: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create peso corporal: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create peso corporal: ${response.body}');
     }
   }
@@ -1425,8 +1540,15 @@ class AuthService {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached medidas corporales data', 'AuthService');
-        return MedidasCorporalesResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached medidas corporales data',
+          'AuthService',
+        );
+        return MedidasCorporalesResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1438,39 +1560,58 @@ class AuthService {
 
       String url = AppConfig.medidasCorporalesUrl;
       Map<String, String> queryParams = {};
-      
+
       if (animalId != null) queryParams['animal_id'] = animalId.toString();
       if (etapaId != null) queryParams['etapa_id'] = etapaId.toString();
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final medidasResponse = MedidasCorporalesResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Medidas corporales fetched successfully (${medidasResponse.data.length} items)', 'AuthService');
+        final medidasResponse = MedidasCorporalesResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Medidas corporales fetched successfully (${medidasResponse.data.length} items)',
+          'AuthService',
+        );
         return medidasResponse;
       } else {
         throw Exception('Failed to get medidas corporales: ${response.body}');
       }
     } catch (e) {
-      LoggingService.error('Error getting medidas corporales', 'AuthService', e);
+      LoggingService.error(
+        'Error getting medidas corporales',
+        'AuthService',
+        e,
+      );
       if (_isNetworkError(e)) {
-        return MedidasCorporalesResponse(success: true, message: 'Datos offline', data: []);
+        return MedidasCorporalesResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
   }
 
-  Future<MedidasCorporales> createMedidasCorporales(MedidasCorporales medidas) async {
+  Future<MedidasCorporales> createMedidasCorporales(
+    MedidasCorporales medidas,
+  ) async {
     LoggingService.debug('Creating medidas corporales...', 'AuthService');
 
     final token = await getToken();
@@ -1478,38 +1619,51 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.medidasCorporalesUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(medidas.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.medidasCorporalesUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(medidas.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
-      LoggingService.info('Medidas corporales created successfully', 'AuthService');
+      LoggingService.info(
+        'Medidas corporales created successfully',
+        'AuthService',
+      );
       return MedidasCorporales.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create medidas corporales: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create medidas corporales: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create medidas corporales: ${response.body}');
     }
   }
 
   // Personal Finca API methods
-  Future<PersonalFincaResponse> getPersonalFinca({
-    int? idFinca,
-  }) async {
+  Future<PersonalFincaResponse> getPersonalFinca({int? idFinca}) async {
     LoggingService.debug('Getting personal finca list...', 'AuthService');
 
     try {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        LoggingService.info('No connectivity - using cached personal finca data', 'AuthService');
-        return PersonalFincaResponse(success: true, message: 'Datos offline', data: []);
+        LoggingService.info(
+          'No connectivity - using cached personal finca data',
+          'AuthService',
+        );
+        return PersonalFincaResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
 
       await _restoreOriginalTokenIfNeeded();
@@ -1521,24 +1675,33 @@ class AuthService {
 
       String url = AppConfig.personalFincaUrl;
       Map<String, String> queryParams = {};
-      
+
       if (idFinca != null) queryParams['id_finca'] = idFinca.toString();
-      
+
       if (queryParams.isNotEmpty) {
-        url += '?' + queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+        url +=
+            '?' +
+            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
       }
 
-      final response = await http.get(
-        Uri.parse(url),
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-      ).timeout(_httpTimeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            headers: {
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+          )
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final personalResponse = PersonalFincaResponse.fromJson(jsonDecode(response.body));
-        LoggingService.info('Personal finca fetched successfully (${personalResponse.data.length} items)', 'AuthService');
+        final personalResponse = PersonalFincaResponse.fromJson(
+          jsonDecode(response.body),
+        );
+        LoggingService.info(
+          'Personal finca fetched successfully (${personalResponse.data.length} items)',
+          'AuthService',
+        );
         return personalResponse;
       } else {
         throw Exception('Failed to get personal finca: ${response.body}');
@@ -1546,7 +1709,11 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting personal finca', 'AuthService', e);
       if (_isNetworkError(e)) {
-        return PersonalFincaResponse(success: true, message: 'Datos offline', data: []);
+        return PersonalFincaResponse(
+          success: true,
+          message: 'Datos offline',
+          data: [],
+        );
       }
       rethrow;
     }
@@ -1560,22 +1727,27 @@ class AuthService {
       throw Exception('No token found');
     }
 
-    final response = await http.post(
-      Uri.parse(AppConfig.personalFincaUrl),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      },
-      body: jsonEncode(personal.toJson()),
-    ).timeout(_httpTimeout);
+    final response = await http
+        .post(
+          Uri.parse(AppConfig.personalFincaUrl),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(personal.toJson()),
+        )
+        .timeout(_httpTimeout);
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       LoggingService.info('Personal finca created successfully', 'AuthService');
       return PersonalFinca.fromJson(responseData['data']);
     } else {
-      LoggingService.error('Failed to create personal finca: ${response.body}', 'AuthService');
+      LoggingService.error(
+        'Failed to create personal finca: ${response.body}',
+        'AuthService',
+      );
       throw Exception('Failed to create personal finca: ${response.body}');
     }
   }

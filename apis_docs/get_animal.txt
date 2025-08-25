@@ -1,0 +1,93 @@
+Request:
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/animales/13' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8'
+
+Response:
+{
+    "success": true,
+    "message": "Detalle de animal",
+    "data": {
+        "id_Animal": 13,
+        "id_Rebano": 6,
+        "Nombre": "Animal 1",
+        "codigo_animal": "ANIMAL-001",
+        "Sexo": "F",
+        "fecha_nacimiento": "2025-03-15T00:00:00.000000Z",
+        "Procedencia": "Finca Origen",
+        "archivado": false,
+        "created_at": "2025-08-18T21:35:24.000000Z",
+        "updated_at": "2025-08-18T21:35:24.000000Z",
+        "fk_composicion_raza": 70,
+        "rebano": {
+            "id_Rebano": 6,
+            "id_Finca": 15,
+            "Nombre": "Rebaño 1",
+            "archivado": false,
+            "created_at": "2025-08-18T21:30:56.000000Z",
+            "updated_at": "2025-08-18T21:30:56.000000Z",
+            "finca": {
+                "id_Finca": 15,
+                "id_Propietario": 6,
+                "Nombre": "Finca Romero SPA",
+                "Explotacion_Tipo": "Bovinos",
+                "archivado": false,
+                "created_at": "2025-08-18T00:59:56.000000Z",
+                "updated_at": "2025-08-18T00:59:56.000000Z",
+                "propietario": {
+                    "id": 6,
+                    "id_Personal": 17873216,
+                    "Nombre": "Leonel",
+                    "Apellido": "Romero",
+                    "Telefono": "04140659739",
+                    "archivado": false,
+                    "created_at": null,
+                    "updated_at": null
+                }
+            }
+        },
+        "estados": [
+            {
+                "esan_id": 13,
+                "esan_fecha_ini": "2025-03-15T00:00:00.000000Z",
+                "esan_fecha_fin": null,
+                "esan_fk_estado_id": 15,
+                "esan_fk_id_animal": 13,
+                "estado_salud": {
+                    "estado_id": 15,
+                    "estado_nombre": "Sano"
+                }
+            }
+        ],
+        "etapa_animales": [
+            {
+                "etan_etapa_id": 15,
+                "etan_animal_id": 13,
+                "etan_fecha_ini": "2025-03-15T00:00:00.000000Z",
+                "etan_fecha_fin": null,
+                "etapa": {
+                    "etapa_id": 15,
+                    "etapa_nombre": "Becerro",
+                    "etapa_edad_ini": 0,
+                    "etapa_edad_fin": 365,
+                    "etapa_fk_tipo_animal_id": 3,
+                    "etapa_sexo": "M"
+                }
+            }
+        ],
+        "etapa_actual": {
+            "etan_etapa_id": 15,
+            "etan_animal_id": 13,
+            "etan_fecha_ini": "2025-03-15T00:00:00.000000Z",
+            "etan_fecha_fin": null,
+            "etapa": {
+                "etapa_id": 15,
+                "etapa_nombre": "Becerro",
+                "etapa_edad_ini": 0,
+                "etapa_edad_fin": 365,
+                "etapa_fk_tipo_animal_id": 3,
+                "etapa_sexo": "M"
+            }
+        }
+    }
+}

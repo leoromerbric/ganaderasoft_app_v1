@@ -436,13 +436,13 @@ class ConfigurationService {
           'Failed to load composicion raza: ${response.statusCode}',
         );
       }
-    } on TimeoutException catch (e) {
+    } on TimeoutException {
       LoggingService.warning(
         'Composicion raza request timeout - falling back to offline data',
         'ConfigurationService',
       );
       return await _getOfflineComposicionRaza();
-    } on SocketException catch (e) {
+    } on SocketException {
       LoggingService.warning(
         'Composicion raza request socket error - falling back to offline data',
         'ConfigurationService',

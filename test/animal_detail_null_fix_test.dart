@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ganaderasoft_app_v1/models/animal.dart';
-import 'package:ganaderasoft_app_v1/models/configuration_models.dart';
+import '../lib/models/animal.dart';
+import '../lib/models/configuration_models.dart';
 
 void main() {
   group('Animal Detail Null Fix Tests', () {

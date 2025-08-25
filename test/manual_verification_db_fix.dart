@@ -25,8 +25,8 @@ Future<void> manualVerification() async {
     );
     final tableNames = tables.map((t) => t['name'] as String).toSet();
     
-    // Check required tables
-    final requiredTables = ['rebanos', 'animales', 'composicion_raza'];
+    // Check required tables including animal_detail (added for issue #53 fix)
+    final requiredTables = ['rebanos', 'animales', 'composicion_raza', 'animal_detail'];
     final missingTables = <String>[];
     
     for (final tableName in requiredTables) {

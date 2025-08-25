@@ -74,6 +74,39 @@ void main() {
       expect(tipoAnimal.synced, equals(false));
     });
 
+    test('Should handle null estado_salud in EstadoAnimal.fromJson', () {
+      final jsonWithNullEstadoSalud = {
+        'esan_id': 13,
+        'esan_fecha_ini': '2025-03-15T00:00:00.000000Z',
+        'esan_fecha_fin': null,
+        'esan_fk_estado_id': 15,
+        'esan_fk_id_animal': 13,
+        'estado_salud': null, // This should not crash
+      };
+
+      // This should not throw "type 'Null' is not a subtype of type 'Map"
+      expect(() => EstadoAnimal.fromJson(jsonWithNullEstadoSalud), returnsNormally);
+      
+      final estadoAnimal = EstadoAnimal.fromJson(jsonWithNullEstadoSalud);
+      expect(estadoAnimal.esanId, equals(13));
+      expect(estadoAnimal.esanFkEstadoId, equals(15));
+      // EstadoSalud should be created with default values due to empty map fallback
+      expect(estadoAnimal.estadoSalud.estadoId, equals(0));
+      expect(estadoAnimal.estadoSalud.estadoNombre, equals(''));
+    });
+
+    test('Should handle completely empty JSON in EstadoSalud.fromJson', () {
+      final emptyJson = <String, dynamic>{};
+
+      // This should not crash and create object with default values
+      expect(() => EstadoSalud.fromJson(emptyJson), returnsNormally);
+      
+      final estadoSalud = EstadoSalud.fromJson(emptyJson);
+      expect(estadoSalud.estadoId, equals(0));
+      expect(estadoSalud.estadoNombre, equals(''));
+      expect(estadoSalud.synced, equals(false));
+    });
+
     test('Should handle null etapa_actual in AnimalDetail.fromJson', () {
       // This simulates the API response that was causing the original error
       final animalDetailJson = {

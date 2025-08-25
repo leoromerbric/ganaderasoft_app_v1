@@ -194,8 +194,8 @@ class EstadoSalud {
 
   factory EstadoSalud.fromJson(Map<String, dynamic> json) {
     return EstadoSalud(
-      estadoId: json['estado_id'],
-      estadoNombre: json['estado_nombre'],
+      estadoId: json['estado_id'] ?? 0,
+      estadoNombre: json['estado_nombre'] ?? '',
       synced: json['synced'] ?? false,
     );
   }

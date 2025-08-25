@@ -194,8 +194,8 @@ class EstadoSalud {
 
   factory EstadoSalud.fromJson(Map<String, dynamic> json) {
     return EstadoSalud(
-      estadoId: json['estado_id'],
-      estadoNombre: json['estado_nombre'],
+      estadoId: json['estado_id'] ?? 0,
+      estadoNombre: json['estado_nombre'] ?? '',
       synced: json['synced'] ?? false,
     );
   }
@@ -222,8 +222,8 @@ class TipoAnimal {
 
   factory TipoAnimal.fromJson(Map<String, dynamic> json) {
     return TipoAnimal(
-      tipoAnimalId: json['tipo_animal_id'],
-      tipoAnimalNombre: json['tipo_animal_nombre'],
+      tipoAnimalId: json['tipo_animal_id'] ?? 0,
+      tipoAnimalNombre: json['tipo_animal_nombre'] ?? '',
       synced: json['synced'] ?? false,
     );
   }
@@ -261,13 +261,13 @@ class Etapa {
 
   factory Etapa.fromJson(Map<String, dynamic> json) {
     return Etapa(
-      etapaId: json['etapa_id'],
-      etapaNombre: json['etapa_nombre'],
-      etapaEdadIni: json['etapa_edad_ini'],
+      etapaId: json['etapa_id'] ?? 0,
+      etapaNombre: json['etapa_nombre'] ?? '',
+      etapaEdadIni: json['etapa_edad_ini'] ?? 0,
       etapaEdadFin: json['etapa_edad_fin'],
-      etapaFkTipoAnimalId: json['etapa_fk_tipo_animal_id'],
-      etapaSexo: json['etapa_sexo'],
-      tipoAnimal: TipoAnimal.fromJson(json['tipo_animal']),
+      etapaFkTipoAnimalId: json['etapa_fk_tipo_animal_id'] ?? 0,
+      etapaSexo: json['etapa_sexo'] ?? '',
+      tipoAnimal: TipoAnimal.fromJson(json['tipo_animal'] ?? {}),
       synced: json['synced'] ?? false,
     );
   }

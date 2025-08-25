@@ -193,7 +193,7 @@ class EtapaAnimal {
       etanAnimalId: json['etan_animal_id'],
       etanFechaIni: json['etan_fecha_ini'],
       etanFechaFin: json['etan_fecha_fin'],
-      etapa: Etapa.fromJson(json['etapa']),
+      etapa: Etapa.fromJson(json['etapa'] ?? {}),
     );
   }
 
@@ -228,12 +228,12 @@ class EstadoAnimal {
 
   factory EstadoAnimal.fromJson(Map<String, dynamic> json) {
     return EstadoAnimal(
-      esanId: json['esan_id'],
-      esanFechaIni: json['esan_fecha_ini'],
+      esanId: json['esan_id'] ?? 0,
+      esanFechaIni: json['esan_fecha_ini'] ?? '',
       esanFechaFin: json['esan_fecha_fin'],
-      esanFkEstadoId: json['esan_fk_estado_id'],
-      esanFkIdAnimal: json['esan_fk_id_animal'],
-      estadoSalud: EstadoSalud.fromJson(json['estado_salud']),
+      esanFkEstadoId: json['esan_fk_estado_id'] ?? 0,
+      esanFkIdAnimal: json['esan_fk_id_animal'] ?? 0,
+      estadoSalud: EstadoSalud.fromJson(json['estado_salud'] ?? {}),
     );
   }
 

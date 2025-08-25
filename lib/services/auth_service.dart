@@ -782,14 +782,27 @@ class AuthService {
           .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
-        final animalDetailResponse = AnimalDetailResponse.fromJson(jsonDecode(response.body));
+        try {
+          final responseBody = jsonDecode(response.body);
+          final animalDetailResponse = AnimalDetailResponse.fromJson(responseBody);
 
-        LoggingService.info('Animal detail retrieved successfully', 'AuthService');
+          LoggingService.info('Animal detail retrieved successfully', 'AuthService');
 
-        // Cache the animal detail data for offline use
-        await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
+          // Cache the animal detail data for offline use
+          await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
 
-        return animalDetailResponse;
+          return animalDetailResponse;
+        } catch (parseError) {
+          LoggingService.error(
+            'Error parsing animal detail response: $parseError',
+            'AuthService',
+          );
+          LoggingService.debug(
+            'Response body that failed to parse: ${response.body}',
+            'AuthService',
+          );
+          throw Exception('Error parsing animal detail response: $parseError');
+        }
       } else {
         LoggingService.error(
           'Animal detail request failed with status: ${response.statusCode}',

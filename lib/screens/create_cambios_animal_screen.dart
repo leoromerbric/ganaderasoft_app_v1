@@ -4,7 +4,6 @@ import '../models/animal.dart';
 import '../models/farm_management_models.dart';
 import '../models/configuration_models.dart';
 import '../services/auth_service.dart';
-import '../services/configuration_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 
@@ -37,16 +36,16 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
 
   // Form data
   Animal? _selectedAnimal;
+  AnimalDetail? _selectedAnimalDetail;
   Etapa? _selectedEtapa;
 
   // Loading states
   bool _isLoading = false;
-  bool _isLoadingData = true;
+  bool _isLoadingAnimalDetail = false;
   bool _isOffline = false;
 
   // Data lists
   List<Animal> _animales = [];
-  List<Etapa> _etapas = [];
 
   @override
   void initState() {
@@ -57,7 +56,11 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
       'T',
     )[0];
     _checkConnectivity();
-    _loadData();
+
+    // Load animal detail if an animal is pre-selected
+    if (_selectedAnimal != null) {
+      _loadAnimalDetail(_selectedAnimal!.idAnimal);
+    }
   }
 
   @override
@@ -76,50 +79,32 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
     });
   }
 
-  Future<void> _loadData() async {
+  Future<void> _loadAnimalDetail(int animalId) async {
     setState(() {
-      _isLoadingData = true;
+      _isLoadingAnimalDetail = true;
     });
 
     try {
-      // Load etapas
-      if (_isOffline) {
-        // Use offline data if available
-        LoggingService.info(
-          'Loading etapas from offline storage',
-          'CreateCambiosAnimalScreen',
-        );
-        // For now, set empty list - in real implementation, would load from local DB
-        _etapas = [];
-      } else {
-        LoggingService.info(
-          'Loading etapas from server',
-          'CreateCambiosAnimalScreen',
-        );
-        final etapasResponse = await ConfigurationService.getEtapas();
-        _etapas = etapasResponse;
-      }
-
+      final animalDetailResponse = await _authService.getAnimalDetail(animalId);
       setState(() {
-        _isLoadingData = false;
+        _selectedAnimalDetail = animalDetailResponse.data;
+        // Clear selected etapa when loading new animal detail
+        _selectedEtapa = null;
       });
     } catch (e) {
-      LoggingService.error(
-        'Error loading data',
-        'CreateCambiosAnimalScreen',
-        e,
-      );
-      setState(() {
-        _isLoadingData = false;
-      });
+      LoggingService.error('Error loading animal detail', 'CreateCambiosAnimalScreen', e);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al cargar datos: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            content: Text('Error al cargar detalle del animal: ${e.toString()}'),
+            backgroundColor: Colors.orange,
           ),
         );
       }
+    } finally {
+      setState(() {
+        _isLoadingAnimalDetail = false;
+      });
     }
   }
 
@@ -248,15 +233,13 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
             ),
         ],
       ),
-      body: _isLoadingData
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
                     // Farm info card
                     Card(
                       child: Padding(
@@ -320,7 +303,13 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                       onChanged: (Animal? value) {
                         setState(() {
                           _selectedAnimal = value;
+                          _selectedAnimalDetail = null;
+                          _selectedEtapa = null;
                         });
+                        
+                        if (value != null) {
+                          _loadAnimalDetail(value.idAnimal);
+                        }
                       },
                       validator: (value) {
                         if (value == null) {
@@ -370,17 +359,22 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Etapa>(
                       value: _selectedEtapa,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Selecciona la nueva etapa',
+                      decoration: InputDecoration(
+                        border: const OutlineInputBorder(),
+                        hintText: _isLoadingAnimalDetail 
+                            ? 'Cargando etapas...' 
+                            : 'Selecciona la nueva etapa',
+                        prefixIcon: const Icon(Icons.timeline),
                       ),
-                      items: _etapas.map((etapa) {
+                      items: _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
                         return DropdownMenuItem<Etapa>(
-                          value: etapa,
-                          child: Text(etapa.etapaNombre),
+                          value: etapaAnimal.etapa,
+                          child: Text(
+                            '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
+                          ),
                         );
-                      }).toList(),
-                      onChanged: (Etapa? value) {
+                      }).toList() ?? [],
+                      onChanged: _isLoadingAnimalDetail ? null : (Etapa? value) {
                         setState(() {
                           _selectedEtapa = value;
                         });

@@ -33,6 +33,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
   String? _dataSourceMessage;
   Animal? _selectedAnimal;
   List<Animal> _animales = [];
+  String _selectedStatus = 'todas'; // 'todas', 'activas', 'finalizadas'
 
   @override
   void initState() {
@@ -65,9 +66,18 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
 
       await _checkConnectivity();
 
+      // Determine activa parameter based on selected status
+      int? activaParam;
+      if (_selectedStatus == 'activas') {
+        activaParam = 1;
+      } else if (_selectedStatus == 'finalizadas') {
+        activaParam = 0;
+      }
+      // If 'todas', leave activaParam as null to get all lactations
+
       final lactanciaResponse = await _authService.getLactancia(
         animalId: _selectedAnimal?.idAnimal,
-        activa: 1,
+        activa: activaParam,
         fechaInicio: '2023-01-01',
         fechaFin: DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
       );
@@ -82,17 +92,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
         _isLoading = false;
         _dataSourceMessage = lactanciaResponse.message;
 
-        // Apply animal filter if one is selected
-        if (_selectedAnimal != null) {
-          _filteredLactancias = _lactancias
-              .where((lactancia) => lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal)
-              .toList();
-        } else {
-          _filteredLactancias = _lactancias;
-        }
-
-        // Sort by start date descending (most recent first)
-        _filteredLactancias.sort((a, b) => DateTime.parse(b.lactanciaFechaInicio).compareTo(DateTime.parse(a.lactanciaFechaInicio)));
+        _applyFilters();
       });
     } catch (e) {
       LoggingService.error('Error loading lactancias', 'LactanciaListScreen', e);
@@ -103,20 +103,84 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
     }
   }
 
+  void _applyFilters() {
+    _filteredLactancias = _lactancias;
+
+    // Apply animal filter if one is selected
+    if (_selectedAnimal != null) {
+      _filteredLactancias = _filteredLactancias
+          .where((lactancia) => lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal)
+          .toList();
+    }
+
+    // Apply status filter if not showing all
+    if (_selectedStatus == 'activas') {
+      _filteredLactancias = _filteredLactancias
+          .where((lactancia) => _isLactanciaActive(lactancia))
+          .toList();
+    } else if (_selectedStatus == 'finalizadas') {
+      _filteredLactancias = _filteredLactancias
+          .where((lactancia) => !_isLactanciaActive(lactancia))
+          .toList();
+    }
+
+    // Sort by start date descending (most recent first)
+    _filteredLactancias.sort((a, b) => DateTime.parse(b.lactanciaFechaInicio).compareTo(DateTime.parse(a.lactanciaFechaInicio)));
+  }
+
   void _filterByAnimal(Animal? animal) {
     setState(() {
       _selectedAnimal = animal;
-      if (animal == null) {
-        _filteredLactancias = _lactancias;
-      } else {
-        _filteredLactancias = _lactancias
-            .where((lactancia) => lactancia.lactanciaEtapaAnid == animal.idAnimal)
-            .toList();
-      }
-      
-      // Sort by start date descending
-      _filteredLactancias.sort((a, b) => DateTime.parse(b.lactanciaFechaInicio).compareTo(DateTime.parse(a.lactanciaFechaInicio)));
+      _applyFilters();
     });
+  }
+
+  void _filterByStatus(String status) {
+    setState(() {
+      _selectedStatus = status;
+    });
+    _loadLactancias(); // Reload data with new status filter
+  }
+
+  String _getEmptyStateTitle() {
+    switch (_selectedStatus) {
+      case 'activas':
+        return 'No hay lactancias activas';
+      case 'finalizadas':
+        return 'No hay lactancias finalizadas';
+      default:
+        return 'No hay lactancias registradas';
+    }
+  }
+
+  String _getEmptyStateSubtitle() {
+    switch (_selectedStatus) {
+      case 'activas':
+        return 'No se encontraron lactancias en curso';
+      case 'finalizadas':
+        return 'No se encontraron lactancias terminadas';
+      default:
+        return 'Agrega el primer período de lactancia';
+    }
+  }
+
+  String _getCountDisplayText() {
+    final count = _filteredLactancias.length;
+    final plural = count != 1;
+    
+    String statusText = '';
+    switch (_selectedStatus) {
+      case 'activas':
+        statusText = ' activa${plural ? 's' : ''}';
+        break;
+      case 'finalizadas':
+        statusText = ' finalizada${plural ? 's' : ''}';
+        break;
+      default:
+        statusText = '';
+    }
+    
+    return '$count lactancia${plural ? 's' : ''}$statusText${plural ? ' encontradas' : ' encontrada'}';
   }
 
   String _formatDate(String dateString) {
@@ -253,39 +317,83 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                   ),
 
                 // Filter section
-                if (_animales.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.filter_list, size: 20),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: DropdownButtonFormField<Animal?>(
-                            value: _selectedAnimal,
-                            decoration: const InputDecoration(
-                              hintText: 'Filtrar por animal',
-                              border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                            ),
-                            items: [
-                              const DropdownMenuItem<Animal?>(
-                                value: null,
-                                child: Text('Todos los animales'),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    children: [
+                      // Status filter
+                      Row(
+                        children: [
+                          const Icon(Icons.filter_alt, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: DropdownButtonFormField<String>(
+                              value: _selectedStatus,
+                              decoration: const InputDecoration(
+                                hintText: 'Filtrar por estado',
+                                border: OutlineInputBorder(),
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                               ),
-                              ..._animales.map((animal) {
-                                return DropdownMenuItem<Animal>(
-                                  value: animal,
-                                  child: Text('${animal.nombre} (${animal.codigoAnimal})'),
-                                );
-                              }),
-                            ],
-                            onChanged: _filterByAnimal,
+                              items: const [
+                                DropdownMenuItem<String>(
+                                  value: 'todas',
+                                  child: Text('Todas las lactancias'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'activas',
+                                  child: Text('Lactancias activas'),
+                                ),
+                                DropdownMenuItem<String>(
+                                  value: 'finalizadas',
+                                  child: Text('Lactancias finalizadas'),
+                                ),
+                              ],
+                              onChanged: (String? value) {
+                                if (value != null) {
+                                  _filterByStatus(value);
+                                }
+                              },
+                            ),
                           ),
+                        ],
+                      ),
+                      
+                      // Animal filter (only show if there are animals)
+                      if (_animales.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.pets, size: 20),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: DropdownButtonFormField<Animal?>(
+                                value: _selectedAnimal,
+                                decoration: const InputDecoration(
+                                  hintText: 'Filtrar por animal',
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                ),
+                                items: [
+                                  const DropdownMenuItem<Animal?>(
+                                    value: null,
+                                    child: Text('Todos los animales'),
+                                  ),
+                                  ..._animales.map((animal) {
+                                    return DropdownMenuItem<Animal>(
+                                      value: animal,
+                                      child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                                    );
+                                  }),
+                                ],
+                                onChanged: _filterByAnimal,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
-                    ),
+                    ],
                   ),
+                ),
 
                 // Count info
                 Padding(
@@ -294,10 +402,12 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                     children: [
                       Icon(Icons.baby_changing_station, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 8),
-                      Text(
-                        '${_filteredLactancias.length} lactancia${_filteredLactancias.length != 1 ? 's' : ''} registrada${_filteredLactancias.length != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Text(
+                          _getCountDisplayText(),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                       ),
                     ],
@@ -318,14 +428,14 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                               ),
                               const SizedBox(height: 16),
                               Text(
-                                'No hay lactancias registradas',
+                                _getEmptyStateTitle(),
                                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                   color: Colors.grey[600],
                                 ),
                               ),
                               const SizedBox(height: 8),
                               Text(
-                                'Agrega el primer período de lactancia',
+                                _getEmptyStateSubtitle(),
                                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                   color: Colors.grey[500],
                                 ),

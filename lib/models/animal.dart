@@ -193,7 +193,7 @@ class EtapaAnimal {
       etanAnimalId: json['etan_animal_id'],
       etanFechaIni: json['etan_fecha_ini'],
       etanFechaFin: json['etan_fecha_fin'],
-      etapa: Etapa.fromJson(json['etapa']),
+      etapa: Etapa.fromJson(json['etapa'] ?? {}),
     );
   }
 

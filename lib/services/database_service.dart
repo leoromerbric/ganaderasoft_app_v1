@@ -211,6 +211,18 @@ class DatabaseService {
         local_updated_at INTEGER NOT NULL
       )
     ''');
+
+    // Create animal_detail table
+    await db.execute('''
+      CREATE TABLE animal_detail (
+        id_animal INTEGER PRIMARY KEY,
+        animal_data TEXT NOT NULL,
+        etapa_animales_data TEXT NOT NULL,
+        etapa_actual_data TEXT,
+        estados_data TEXT,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
     
     LoggingService.info('Database tables created successfully', 'DatabaseService');
   }

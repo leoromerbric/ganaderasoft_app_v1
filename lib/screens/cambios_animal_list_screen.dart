@@ -81,13 +81,17 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
         _isLoading = false;
         _dataSourceMessage = cambiosResponse.message;
 
+        // Filter by finca animals (only show changes for animals that belong to this finca)
+        final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
+        _filteredCambios = _cambios
+            .where((cambio) => fincaAnimalIds.contains(cambio.cambiosEtapaAnid))
+            .toList();
+
         // Apply animal filter if one is selected
         if (_selectedAnimal != null) {
-          _filteredCambios = _cambios
+          _filteredCambios = _filteredCambios
               .where((cambio) => cambio.cambiosEtapaAnid == _selectedAnimal!.idAnimal)
               .toList();
-        } else {
-          _filteredCambios = _cambios;
         }
       });
     } catch (e) {
@@ -102,10 +106,16 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
   void _filterByAnimal(Animal? animal) {
     setState(() {
       _selectedAnimal = animal;
-      if (animal == null) {
-        _filteredCambios = _cambios;
-      } else {
-        _filteredCambios = _cambios
+      
+      // First, filter by finca animals
+      final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
+      _filteredCambios = _cambios
+          .where((cambio) => fincaAnimalIds.contains(cambio.cambiosEtapaAnid))
+          .toList();
+      
+      // Then apply specific animal filter if one is selected
+      if (animal != null) {
+        _filteredCambios = _filteredCambios
             .where((cambio) => cambio.cambiosEtapaAnid == animal.idAnimal)
             .toList();
       }

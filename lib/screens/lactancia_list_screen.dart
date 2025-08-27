@@ -106,6 +106,12 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
   void _applyFilters() {
     _filteredLactancias = _lactancias;
 
+    // First, filter by finca animals (only show lactations for animals that belong to this finca)
+    final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
+    _filteredLactancias = _filteredLactancias
+        .where((lactancia) => fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid))
+        .toList();
+
     // Apply animal filter if one is selected
     if (_selectedAnimal != null) {
       _filteredLactancias = _filteredLactancias
@@ -400,7 +406,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
-                      Icon(Icons.baby_changing_station, color: Theme.of(context).colorScheme.primary),
+                      Icon(Icons.local_drink, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -422,7 +428,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.baby_changing_station,
+                                Icons.local_drink,
                                 size: 64,
                                 color: Colors.grey[400],
                               ),
@@ -506,7 +512,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
             Row(
               children: [
                 Icon(
-                  Icons.baby_changing_station,
+                  Icons.local_drink,
                   color: isActive ? Colors.green : Colors.grey,
                   size: 24,
                 ),

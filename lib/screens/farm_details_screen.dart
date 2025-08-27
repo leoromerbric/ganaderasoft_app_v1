@@ -271,7 +271,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                     child: _buildNavigationCard(
                       context,
                       'Cambios de Animales',
-                      Icons.trending_up,
+                      Icons.update,
                       'Cambios de etapa',
                       false,
                       () => Navigator.push(
@@ -333,7 +333,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                     child: _buildNavigationCard(
                       context,
                       'Lactancia',
-                      Icons.baby_changing_station,
+                      Icons.local_drink,
                       'Control de lactancia',
                       false,
                       () => Navigator.push(

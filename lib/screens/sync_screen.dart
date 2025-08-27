@@ -253,6 +253,35 @@ class _SyncScreenState extends State<SyncScreen> {
                     _lastSyncTimes['composicion_raza'],
                     Icons.pets,
                   ),
+                  const SizedBox(height: 12),
+
+                  // Farm Management Data
+                  _buildSyncInfoCard(
+                    'Cambios de Animales',
+                    _lastSyncTimes['cambios_animal'],
+                    Icons.update,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Peso Corporal',
+                    _lastSyncTimes['peso_corporal'],
+                    Icons.monitor_weight,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Personal de Finca',
+                    _lastSyncTimes['personal_finca'],
+                    Icons.person,
+                  ),
+                  const SizedBox(height: 12),
+
+                  _buildSyncInfoCard(
+                    'Registros de Lactancia',
+                    _lastSyncTimes['lactancia'],
+                    Icons.local_drink,
+                  ),
 
                   const SizedBox(height: 24),
                 ],

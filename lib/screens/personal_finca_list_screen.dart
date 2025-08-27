@@ -78,21 +78,6 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
     }
   }
 
-  String _getTipoTrabajadorIcon(String tipo) {
-    switch (tipo.toLowerCase()) {
-      case 'veterinario':
-        return '🐕';
-      case 'tecnico':
-        return '🔧';
-      case 'vigilante':
-        return '🛡️';
-      case 'administrador':
-        return '📊';
-      default:
-        return '👤';
-    }
-  }
-
   Color _getTipoTrabajadorColor(String tipo) {
     switch (tipo.toLowerCase()) {
       case 'veterinario':
@@ -304,9 +289,10 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
               children: [
                 CircleAvatar(
                   backgroundColor: tipoColor.withOpacity(0.1),
-                  child: Text(
-                    _getTipoTrabajadorIcon(persona.tipoTrabajador),
-                    style: const TextStyle(fontSize: 20),
+                  child: Icon(
+                    Icons.person,
+                    color: tipoColor,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),

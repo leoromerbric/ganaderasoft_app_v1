@@ -483,6 +483,11 @@ class SyncService {
       'composicion_raza': await DatabaseService.getConfigurationLastUpdated(
         'composicion_raza',
       ),
+      // Farm management data
+      'cambios_animal': await DatabaseService.getCambiosAnimalLastUpdated(),
+      'peso_corporal': await DatabaseService.getPesoCorporalLastUpdated(),
+      'personal_finca': await DatabaseService.getPersonalFincaLastUpdated(),
+      'lactancia': await DatabaseService.getLactanciaLastUpdated(),
     };
 
     LoggingService.debug(
@@ -499,20 +504,101 @@ class SyncService {
         'SyncService',
       );
 
-      // Note: For now, these endpoints don't require offline storage
-      // In a real implementation, you might want to cache some of this data
-
+      // Sync Cambios Animal
       _syncController.add(
         SyncData(
           status: SyncStatus.syncing,
-          message: 'Verificando datos de gestión de finca...',
-          progress: 0.4,
+          message: 'Sincronizando cambios de animales...',
+          progress: 0.52,
         ),
       );
 
-      // Test connectivity to farm management endpoints
-      // This is a basic check to ensure the new endpoints are reachable
-      // In a full implementation, you might want to sync some basic data
+      try {
+        LoggingService.debug('Syncing cambios animal data...', 'SyncService');
+        final cambiosResponse = await _authService.getCambiosAnimal();
+        await DatabaseService.saveCambiosAnimalOffline(cambiosResponse.data);
+        LoggingService.info(
+          'Cambios animal synchronized: ${cambiosResponse.data.length} items',
+          'SyncService',
+        );
+      } catch (e) {
+        LoggingService.warning(
+          'Failed to sync cambios animal data: $e',
+          'SyncService',
+        );
+      }
+
+      // Sync Peso Corporal
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.syncing,
+          message: 'Sincronizando peso corporal...',
+          progress: 0.54,
+        ),
+      );
+
+      try {
+        LoggingService.debug('Syncing peso corporal data...', 'SyncService');
+        final pesoResponse = await _authService.getPesoCorporal();
+        await DatabaseService.savePesoCorporalOffline(pesoResponse.data);
+        LoggingService.info(
+          'Peso corporal synchronized: ${pesoResponse.data.length} items',
+          'SyncService',
+        );
+      } catch (e) {
+        LoggingService.warning(
+          'Failed to sync peso corporal data: $e',
+          'SyncService',
+        );
+      }
+
+      // Sync Personal Finca
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.syncing,
+          message: 'Sincronizando personal de finca...',
+          progress: 0.56,
+        ),
+      );
+
+      try {
+        LoggingService.debug('Syncing personal finca data...', 'SyncService');
+        final personalResponse = await _authService.getPersonalFinca();
+        await DatabaseService.savePersonalFincaOffline(personalResponse.data);
+        LoggingService.info(
+          'Personal finca synchronized: ${personalResponse.data.length} items',
+          'SyncService',
+        );
+      } catch (e) {
+        LoggingService.warning(
+          'Failed to sync personal finca data: $e',
+          'SyncService',
+        );
+      }
+
+      // Sync Lactancia
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.syncing,
+          message: 'Sincronizando registros de lactancia...',
+          progress: 0.58,
+        ),
+      );
+
+      try {
+        LoggingService.debug('Syncing lactancia data...', 'SyncService');
+        final lactanciaResponse = await _authService.getLactancia();
+        await DatabaseService.saveLactanciaOffline(lactanciaResponse.data);
+        LoggingService.info(
+          'Lactancia synchronized: ${lactanciaResponse.data.length} items',
+          'SyncService',
+        );
+      } catch (e) {
+        LoggingService.warning(
+          'Failed to sync lactancia data: $e',
+          'SyncService',
+        );
+      }
 
       LoggingService.info(
         'Farm management data synchronization completed',

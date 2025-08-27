@@ -273,7 +273,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                   child: Row(
                     children: [
-                      Icon(Icons.trending_up, color: Theme.of(context).colorScheme.primary),
+                      Icon(Icons.update, color: Theme.of(context).colorScheme.primary),
                       const SizedBox(width: 8),
                       Text(
                         '${_filteredCambios.length} cambio${_filteredCambios.length != 1 ? 's' : ''} encontrado${_filteredCambios.length != 1 ? 's' : ''}',
@@ -293,7 +293,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(
-                                Icons.trending_up,
+                                Icons.update,
                                 size: 64,
                                 color: Colors.grey[400],
                               ),
@@ -374,7 +374,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             Row(
               children: [
                 Icon(
-                  Icons.trending_up,
+                  Icons.update,
                   color: Theme.of(context).colorScheme.primary,
                   size: 24,
                 ),

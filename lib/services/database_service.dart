@@ -5,6 +5,7 @@ import '../models/user.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/configuration_models.dart';
+import '../models/farm_management_models.dart';
 import 'logging_service.dart';
 
 class DatabaseService {
@@ -23,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -223,6 +224,75 @@ class DatabaseService {
         local_updated_at INTEGER NOT NULL
       )
     ''');
+
+    // Farm management tables
+    // Cambios de animales table
+    await db.execute('''
+      CREATE TABLE cambios_animal (
+        id_cambio INTEGER PRIMARY KEY,
+        fecha_cambio TEXT NOT NULL,
+        etapa_cambio TEXT NOT NULL,
+        peso REAL NOT NULL,
+        altura REAL NOT NULL,
+        comentario TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        cambios_etapa_anid INTEGER NOT NULL,
+        cambios_etapa_etid INTEGER NOT NULL,
+        synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Lactancia table
+    await db.execute('''
+      CREATE TABLE lactancia (
+        lactancia_id INTEGER PRIMARY KEY,
+        lactancia_fecha_inicio TEXT NOT NULL,
+        lactancia_fecha_fin TEXT,
+        lactancia_secado TEXT,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        lactancia_etapa_anid INTEGER NOT NULL,
+        lactancia_etapa_etid INTEGER NOT NULL,
+        synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Peso corporal table
+    await db.execute('''
+      CREATE TABLE peso_corporal (
+        id_peso INTEGER PRIMARY KEY,
+        fecha_peso TEXT NOT NULL,
+        peso REAL NOT NULL,
+        comentario TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        peso_etapa_anid INTEGER NOT NULL,
+        peso_etapa_etid INTEGER NOT NULL,
+        synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Personal finca table
+    await db.execute('''
+      CREATE TABLE personal_finca (
+        id_tecnico INTEGER PRIMARY KEY,
+        id_finca INTEGER NOT NULL,
+        cedula INTEGER NOT NULL,
+        nombre TEXT NOT NULL,
+        apellido TEXT NOT NULL,
+        telefono TEXT NOT NULL,
+        correo TEXT NOT NULL,
+        tipo_trabajador TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL
+      )
+    ''');
     
     LoggingService.info('Database tables created successfully', 'DatabaseService');
   }
@@ -417,6 +487,75 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Animal detail table added successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 7) {
+      // Add farm management tables for version 7
+      await db.execute('''
+        CREATE TABLE cambios_animal (
+          id_cambio INTEGER PRIMARY KEY,
+          fecha_cambio TEXT NOT NULL,
+          etapa_cambio TEXT NOT NULL,
+          peso REAL NOT NULL,
+          altura REAL NOT NULL,
+          comentario TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          cambios_etapa_anid INTEGER NOT NULL,
+          cambios_etapa_etid INTEGER NOT NULL,
+          synced INTEGER DEFAULT 0,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE lactancia (
+          lactancia_id INTEGER PRIMARY KEY,
+          lactancia_fecha_inicio TEXT NOT NULL,
+          lactancia_fecha_fin TEXT,
+          lactancia_secado TEXT,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          lactancia_etapa_anid INTEGER NOT NULL,
+          lactancia_etapa_etid INTEGER NOT NULL,
+          synced INTEGER DEFAULT 0,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE peso_corporal (
+          id_peso INTEGER PRIMARY KEY,
+          fecha_peso TEXT NOT NULL,
+          peso REAL NOT NULL,
+          comentario TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          peso_etapa_anid INTEGER NOT NULL,
+          peso_etapa_etid INTEGER NOT NULL,
+          synced INTEGER DEFAULT 0,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+
+      await db.execute('''
+        CREATE TABLE personal_finca (
+          id_tecnico INTEGER PRIMARY KEY,
+          id_finca INTEGER NOT NULL,
+          cedula INTEGER NOT NULL,
+          nombre TEXT NOT NULL,
+          apellido TEXT NOT NULL,
+          telefono TEXT NOT NULL,
+          correo TEXT NOT NULL,
+          tipo_trabajador TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          synced INTEGER DEFAULT 0,
+          local_updated_at INTEGER NOT NULL
+        )
+      ''');
+      
+      LoggingService.info('Farm management tables added successfully', 'DatabaseService');
     }
   }
 
@@ -1503,6 +1642,228 @@ class DatabaseService {
       return animalDetail;
     } catch (e) {
       LoggingService.error('Error retrieving animal detail from offline storage', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  // Farm Management data operations
+  
+  // Cambios Animal operations
+  static Future<void> saveCambiosAnimalOffline(List<CambiosAnimal> cambiosAnimales) async {
+    try {
+      LoggingService.debug('Saving cambios animal offline (${cambiosAnimales.length} items)', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      for (final cambio in cambiosAnimales) {
+        batch.insert(
+          'cambios_animal',
+          {
+            'id_cambio': cambio.idCambio,
+            'fecha_cambio': cambio.fechaCambio,
+            'etapa_cambio': cambio.etapaCambio,
+            'peso': cambio.peso,
+            'altura': cambio.altura,
+            'comentario': cambio.comentario,
+            'created_at': cambio.createdAt,
+            'updated_at': cambio.updatedAt,
+            'cambios_etapa_anid': cambio.cambiosEtapaAnid,
+            'cambios_etapa_etid': cambio.cambiosEtapaEtid,
+            'synced': 1,
+            'local_updated_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      
+      await batch.commit();
+      LoggingService.info('Cambios animal saved offline: ${cambiosAnimales.length} items', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving cambios animal offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<DateTime?> getCambiosAnimalLastUpdated() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'cambios_animal',
+        columns: ['local_updated_at'],
+        orderBy: 'local_updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty) return null;
+      return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
+    } catch (e) {
+      LoggingService.error('Error getting cambios animal last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  // Lactancia operations
+  static Future<void> saveLactanciaOffline(List<Lactancia> lactancias) async {
+    try {
+      LoggingService.debug('Saving lactancia offline (${lactancias.length} items)', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      for (final lactancia in lactancias) {
+        batch.insert(
+          'lactancia',
+          {
+            'lactancia_id': lactancia.lactanciaId,
+            'lactancia_fecha_inicio': lactancia.lactanciaFechaInicio,
+            'lactancia_fecha_fin': lactancia.lactanciaFechaFin,
+            'lactancia_secado': lactancia.lactanciaSecado,
+            'created_at': lactancia.createdAt,
+            'updated_at': lactancia.updatedAt,
+            'lactancia_etapa_anid': lactancia.lactanciaEtapaAnid,
+            'lactancia_etapa_etid': lactancia.lactanciaEtapaEtid,
+            'synced': 1,
+            'local_updated_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      
+      await batch.commit();
+      LoggingService.info('Lactancia saved offline: ${lactancias.length} items', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving lactancia offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<DateTime?> getLactanciaLastUpdated() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lactancia',
+        columns: ['local_updated_at'],
+        orderBy: 'local_updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty) return null;
+      return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
+    } catch (e) {
+      LoggingService.error('Error getting lactancia last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  // Peso Corporal operations
+  static Future<void> savePesoCorporalOffline(List<PesoCorporal> pesosCorporales) async {
+    try {
+      LoggingService.debug('Saving peso corporal offline (${pesosCorporales.length} items)', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      for (final peso in pesosCorporales) {
+        batch.insert(
+          'peso_corporal',
+          {
+            'id_peso': peso.idPeso,
+            'fecha_peso': peso.fechaPeso,
+            'peso': peso.peso,
+            'comentario': peso.comentario,
+            'created_at': peso.createdAt,
+            'updated_at': peso.updatedAt,
+            'peso_etapa_anid': peso.pesoEtapaAnid,
+            'peso_etapa_etid': peso.pesoEtapaEtid,
+            'synced': 1,
+            'local_updated_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      
+      await batch.commit();
+      LoggingService.info('Peso corporal saved offline: ${pesosCorporales.length} items', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving peso corporal offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<DateTime?> getPesoCorporalLastUpdated() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'peso_corporal',
+        columns: ['local_updated_at'],
+        orderBy: 'local_updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty) return null;
+      return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
+    } catch (e) {
+      LoggingService.error('Error getting peso corporal last updated time', 'DatabaseService', e);
+      return null;
+    }
+  }
+
+  // Personal Finca operations
+  static Future<void> savePersonalFincaOffline(List<PersonalFinca> personalFincas) async {
+    try {
+      LoggingService.debug('Saving personal finca offline (${personalFincas.length} items)', 'DatabaseService');
+      
+      final db = await database;
+      final batch = db.batch();
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      for (final personal in personalFincas) {
+        batch.insert(
+          'personal_finca',
+          {
+            'id_tecnico': personal.idTecnico,
+            'id_finca': personal.idFinca,
+            'cedula': personal.cedula,
+            'nombre': personal.nombre,
+            'apellido': personal.apellido,
+            'telefono': personal.telefono,
+            'correo': personal.correo,
+            'tipo_trabajador': personal.tipoTrabajador,
+            'created_at': personal.createdAt,
+            'updated_at': personal.updatedAt,
+            'synced': 1,
+            'local_updated_at': now,
+          },
+          conflictAlgorithm: ConflictAlgorithm.replace,
+        );
+      }
+      
+      await batch.commit();
+      LoggingService.info('Personal finca saved offline: ${personalFincas.length} items', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving personal finca offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<DateTime?> getPersonalFincaLastUpdated() async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'personal_finca',
+        columns: ['local_updated_at'],
+        orderBy: 'local_updated_at DESC',
+        limit: 1,
+      );
+
+      if (maps.isEmpty) return null;
+      return DateTime.fromMillisecondsSinceEpoch(maps.first['local_updated_at']);
+    } catch (e) {
+      LoggingService.error('Error getting personal finca last updated time', 'DatabaseService', e);
       return null;
     }
   }

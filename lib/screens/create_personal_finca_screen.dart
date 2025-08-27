@@ -43,6 +43,7 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
     'Vigilante',
     'Operario',
     'Supervisor',
+    'Otro',
   ];
 
   @override
@@ -131,25 +132,6 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
           _isLoading = false;
         });
       }
-    }
-  }
-
-  String _getTipoTrabajadorIcon(String tipo) {
-    switch (tipo.toLowerCase()) {
-      case 'veterinario':
-        return '🐕';
-      case 'tecnico':
-        return '🔧';
-      case 'vigilante':
-        return '🛡️';
-      case 'administrador':
-        return '📊';
-      case 'operario':
-        return '👷';
-      case 'supervisor':
-        return '👨‍💼';
-      default:
-        return '👤';
     }
   }
 
@@ -382,13 +364,7 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
                 items: _tiposTrabajador.map((tipo) {
                   return DropdownMenuItem<String>(
                     value: tipo,
-                    child: Row(
-                      children: [
-                        Text(_getTipoTrabajadorIcon(tipo)),
-                        const SizedBox(width: 8),
-                        Text(tipo),
-                      ],
-                    ),
+                    child: Text(tipo),
                   );
                 }).toList(),
                 onChanged: (String? value) {

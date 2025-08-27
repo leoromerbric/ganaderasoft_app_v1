@@ -1704,6 +1704,76 @@ class DatabaseService {
     }
   }
 
+  static Future<List<CambiosAnimal>> getCambiosAnimalOffline({
+    int? animalId,
+    int? etapaId,
+    String? etapaCambio,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    try {
+      final db = await database;
+      
+      String whereClause = '';
+      List<dynamic> whereArgs = [];
+      
+      if (animalId != null) {
+        whereClause += 'cambios_etapa_anid = ?';
+        whereArgs.add(animalId);
+      }
+      
+      if (etapaId != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'cambios_etapa_etid = ?';
+        whereArgs.add(etapaId);
+      }
+      
+      if (etapaCambio != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'etapa_cambio = ?';
+        whereArgs.add(etapaCambio);
+      }
+      
+      if (fechaInicio != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'fecha_cambio >= ?';
+        whereArgs.add(fechaInicio);
+      }
+      
+      if (fechaFin != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'fecha_cambio <= ?';
+        whereArgs.add(fechaFin);
+      }
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'cambios_animal',
+        where: whereClause.isEmpty ? null : whereClause,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
+        orderBy: 'fecha_cambio DESC',
+      );
+
+      final cambios = maps.map((map) => CambiosAnimal(
+        idCambio: map['id_cambio'],
+        fechaCambio: map['fecha_cambio'],
+        etapaCambio: map['etapa_cambio'],
+        peso: (map['peso'] ?? 0).toDouble(),
+        altura: (map['altura'] ?? 0).toDouble(),
+        comentario: map['comentario'] ?? '',
+        createdAt: map['created_at'],
+        updatedAt: map['updated_at'],
+        cambiosEtapaAnid: map['cambios_etapa_anid'],
+        cambiosEtapaEtid: map['cambios_etapa_etid'],
+      )).toList();
+
+      LoggingService.info('Retrieved ${cambios.length} cambios animal from offline storage', 'DatabaseService');
+      return cambios;
+    } catch (e) {
+      LoggingService.error('Error retrieving cambios animal from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
   // Lactancia operations
   static Future<void> saveLactanciaOffline(List<Lactancia> lactancias) async {
     try {
@@ -1755,6 +1825,67 @@ class DatabaseService {
     } catch (e) {
       LoggingService.error('Error getting lactancia last updated time', 'DatabaseService', e);
       return null;
+    }
+  }
+
+  static Future<List<Lactancia>> getLactanciaOffline({
+    int? animalId,
+    int? activa,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    try {
+      final db = await database;
+      
+      String whereClause = '';
+      List<dynamic> whereArgs = [];
+      
+      if (animalId != null) {
+        whereClause += 'lactancia_etapa_anid = ?';
+        whereArgs.add(animalId);
+      }
+      
+      // Note: activa filtering would need additional logic based on fecha_fin
+      if (activa != null && activa == 1) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'lactancia_fecha_fin IS NULL';
+      }
+      
+      if (fechaInicio != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'lactancia_fecha_inicio >= ?';
+        whereArgs.add(fechaInicio);
+      }
+      
+      if (fechaFin != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'lactancia_fecha_inicio <= ?';
+        whereArgs.add(fechaFin);
+      }
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lactancia',
+        where: whereClause.isEmpty ? null : whereClause,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
+        orderBy: 'lactancia_fecha_inicio DESC',
+      );
+
+      final lactancias = maps.map((map) => Lactancia(
+        lactanciaId: map['lactancia_id'],
+        lactanciaFechaInicio: map['lactancia_fecha_inicio'],
+        lactanciaFechaFin: map['lactancia_fecha_fin'],
+        lactanciaSecado: map['lactancia_secado'],
+        createdAt: map['created_at'],
+        updatedAt: map['updated_at'],
+        lactanciaEtapaAnid: map['lactancia_etapa_anid'],
+        lactanciaEtapaEtid: map['lactancia_etapa_etid'],
+      )).toList();
+
+      LoggingService.info('Retrieved ${lactancias.length} lactancia from offline storage', 'DatabaseService');
+      return lactancias;
+    } catch (e) {
+      LoggingService.error('Error retrieving lactancia from offline storage', 'DatabaseService', e);
+      return [];
     }
   }
 
@@ -1812,6 +1943,60 @@ class DatabaseService {
     }
   }
 
+  static Future<List<PesoCorporal>> getPesoCorporalOffline({
+    int? animalId,
+    String? fechaInicio,
+    String? fechaFin,
+  }) async {
+    try {
+      final db = await database;
+      
+      String whereClause = '';
+      List<dynamic> whereArgs = [];
+      
+      if (animalId != null) {
+        whereClause += 'peso_etapa_anid = ?';
+        whereArgs.add(animalId);
+      }
+      
+      if (fechaInicio != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'fecha_peso >= ?';
+        whereArgs.add(fechaInicio);
+      }
+      
+      if (fechaFin != null) {
+        if (whereClause.isNotEmpty) whereClause += ' AND ';
+        whereClause += 'fecha_peso <= ?';
+        whereArgs.add(fechaFin);
+      }
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'peso_corporal',
+        where: whereClause.isEmpty ? null : whereClause,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
+        orderBy: 'fecha_peso DESC',
+      );
+
+      final pesos = maps.map((map) => PesoCorporal(
+        idPeso: map['id_peso'],
+        fechaPeso: map['fecha_peso'],
+        peso: (map['peso'] ?? 0).toDouble(),
+        comentario: map['comentario'] ?? '',
+        createdAt: map['created_at'],
+        updatedAt: map['updated_at'],
+        pesoEtapaAnid: map['peso_etapa_anid'],
+        pesoEtapaEtid: map['peso_etapa_etid'],
+      )).toList();
+
+      LoggingService.info('Retrieved ${pesos.length} peso corporal from offline storage', 'DatabaseService');
+      return pesos;
+    } catch (e) {
+      LoggingService.error('Error retrieving peso corporal from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
   // Personal Finca operations
   static Future<void> savePersonalFincaOffline(List<PersonalFinca> personalFincas) async {
     try {
@@ -1865,6 +2050,47 @@ class DatabaseService {
     } catch (e) {
       LoggingService.error('Error getting personal finca last updated time', 'DatabaseService', e);
       return null;
+    }
+  }
+
+  static Future<List<PersonalFinca>> getPersonalFincaOffline({int? idFinca}) async {
+    try {
+      final db = await database;
+      
+      String whereClause = '';
+      List<dynamic> whereArgs = [];
+      
+      if (idFinca != null) {
+        whereClause = 'id_finca = ?';
+        whereArgs.add(idFinca);
+      }
+
+      final List<Map<String, dynamic>> maps = await db.query(
+        'personal_finca',
+        where: whereClause.isEmpty ? null : whereClause,
+        whereArgs: whereArgs.isEmpty ? null : whereArgs,
+        orderBy: 'nombre ASC',
+      );
+
+      final personal = maps.map((map) => PersonalFinca(
+        idTecnico: map['id_tecnico'],
+        idFinca: map['id_finca'],
+        cedula: map['cedula'],
+        nombre: map['nombre'],
+        apellido: map['apellido'],
+        telefono: map['telefono'],
+        correo: map['correo'],
+        tipoTrabajador: map['tipo_trabajador'],
+        createdAt: map['created_at'],
+        updatedAt: map['updated_at'],
+        finca: null, // Note: Finca object not stored in this table
+      )).toList();
+
+      LoggingService.info('Retrieved ${personal.length} personal finca from offline storage', 'DatabaseService');
+      return personal;
+    } catch (e) {
+      LoggingService.error('Error retrieving personal finca from offline storage', 'DatabaseService', e);
+      return [];
     }
   }
 }

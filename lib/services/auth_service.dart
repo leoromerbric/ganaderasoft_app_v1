@@ -1219,10 +1219,17 @@ class AuthService {
           'No connectivity - using cached cambios animal data',
           'AuthService',
         );
+        final cachedData = await DatabaseService.getCambiosAnimalOffline(
+          animalId: animalId,
+          etapaId: etapaId,
+          etapaCambio: etapaCambio,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return CambiosAnimalResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (sin conexión)',
+          data: cachedData,
         );
       }
 
@@ -1273,10 +1280,17 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting cambios animal', 'AuthService', e);
       if (_isNetworkError(e)) {
+        final cachedData = await DatabaseService.getCambiosAnimalOffline(
+          animalId: animalId,
+          etapaId: etapaId,
+          etapaCambio: etapaCambio,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return CambiosAnimalResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (error de conexión)',
+          data: cachedData,
         );
       }
       rethrow;
@@ -1305,8 +1319,19 @@ class AuthService {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
+      final createdCambio = CambiosAnimal.fromJson(responseData['data']);
+      
+      // Save to local database for offline access
+      try {
+        await DatabaseService.saveCambiosAnimalOffline([createdCambio]);
+        LoggingService.info('Cambios animal saved to local database', 'AuthService');
+      } catch (e) {
+        LoggingService.error('Failed to save cambios animal to local database', 'AuthService', e);
+        // Don't throw - the online creation was successful
+      }
+      
       LoggingService.info('Cambios animal created successfully', 'AuthService');
-      return CambiosAnimal.fromJson(responseData['data']);
+      return createdCambio;
     } else {
       LoggingService.error(
         'Failed to create cambios animal: ${response.body}',
@@ -1333,10 +1358,16 @@ class AuthService {
           'No connectivity - using cached lactancia data',
           'AuthService',
         );
+        final cachedData = await DatabaseService.getLactanciaOffline(
+          animalId: animalId,
+          activa: activa,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return LactanciaResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (sin conexión)',
+          data: cachedData,
         );
       }
 
@@ -1386,10 +1417,16 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting lactancia', 'AuthService', e);
       if (_isNetworkError(e)) {
+        final cachedData = await DatabaseService.getLactanciaOffline(
+          animalId: animalId,
+          activa: activa,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return LactanciaResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (error de conexión)',
+          data: cachedData,
         );
       }
       rethrow;
@@ -1418,8 +1455,19 @@ class AuthService {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
+      final createdLactancia = Lactancia.fromJson(responseData['data']);
+      
+      // Save to local database for offline access
+      try {
+        await DatabaseService.saveLactanciaOffline([createdLactancia]);
+        LoggingService.info('Lactancia saved to local database', 'AuthService');
+      } catch (e) {
+        LoggingService.error('Failed to save lactancia to local database', 'AuthService', e);
+        // Don't throw - the online creation was successful
+      }
+      
       LoggingService.info('Lactancia created successfully', 'AuthService');
-      return Lactancia.fromJson(responseData['data']);
+      return createdLactancia;
     } else {
       LoggingService.error(
         'Failed to create lactancia: ${response.body}',
@@ -1562,10 +1610,15 @@ class AuthService {
           'No connectivity - using cached peso corporal data',
           'AuthService',
         );
+        final cachedData = await DatabaseService.getPesoCorporalOffline(
+          animalId: animalId,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return PesoCorporalResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (sin conexión)',
+          data: cachedData,
         );
       }
 
@@ -1614,10 +1667,15 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting peso corporal', 'AuthService', e);
       if (_isNetworkError(e)) {
+        final cachedData = await DatabaseService.getPesoCorporalOffline(
+          animalId: animalId,
+          fechaInicio: fechaInicio,
+          fechaFin: fechaFin,
+        );
         return PesoCorporalResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (error de conexión)',
+          data: cachedData,
         );
       }
       rethrow;
@@ -1646,8 +1704,19 @@ class AuthService {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
+      final createdPeso = PesoCorporal.fromJson(responseData['data']);
+      
+      // Save to local database for offline access
+      try {
+        await DatabaseService.savePesoCorporalOffline([createdPeso]);
+        LoggingService.info('Peso corporal saved to local database', 'AuthService');
+      } catch (e) {
+        LoggingService.error('Failed to save peso corporal to local database', 'AuthService', e);
+        // Don't throw - the online creation was successful
+      }
+      
       LoggingService.info('Peso corporal created successfully', 'AuthService');
-      return PesoCorporal.fromJson(responseData['data']);
+      return createdPeso;
     } else {
       LoggingService.error(
         'Failed to create peso corporal: ${response.body}',
@@ -1787,10 +1856,13 @@ class AuthService {
           'No connectivity - using cached personal finca data',
           'AuthService',
         );
+        final cachedData = await DatabaseService.getPersonalFincaOffline(
+          idFinca: idFinca,
+        );
         return PersonalFincaResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (sin conexión)',
+          data: cachedData,
         );
       }
 
@@ -1837,10 +1909,13 @@ class AuthService {
     } catch (e) {
       LoggingService.error('Error getting personal finca', 'AuthService', e);
       if (_isNetworkError(e)) {
+        final cachedData = await DatabaseService.getPersonalFincaOffline(
+          idFinca: idFinca,
+        );
         return PersonalFincaResponse(
           success: true,
-          message: 'Datos offline',
-          data: [],
+          message: 'Datos cargados desde caché local (error de conexión)',
+          data: cachedData,
         );
       }
       rethrow;
@@ -1869,8 +1944,19 @@ class AuthService {
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
+      final createdPersonal = PersonalFinca.fromJson(responseData['data']);
+      
+      // Save to local database for offline access
+      try {
+        await DatabaseService.savePersonalFincaOffline([createdPersonal]);
+        LoggingService.info('Personal finca saved to local database', 'AuthService');
+      } catch (e) {
+        LoggingService.error('Failed to save personal finca to local database', 'AuthService', e);
+        // Don't throw - the online creation was successful
+      }
+      
       LoggingService.info('Personal finca created successfully', 'AuthService');
-      return PersonalFinca.fromJson(responseData['data']);
+      return createdPersonal;
     } else {
       LoggingService.error(
         'Failed to create personal finca: ${response.body}',

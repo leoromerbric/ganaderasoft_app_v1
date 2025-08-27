@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ganaderasoft_app/models/farm_management_models.dart';
+import 'package:ganaderasoft_app_v1/models/farm_management_models.dart';
 
 void main() {
   group('Lactancia Filtering Logic Tests', () {

@@ -1273,6 +1273,18 @@ class AuthService {
           'Cambios animal fetched successfully (${cambiosResponse.data.length} items)',
           'AuthService',
         );
+        
+        // Save to offline storage for future offline access
+        if (cambiosResponse.data.isNotEmpty) {
+          try {
+            await DatabaseService.saveCambiosAnimalOffline(cambiosResponse.data);
+            LoggingService.info('Cambios animal saved to local database', 'AuthService');
+          } catch (e) {
+            LoggingService.error('Failed to save cambios animal to local database', 'AuthService', e);
+            // Don't throw - the online fetch was successful
+          }
+        }
+        
         return cambiosResponse;
       } else {
         throw Exception('Failed to get cambios animal: ${response.body}');
@@ -1410,6 +1422,18 @@ class AuthService {
           'Lactancia fetched successfully (${lactanciaResponse.data.length} items)',
           'AuthService',
         );
+        
+        // Save to offline storage for future offline access
+        if (lactanciaResponse.data.isNotEmpty) {
+          try {
+            await DatabaseService.saveLactanciaOffline(lactanciaResponse.data);
+            LoggingService.info('Lactancia saved to local database', 'AuthService');
+          } catch (e) {
+            LoggingService.error('Failed to save lactancia to local database', 'AuthService', e);
+            // Don't throw - the online fetch was successful
+          }
+        }
+        
         return lactanciaResponse;
       } else {
         throw Exception('Failed to get lactancia: ${response.body}');
@@ -1660,6 +1684,18 @@ class AuthService {
           'Peso corporal fetched successfully (${pesoResponse.data.length} items)',
           'AuthService',
         );
+        
+        // Save to offline storage for future offline access
+        if (pesoResponse.data.isNotEmpty) {
+          try {
+            await DatabaseService.savePesoCorporalOffline(pesoResponse.data);
+            LoggingService.info('Peso corporal saved to local database', 'AuthService');
+          } catch (e) {
+            LoggingService.error('Failed to save peso corporal to local database', 'AuthService', e);
+            // Don't throw - the online fetch was successful
+          }
+        }
+        
         return pesoResponse;
       } else {
         throw Exception('Failed to get peso corporal: ${response.body}');
@@ -1902,6 +1938,18 @@ class AuthService {
           'Personal finca fetched successfully (${personalResponse.data.length} items)',
           'AuthService',
         );
+        
+        // Save to offline storage for future offline access
+        if (personalResponse.data.isNotEmpty) {
+          try {
+            await DatabaseService.savePersonalFincaOffline(personalResponse.data);
+            LoggingService.info('Personal finca saved to local database', 'AuthService');
+          } catch (e) {
+            LoggingService.error('Failed to save personal finca to local database', 'AuthService', e);
+            // Don't throw - the online fetch was successful
+          }
+        }
+        
         return personalResponse;
       } else {
         throw Exception('Failed to get personal finca: ${response.body}');

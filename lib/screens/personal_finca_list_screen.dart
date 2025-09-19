@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import 'create_personal_finca_screen.dart';
+import 'edit_personal_finca_screen.dart';
 
 class PersonalFincaListScreen extends StatefulWidget {
   final Finca finca;
@@ -77,6 +78,22 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
         _error = e.toString();
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _editPersonal(PersonalFinca persona) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditPersonalFincaScreen(
+          finca: widget.finca,
+          personal: persona,
+        ),
+      ),
+    );
+
+    if (result == true) {
+      _loadPersonal();
     }
   }
 
@@ -282,7 +299,7 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with name and type
+            // Header with name and edit button
             Row(
               children: [
                 Icon(
@@ -302,6 +319,12 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  onPressed: () => _editPersonal(persona),
+                  icon: const Icon(Icons.edit),
+                  tooltip: 'Editar empleado',
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ],
             ),

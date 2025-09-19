@@ -2106,6 +2106,51 @@ class AuthService {
     }
   }
 
+  // Update Personal Finca
+  Future<PersonalFinca> updatePersonalFinca(PersonalFinca personal) async {
+    LoggingService.debug('Updating personal finca...', 'AuthService');
+
+    final token = await getToken();
+    if (token == null) {
+      throw Exception('No token found');
+    }
+
+    final response = await http
+        .put(
+          Uri.parse('${AppConfig.personalFincaUrl}/${personal.idTecnico}'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: jsonEncode(personal.toJson()),
+        )
+        .timeout(_httpTimeout);
+
+    if (response.statusCode == 200) {
+      final responseData = jsonDecode(response.body);
+      final updatedPersonal = PersonalFinca.fromJson(responseData['data']);
+      
+      // Update local database for offline access
+      try {
+        await DatabaseService.savePersonalFincaOffline([updatedPersonal]);
+        LoggingService.info('Personal finca updated in local database', 'AuthService');
+      } catch (e) {
+        LoggingService.error('Failed to update personal finca in local database', 'AuthService', e);
+        // Don't throw - the online update was successful
+      }
+      
+      LoggingService.info('Personal finca updated successfully', 'AuthService');
+      return updatedPersonal;
+    } else {
+      LoggingService.error(
+        'Failed to update personal finca: ${response.body}',
+        'AuthService',
+      );
+      throw Exception('Failed to update personal finca: ${response.body}');
+    }
+  }
+
   /// Check if an error is network-related
   bool _isNetworkError(dynamic error) {
     final errorString = error.toString().toLowerCase();

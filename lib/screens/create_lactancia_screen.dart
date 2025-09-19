@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
-import '../models/configuration_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
@@ -141,31 +140,6 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
     if (picked != null) {
       setState(() {
         _fechaFinController.text = picked.toIso8601String().split('T')[0];
-      });
-    }
-  }
-
-  Future<void> _selectFechaSecado() async {
-    if (_fechaInicioController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Primero selecciona la fecha de inicio'),
-          backgroundColor: Colors.orange,
-        ),
-      );
-      return;
-    }
-
-    final fechaInicio = DateTime.parse(_fechaInicioController.text);
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: fechaInicio.add(const Duration(days: 30)),
-      firstDate: fechaInicio,
-      lastDate: DateTime.now().add(const Duration(days: 365)),
-    );
-    if (picked != null) {
-      setState(() {
-        _secadoController.text = picked.toIso8601String().split('T')[0];
       });
     }
   }
@@ -478,7 +452,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                   controller: _fechaFinController,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    hintText: 'Selecciona la fecha de fin (opcional)',
+                    hintText: 'Selecciona la fecha de fin',
                     prefixIcon: const Icon(Icons.event_busy),
                     suffixIcon: IconButton(
                       icon: const Icon(Icons.edit_calendar),
@@ -489,31 +463,27 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                   onTap: _selectFechaFin,
                 ),
                 const SizedBox(height: 16),
-
-                // Fecha secado (solo si no está activa)
-                Text(
-                  'Fecha Secado',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _secadoController,
-                  decoration: InputDecoration(
-                    border: const OutlineInputBorder(),
-                    hintText: 'Selecciona la fecha de secado (opcional)',
-                    prefixIcon: const Icon(Icons.dry_cleaning),
-                    suffixIcon: IconButton(
-                      icon: const Icon(Icons.edit_calendar),
-                      onPressed: _selectFechaSecado,
-                    ),
-                  ),
-                  readOnly: true,
-                  onTap: _selectFechaSecado,
-                ),
-                const SizedBox(height: 16),
               ],
+
+              // Información sobre secado
+              Text(
+                'Información de Secado',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _secadoController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Información sobre el proceso de secado (opcional)',
+                  prefixIcon: Icon(Icons.info_outline),
+                ),
+                maxLines: 3,
+                maxLength: 200,
+              ),
+              const SizedBox(height: 32),
 
               // Info card
               Card(
@@ -544,8 +514,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                       Text(
                         '• Solo las hembras pueden tener períodos de lactancia\n'
                         '• Una lactancia activa significa que la vaca está produciendo leche\n'
-                        '• El secado es el período de descanso antes del siguiente parto\n'
-                        '• Las fechas de fin y secado son opcionales para lactancias finalizadas',
+                        '• El secado es el período de descanso antes del siguiente parto',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Colors.blue[700],
                         ),

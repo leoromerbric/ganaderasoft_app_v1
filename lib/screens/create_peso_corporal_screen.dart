@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
-import '../models/configuration_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
@@ -20,7 +19,8 @@ class CreatePesoCorporalScreen extends StatefulWidget {
   });
 
   @override
-  State<CreatePesoCorporalScreen> createState() => _CreatePesoCorporalScreenState();
+  State<CreatePesoCorporalScreen> createState() =>
+      _CreatePesoCorporalScreenState();
 }
 
 class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
@@ -48,7 +48,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
     _selectedAnimal = widget.selectedAnimal;
     _fechaPesoController.text = DateTime.now().toIso8601String().split('T')[0];
     _checkConnectivity();
-    
+
     // Load animal detail if an animal is pre-selected
     if (_selectedAnimal != null) {
       _loadAnimalDetail(_selectedAnimal!.idAnimal);
@@ -89,11 +89,17 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
         }
       });
     } catch (e) {
-      LoggingService.error('Error loading animal detail', 'CreatePesoCorporalScreen', e);
+      LoggingService.error(
+        'Error loading animal detail',
+        'CreatePesoCorporalScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al cargar detalle del animal: ${e.toString()}'),
+            content: Text(
+              'Error al cargar detalle del animal: ${e.toString()}',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -163,7 +169,10 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
       LoggingService.info('Creating peso corporal', 'CreatePesoCorporalScreen');
       await _authService.createPesoCorporal(pesoCorporal);
 
-      LoggingService.info('Peso corporal created successfully', 'CreatePesoCorporalScreen');
+      LoggingService.info(
+        'Peso corporal created successfully',
+        'CreatePesoCorporalScreen',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -175,7 +184,11 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
         Navigator.pop(context, true);
       }
     } catch (e) {
-      LoggingService.error('Error creating peso corporal', 'CreatePesoCorporalScreen', e);
+      LoggingService.error(
+        'Error creating peso corporal',
+        'CreatePesoCorporalScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -242,15 +255,13 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                           children: [
                             Text(
                               widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Registro de peso corporal',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -264,9 +275,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               // Animal selection
               Text(
                 'Animal *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
@@ -288,7 +299,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                     _selectedAnimalDetail = null;
                     _selectedEtapaAnimal = null;
                   });
-                  
+
                   if (value != null) {
                     _loadAnimalDetail(value.idAnimal);
                   }
@@ -305,33 +316,37 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               // Etapa selection
               Text(
                 'Etapa del Animal *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<EtapaAnimal>(
                 value: _selectedEtapaAnimal,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  hintText: _isLoadingAnimalDetail 
-                      ? 'Cargando etapas...' 
+                  hintText: _isLoadingAnimalDetail
+                      ? 'Cargando etapas...'
                       : 'Selecciona la etapa del animal',
                   prefixIcon: const Icon(Icons.timeline),
                 ),
-                items: _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
-                  return DropdownMenuItem<EtapaAnimal>(
-                    value: etapaAnimal,
-                    child: Text(
-                      '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
-                    ),
-                  );
-                }).toList() ?? [],
-                onChanged: _isLoadingAnimalDetail ? null : (EtapaAnimal? value) {
-                  setState(() {
-                    _selectedEtapaAnimal = value;
-                  });
-                },
+                items:
+                    _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
+                      return DropdownMenuItem<EtapaAnimal>(
+                        value: etapaAnimal,
+                        child: Text(
+                          '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
+                        ),
+                      );
+                    }).toList() ??
+                    [],
+                onChanged: _isLoadingAnimalDetail
+                    ? null
+                    : (EtapaAnimal? value) {
+                        setState(() {
+                          _selectedEtapaAnimal = value;
+                        });
+                      },
                 validator: (value) {
                   if (value == null) {
                     return 'Por favor selecciona la etapa del animal';
@@ -344,9 +359,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               // Fecha peso
               Text(
                 'Fecha del Pesaje *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -374,9 +389,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               // Peso
               Text(
                 'Peso (kg) *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -387,7 +402,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                   prefixIcon: Icon(Icons.monitor_weight),
                   suffixText: 'kg',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingresa el peso';
@@ -410,9 +427,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               // Comentario
               Text(
                 'Comentario',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -445,10 +462,11 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Consejos para el pesaje',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
                           ),
                         ],
                       ),
@@ -483,7 +501,10 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                         )
                       : const Text(
                           'Registrar Peso',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

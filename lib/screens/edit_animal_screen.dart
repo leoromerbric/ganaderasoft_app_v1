@@ -66,10 +66,12 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
   void _populateFormWithAnimalData() {
     _nombreController.text = widget.animal.nombre;
     _codigoAnimalController.text = widget.animal.codigoAnimal;
-    _fechaNacimientoController.text = _formatDateForInput(widget.animal.fechaNacimiento);
+    _fechaNacimientoController.text = _formatDateForInput(
+      widget.animal.fechaNacimiento,
+    );
     _procedenciaController.text = widget.animal.procedencia;
     _selectedSexo = widget.animal.sexo;
-    
+
     // Find and set the selected rebano
     _selectedRebano = widget.rebanos.firstWhere(
       (rebano) => rebano.idRebano == widget.animal.idRebano,
@@ -136,9 +138,11 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
 
       // Get animal detail to get current estado and etapa
       try {
-        final animalDetailResponse = await _authService.getAnimalDetail(widget.animal.idAnimal);
+        final animalDetailResponse = await _authService.getAnimalDetail(
+          widget.animal.idAnimal,
+        );
         final animalDetail = animalDetailResponse.data;
-        
+
         // Set the selected composition race based on animal data
         if (_composicionesRaza.isNotEmpty) {
           _selectedComposicionRaza = _composicionesRaza.firstWhere(
@@ -149,7 +153,8 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
 
         // Set current estado and etapa from animal detail
         if (animalDetail.estados.isNotEmpty && _estadosSalud.isNotEmpty) {
-          final currentEstado = animalDetail.estados.last; // Get most recent estado
+          final currentEstado =
+              animalDetail.estados.last; // Get most recent estado
           _selectedEstadoSalud = _estadosSalud.firstWhere(
             (estado) => estado.estadoId == currentEstado.esanFkEstadoId,
             orElse: () => _estadosSalud.first,
@@ -161,17 +166,21 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
             (etapa) => etapa.etapaId == animalDetail.etapaActual!.etanEtapaId,
             orElse: () => _etapas.first,
           );
-          
+
           // Also set the tipo animal based on the etapa
           if (_tiposAnimal.isNotEmpty && _selectedEtapa != null) {
             _selectedTipoAnimal = _tiposAnimal.firstWhere(
-              (tipo) => tipo.tipoAnimalId == _selectedEtapa!.fkTipoAnimalId,
+              (tipo) =>
+                  tipo.tipoAnimalId == _selectedEtapa!.etapaFkTipoAnimalId,
               orElse: () => _tiposAnimal.first,
             );
           }
         }
       } catch (e) {
-        LoggingService.warning('Could not load animal detail, using defaults', 'EditAnimalScreen');
+        LoggingService.warning(
+          'Could not load animal detail, using defaults',
+          'EditAnimalScreen',
+        );
         // Set defaults if animal detail fails
         if (_composicionesRaza.isNotEmpty) {
           _selectedComposicionRaza = _composicionesRaza.firstWhere(
@@ -189,9 +198,12 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
           _selectedEtapa = _etapas.first;
         }
       }
-
     } catch (e) {
-      LoggingService.error('Error loading configuration data', 'EditAnimalScreen', e);
+      LoggingService.error(
+        'Error loading configuration data',
+        'EditAnimalScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -213,7 +225,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
     try {
       final responses = await Future.wait([
         ConfigurationService.getTiposAnimal(),
-        ConfigurationService.getComposicionesRaza(),
+        ConfigurationService.getComposicionRaza(),
         ConfigurationService.getEstadosSalud(),
         ConfigurationService.getEtapas(),
       ]);
@@ -225,7 +237,11 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         _etapas = responses[3] as List<Etapa>;
       });
     } catch (e) {
-      LoggingService.error('Error loading server configuration', 'EditAnimalScreen', e);
+      LoggingService.error(
+        'Error loading server configuration',
+        'EditAnimalScreen',
+        e,
+      );
       await _loadOfflineConfigurationData();
     }
   }
@@ -234,7 +250,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
     try {
       final responses = await Future.wait([
         DatabaseService.getTiposAnimalOffline(),
-        DatabaseService.getComposicionesRazaOffline(),
+        DatabaseService.getComposicionRazaOffline(),
         DatabaseService.getEstadosSaludOffline(),
         DatabaseService.getEtapasOffline(),
       ]);
@@ -246,7 +262,11 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         _etapas = responses[3] as List<Etapa>;
       });
     } catch (e) {
-      LoggingService.error('Error loading offline configuration', 'EditAnimalScreen', e);
+      LoggingService.error(
+        'Error loading offline configuration',
+        'EditAnimalScreen',
+        e,
+      );
       rethrow;
     }
   }
@@ -254,8 +274,10 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
   List<Etapa> _getFilteredEtapas() {
     if (_selectedTipoAnimal == null) return [];
     return _etapas
-        .where((etapa) =>
-            etapa.fkTipoAnimalId == _selectedTipoAnimal!.tipoAnimalId)
+        .where(
+          (etapa) =>
+              etapa.etapaFkTipoAnimalId == _selectedTipoAnimal!.tipoAnimalId,
+        )
         .toList();
   }
 
@@ -336,7 +358,9 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Sin conexión. La actualización requiere conexión a internet.'),
+              content: Text(
+                'Sin conexión. La actualización requiere conexión a internet.',
+              ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
             ),
@@ -693,7 +717,8 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                         return DropdownMenuItem<ComposicionRaza>(
                           value: composicion,
                           child: Text(
-                              '${composicion.nombre} (${composicion.siglas})'),
+                            '${composicion.nombre} (${composicion.siglas})',
+                          ),
                         );
                       }).toList(),
                       onChanged: (ComposicionRaza? value) {

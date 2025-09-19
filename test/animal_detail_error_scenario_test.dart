@@ -4,7 +4,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ganaderasoft_app_v1/services/database_service.dart';
 import 'package:ganaderasoft_app_v1/models/animal.dart';
-import 'package:ganaderasoft_app_v1/models/configuration_models.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -24,8 +23,7 @@ void main() {
       // 5. After fix: should work without error
 
       // Step 1: Initialize fresh database (simulates clean installation)
-      final db = await DatabaseService.database;
-      
+
       // Step 2: Create a sample AnimalDetail object like what would come from the API
       // Based on the JSON structure from the error logs
       final animalDetail = AnimalDetail(
@@ -48,47 +46,62 @@ void main() {
       // Step 3: Try to save animal detail offline - this was failing before fix
       try {
         await DatabaseService.saveAnimalDetailOffline(animalDetail);
-        
+
         // If we get here, the fix worked!
         print('✓ saveAnimalDetailOffline completed successfully');
-        
+
         // Verify data was actually saved
         final savedDetail = await DatabaseService.getAnimalDetailOffline(22);
         expect(savedDetail, isNotNull);
         expect(savedDetail!.idAnimal, 22);
         expect(savedDetail.nombre, "Esperanza");
-        
+
         print('✓ Animal detail retrieved successfully from database');
-        
       } catch (e) {
-        fail('saveAnimalDetailOffline should not fail with "no such table" error: $e');
+        fail(
+          'saveAnimalDetailOffline should not fail with "no such table" error: $e',
+        );
       }
     });
 
-    test('Verify database has animal_detail table after fresh creation', () async {
-      // Double-check that the table exists and has correct structure
-      final db = await DatabaseService.database;
-      
-      final tableExists = await db.rawQuery(
-        "SELECT name FROM sqlite_master WHERE type='table' AND name='animal_detail'"
-      );
-      
-      expect(tableExists.isNotEmpty, true, 
-        reason: 'animal_detail table must exist in fresh database');
-      
-      // Verify table structure matches what saveAnimalDetailOffline expects
-      final columns = await db.rawQuery("PRAGMA table_info('animal_detail')");
-      final columnNames = columns.map((col) => col['name'] as String).toSet();
-      
-      final requiredColumns = {
-        'id_animal', 'animal_data', 'etapa_animales_data', 
-        'etapa_actual_data', 'estados_data', 'local_updated_at'
-      };
-      
-      for (final col in requiredColumns) {
-        expect(columnNames.contains(col), true,
-          reason: 'Column $col must exist for saveAnimalDetailOffline to work');
-      }
-    });
+    test(
+      'Verify database has animal_detail table after fresh creation',
+      () async {
+        // Double-check that the table exists and has correct structure
+        final db = await DatabaseService.database;
+
+        final tableExists = await db.rawQuery(
+          "SELECT name FROM sqlite_master WHERE type='table' AND name='animal_detail'",
+        );
+
+        expect(
+          tableExists.isNotEmpty,
+          true,
+          reason: 'animal_detail table must exist in fresh database',
+        );
+
+        // Verify table structure matches what saveAnimalDetailOffline expects
+        final columns = await db.rawQuery("PRAGMA table_info('animal_detail')");
+        final columnNames = columns.map((col) => col['name'] as String).toSet();
+
+        final requiredColumns = {
+          'id_animal',
+          'animal_data',
+          'etapa_animales_data',
+          'etapa_actual_data',
+          'estados_data',
+          'local_updated_at',
+        };
+
+        for (final col in requiredColumns) {
+          expect(
+            columnNames.contains(col),
+            true,
+            reason:
+                'Column $col must exist for saveAnimalDetailOffline to work',
+          );
+        }
+      },
+    );
   });
 }

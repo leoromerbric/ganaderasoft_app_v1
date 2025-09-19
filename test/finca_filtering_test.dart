@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ganaderasoft_app_v1/models/animal.dart';
-import 'package:ganaderasoft_app_v1/models/finca.dart';
 import 'package:ganaderasoft_app_v1/models/farm_management_models.dart';
 
 void main() {
@@ -112,11 +111,16 @@ void main() {
 
     test('Lactancia filtering should only show records for finca animals', () {
       // Get finca animal IDs
-      final fincaAnimalIds = fincaAnimales.map((animal) => animal.idAnimal).toSet();
+      final fincaAnimalIds = fincaAnimales
+          .map((animal) => animal.idAnimal)
+          .toSet();
 
       // Filter lactancias
       final filteredLactancias = lactancias
-          .where((lactancia) => fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid))
+          .where(
+            (lactancia) =>
+                fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid),
+          )
           .toList();
 
       // Should only have 2 lactancias (those with animalIds 1 and 2)
@@ -128,7 +132,9 @@ void main() {
 
     test('Cambios filtering should only show records for finca animals', () {
       // Get finca animal IDs
-      final fincaAnimalIds = fincaAnimales.map((animal) => animal.idAnimal).toSet();
+      final fincaAnimalIds = fincaAnimales
+          .map((animal) => animal.idAnimal)
+          .toSet();
 
       // Filter cambios
       final filteredCambios = cambios
@@ -144,11 +150,16 @@ void main() {
 
     test('Combined filtering - by finca and specific animal', () {
       // Get finca animal IDs
-      final fincaAnimalIds = fincaAnimales.map((animal) => animal.idAnimal).toSet();
+      final fincaAnimalIds = fincaAnimales
+          .map((animal) => animal.idAnimal)
+          .toSet();
 
       // First filter by finca animals
       var filteredLactancias = lactancias
-          .where((lactancia) => fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid))
+          .where(
+            (lactancia) =>
+                fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid),
+          )
           .toList();
 
       // Then filter by specific animal (animal with ID 1)
@@ -165,7 +176,10 @@ void main() {
       final emptyAnimalIds = <int>{};
 
       final filteredLactancias = lactancias
-          .where((lactancia) => emptyAnimalIds.contains(lactancia.lactanciaEtapaAnid))
+          .where(
+            (lactancia) =>
+                emptyAnimalIds.contains(lactancia.lactanciaEtapaAnid),
+          )
           .toList();
 
       final filteredCambios = cambios

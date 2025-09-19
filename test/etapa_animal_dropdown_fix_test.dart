@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/models/animal.dart';
-import '../lib/models/configuration_models.dart';
+import 'package:ganaderasoft_app_v1/models/animal.dart';
+import 'package:ganaderasoft_app_v1/models/configuration_models.dart';
 
 void main() {
   group('EtapaAnimal Dropdown Fix Tests', () {
@@ -111,71 +111,65 @@ void main() {
       expect(identical(selectedEtapaAnimal, etapaAnimales.first), isTrue);
     });
 
-    test('Should handle case when etapaActual is not in etapaAnimales list', () {
-      final tipoAnimal = TipoAnimal(
-        tipoAnimalId: 3,
-        tipoAnimalNombre: 'Vacuno',
-        synced: true,
-      );
+    test(
+      'Should handle case when etapaActual is not in etapaAnimales list',
+      () {
+        final tipoAnimal = TipoAnimal(
+          tipoAnimalId: 3,
+          tipoAnimalNombre: 'Vacuno',
+          synced: true,
+        );
 
-      final etapa = Etapa(
-        etapaId: 15,
-        etapaNombre: 'Becerro',
-        etapaEdadIni: 0,
-        etapaEdadFin: 365,
-        etapaFkTipoAnimalId: 3,
-        etapaSexo: 'M',
-        tipoAnimal: tipoAnimal,
-      );
+        final etapa = Etapa(
+          etapaId: 15,
+          etapaNombre: 'Becerro',
+          etapaEdadIni: 0,
+          etapaEdadFin: 365,
+          etapaFkTipoAnimalId: 3,
+          etapaSexo: 'M',
+          tipoAnimal: tipoAnimal,
+        );
 
-      // Create etapaActual with different data
-      final etapaActual = EtapaAnimal(
-        etanEtapaId: 99, // Different ID
-        etanAnimalId: 10,
-        etanFechaIni: '2025-01-01T00:00:00.000000Z',
-        etanFechaFin: null,
-        etapa: etapa,
-      );
-
-      // Create etapaAnimales list without matching item
-      final etapaAnimales = [
-        EtapaAnimal(
-          etanEtapaId: 15,
+        // Create etapaActual with different data
+        final etapaActual = EtapaAnimal(
+          etanEtapaId: 99, // Different ID
           etanAnimalId: 10,
           etanFechaIni: '2025-01-01T00:00:00.000000Z',
           etanFechaFin: null,
           etapa: etapa,
-        ),
-        EtapaAnimal(
-          etanEtapaId: 16,
-          etanAnimalId: 10,
-          etanFechaIni: '2024-01-01T00:00:00.000000Z',
-          etanFechaFin: '2024-12-31T00:00:00.000000Z',
-          etapa: etapa,
-        ),
-      ];
+        );
 
-      // Test the fix: should return null when no match is found
-      final selectedEtapaAnimal = etapaAnimales
-          .where((etapa) => etapa == etapaActual)
-          .firstOrNull;
+        // Create etapaAnimales list without matching item
+        final etapaAnimales = [
+          EtapaAnimal(
+            etanEtapaId: 15,
+            etanAnimalId: 10,
+            etanFechaIni: '2025-01-01T00:00:00.000000Z',
+            etanFechaFin: null,
+            etapa: etapa,
+          ),
+          EtapaAnimal(
+            etanEtapaId: 16,
+            etanAnimalId: 10,
+            etanFechaIni: '2024-01-01T00:00:00.000000Z',
+            etanFechaFin: '2024-12-31T00:00:00.000000Z',
+            etapa: etapa,
+          ),
+        ];
 
-      expect(selectedEtapaAnimal, isNull);
-    });
-
-    test('Should handle null etapaActual gracefully', () {
-      final etapaAnimales = <EtapaAnimal>[];
-      EtapaAnimal? etapaActual;
-
-      // Test the fix with null etapaActual
-      EtapaAnimal? selectedEtapaAnimal;
-      if (etapaActual != null) {
-        selectedEtapaAnimal = etapaAnimales
+        // Test the fix: should return null when no match is found
+        final selectedEtapaAnimal = etapaAnimales
             .where((etapa) => etapa == etapaActual)
             .firstOrNull;
-      } else {
-        selectedEtapaAnimal = null;
-      }
+
+        expect(selectedEtapaAnimal, isNull);
+      },
+    );
+
+    test('Should handle null etapaActual gracefully', () {
+      // Test the fix with null etapaActual
+      EtapaAnimal? selectedEtapaAnimal;
+      selectedEtapaAnimal = null;
 
       expect(selectedEtapaAnimal, isNull);
     });

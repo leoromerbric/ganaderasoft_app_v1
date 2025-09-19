@@ -69,13 +69,12 @@ void main() {
 
     test('should detect when server is unreachable', () async {
       // Test connectivity check
-      final isConnected = await ConnectivityService.isConnected();
-      
+
       // This should complete quickly (within timeout) regardless of result
       final stopwatch = Stopwatch()..start();
       await ConnectivityService.isConnected();
       stopwatch.stop();
-      
+
       // Should complete within reasonable time (not hang for minutes)
       expect(stopwatch.elapsedMilliseconds, lessThan(15000)); // 15 seconds max
     });
@@ -148,16 +147,16 @@ void main() {
     test('should handle network connectivity check gracefully', () async {
       // Test that network check methods don't throw and complete quickly
       final stopwatch = Stopwatch()..start();
-      
+
       final hasNetwork = await ConnectivityService.hasNetworkConnection();
       final isConnected = await ConnectivityService.isConnected();
-      
+
       stopwatch.stop();
-      
+
       // Both should be boolean values
       expect(hasNetwork, isA<bool>());
       expect(isConnected, isA<bool>());
-      
+
       // Should complete quickly
       expect(stopwatch.elapsedMilliseconds, lessThan(15000));
     });

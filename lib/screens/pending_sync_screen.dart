@@ -40,7 +40,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       if (mounted) {
         setState(() {
           _isSyncing = syncData.status == SyncStatus.syncing;
-          _syncProgress = syncData.progress ?? 0.0;
+          _syncProgress = syncData.progress;
           _syncMessage = syncData.message ?? '';
         });
 
@@ -72,7 +72,11 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
         _isLoading = false;
       });
     } catch (e) {
-      LoggingService.error('Error loading pending records', 'PendingSyncScreen', e);
+      LoggingService.error(
+        'Error loading pending records',
+        'PendingSyncScreen',
+        e,
+      );
       setState(() {
         _isLoading = false;
       });
@@ -85,7 +89,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     if (!isConnected) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Sin conexión a internet. Verifica tu conectividad e inténtalo de nuevo.'),
+          content: Text(
+            'Sin conexión a internet. Verifica tu conectividad e inténtalo de nuevo.',
+          ),
           backgroundColor: Colors.red,
         ),
       );
@@ -102,7 +108,11 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       await _syncPendingAnimals();
       await _loadPendingRecords(); // Refresh the list
     } catch (e) {
-      LoggingService.error('Error syncing pending records', 'PendingSyncScreen', e);
+      LoggingService.error(
+        'Error syncing pending records',
+        'PendingSyncScreen',
+        e,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error al sincronizar: $e'),
@@ -120,7 +130,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
   Future<void> _syncPendingAnimals() async {
     final pendingAnimals = await DatabaseService.getPendingAnimalsOffline();
-    
+
     if (pendingAnimals.isEmpty) {
       setState(() {
         _syncMessage = 'No hay animales pendientes por sincronizar';
@@ -135,15 +145,16 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
     for (int i = 0; i < pendingAnimals.length; i++) {
       final animalData = pendingAnimals[i];
-      
+
       setState(() {
         _syncProgress = (i + 1) / pendingAnimals.length;
-        _syncMessage = 'Sincronizando animal ${i + 1} de ${pendingAnimals.length}...';
+        _syncMessage =
+            'Sincronizando animal ${i + 1} de ${pendingAnimals.length}...';
       });
 
       try {
         final tempId = animalData['id_animal'] as int;
-        
+
         // Create the animal on the server
         final animal = await _authService.createAnimal(
           idRebano: animalData['id_rebano'] as int,
@@ -159,10 +170,17 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
         // Mark as synced in local database
         await DatabaseService.markAnimalAsSynced(tempId, animal.idAnimal);
-        
-        LoggingService.info('Animal synced successfully: ${animal.nombre}', 'PendingSyncScreen');
+
+        LoggingService.info(
+          'Animal synced successfully: ${animal.nombre}',
+          'PendingSyncScreen',
+        );
       } catch (e) {
-        LoggingService.error('Error syncing animal: ${animalData['nombre']}', 'PendingSyncScreen', e);
+        LoggingService.error(
+          'Error syncing animal: ${animalData['nombre']}',
+          'PendingSyncScreen',
+          e,
+        );
         // Continue with other animals even if one fails
       }
     }
@@ -223,10 +241,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
           backgroundColor: iconColor.withOpacity(0.1),
           child: Icon(icon, color: iconColor),
         ),
-        title: Text(
-          name,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: Text(name, style: const TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -273,10 +288,14 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
             margin: const EdgeInsets.all(16),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: _pendingRecords.isEmpty ? Colors.green[50] : Colors.orange[50],
+              color: _pendingRecords.isEmpty
+                  ? Colors.green[50]
+                  : Colors.orange[50],
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: _pendingRecords.isEmpty ? Colors.green[200]! : Colors.orange[200]!,
+                color: _pendingRecords.isEmpty
+                    ? Colors.green[200]!
+                    : Colors.orange[200]!,
                 width: 1,
               ),
             ),
@@ -286,17 +305,23 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                 Row(
                   children: [
                     Icon(
-                      _pendingRecords.isEmpty ? Icons.check_circle : Icons.sync_problem,
-                      color: _pendingRecords.isEmpty ? Colors.green[700] : Colors.orange[700],
+                      _pendingRecords.isEmpty
+                          ? Icons.check_circle
+                          : Icons.sync_problem,
+                      color: _pendingRecords.isEmpty
+                          ? Colors.green[700]
+                          : Colors.orange[700],
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      _pendingRecords.isEmpty 
+                      _pendingRecords.isEmpty
                           ? 'Todos los cambios están sincronizados'
                           : '${_pendingRecords.length} registros pendientes por sincronizar',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
-                        color: _pendingRecords.isEmpty ? Colors.green[700] : Colors.orange[700],
+                        color: _pendingRecords.isEmpty
+                            ? Colors.green[700]
+                            : Colors.orange[700],
                       ),
                     ),
                   ],
@@ -344,15 +369,14 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                   LinearProgressIndicator(
                     value: _syncProgress,
                     backgroundColor: Colors.blue[100],
-                    valueColor: AlwaysStoppedAnimation<Color>(Colors.blue[600]!),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      Colors.blue[600]!,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
                     '${(_syncProgress * 100).toInt()}% completado',
-                    style: TextStyle(
-                      color: Colors.blue[700],
-                      fontSize: 12,
-                    ),
+                    style: TextStyle(color: Colors.blue[700], fontSize: 12),
                   ),
                 ],
               ),
@@ -365,38 +389,38 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
             child: _isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : _pendingRecords.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.cloud_done,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No hay registros pendientes',
-                              style: TextStyle(
-                                fontSize: 18,
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Todos tus cambios están sincronizados',
-                              style: TextStyle(color: Colors.grey[500]),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.cloud_done,
+                          size: 64,
+                          color: Colors.grey[400],
                         ),
-                      )
-                    : ListView.builder(
-                        itemCount: _pendingRecords.length,
-                        itemBuilder: (context, index) {
-                          return _buildPendingRecordCard(_pendingRecords[index]);
-                        },
-                      ),
+                        const SizedBox(height: 16),
+                        Text(
+                          'No hay registros pendientes',
+                          style: TextStyle(
+                            fontSize: 18,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Todos tus cambios están sincronizados',
+                          style: TextStyle(color: Colors.grey[500]),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _pendingRecords.length,
+                    itemBuilder: (context, index) {
+                      return _buildPendingRecordCard(_pendingRecords[index]);
+                    },
+                  ),
           ),
 
           // Sync button
@@ -419,7 +443,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           ),
                           SizedBox(width: 12),

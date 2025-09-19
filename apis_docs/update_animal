@@ -1,0 +1,83 @@
+Request:
+curl --location --request PUT 'http: //ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/animales/31' \
+--header 'Content-Type: application/json' \
+--header 'Accept: application/json' \
+--header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8' \
+--data '{
+    "id_Rebano": 6,
+    "Nombre": "Gordini 2",
+    "codigo_animal": "ANIMAL-018",
+    "Sexo": "M",
+    "fecha_nacimiento": "2025-09-10T00:00:00.000000Z",
+    "Procedencia": "Local 2",
+    "archivado": false,
+    "fk_composicion_raza": 81,
+    "estado_inicial": {
+        "estado_id": 17,
+        "fecha_ini": "2024-01-01"
+    },
+    "etapa_inicial": {
+        "etapa_id": 17,
+        "fecha_ini": "2024-01-01"
+    }
+}'
+
+Response: {
+    "success": true,
+    "message": "Animal actualizado exitosamente",
+    "data": {
+        "id_Animal": 31,
+        "id_Rebano": 6,
+        "Nombre": "Gordini 2",
+        "codigo_animal": "ANIMAL-018",
+        "Sexo": "M",
+        "fecha_nacimiento": "2025-09-10T00:00:00.000000Z",
+        "Procedencia": "Local 2",
+        "archivado": false,
+        "created_at": "2025-09-19T14:49:26.000000Z",
+        "updated_at": "2025-09-19T15:58:04.000000Z",
+        "fk_composicion_raza": 81,
+        "rebano": {
+            "id_Rebano": 6,
+            "id_Finca": 15,
+            "Nombre": "Rebaño Los Vaqueros",
+            "archivado": false,
+            "created_at": "2025-08-18T21:30:56.000000Z",
+            "updated_at": "2025-08-18T21:30:56.000000Z",
+            "finca": {
+                "id_Finca": 15,
+                "id_Propietario": 6,
+                "Nombre": "Finca Romero SA",
+                "Explotacion_Tipo": "Bovinos",
+                "archivado": false,
+                "created_at": "2025-08-18T00:59:56.000000Z",
+                "updated_at": "2025-08-18T00:59:56.000000Z",
+                "propietario": {
+                    "id": 6,
+                    "id_Personal": 17873216,
+                    "Nombre": "Leonel",
+                    "Apellido": "Romero",
+                    "Telefono": "04140659739",
+                    "archivado": false,
+                    "created_at": null,
+                    "updated_at": null
+                }
+            }
+        },
+        "composicion_raza": {
+            "id_Composicion": 81,
+            "Nombre": "Senepol",
+            "Siglas": "SEN",
+            "Pelaje": "Rojo",
+            "Proposito": "Doble",
+            "Tipo_Raza": "Bos Taurus",
+            "Origen": "Isla St.Croix",
+            "Caracteristica_Especial": "No tiene cuernos",
+            "Proporcion_Raza": "Mediano",
+            "created_at": null,
+            "updated_at": null,
+            "fk_id_Finca": null,
+            "fk_tipo_animal_id": null
+        }
+    }
+}

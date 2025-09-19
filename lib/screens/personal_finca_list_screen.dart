@@ -9,13 +9,11 @@ import 'create_personal_finca_screen.dart';
 class PersonalFincaListScreen extends StatefulWidget {
   final Finca finca;
 
-  const PersonalFincaListScreen({
-    super.key,
-    required this.finca,
-  });
+  const PersonalFincaListScreen({super.key, required this.finca});
 
   @override
-  State<PersonalFincaListScreen> createState() => _PersonalFincaListScreenState();
+  State<PersonalFincaListScreen> createState() =>
+      _PersonalFincaListScreenState();
 }
 
 class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
@@ -70,26 +68,15 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
         _dataSourceMessage = personalResponse.message;
       });
     } catch (e) {
-      LoggingService.error('Error loading personal finca', 'PersonalFincaListScreen', e);
+      LoggingService.error(
+        'Error loading personal finca',
+        'PersonalFincaListScreen',
+        e,
+      );
       setState(() {
         _error = e.toString();
         _isLoading = false;
       });
-    }
-  }
-
-  Color _getTipoTrabajadorColor(String tipo) {
-    switch (tipo.toLowerCase()) {
-      case 'veterinario':
-        return Colors.green;
-      case 'tecnico':
-        return Colors.blue;
-      case 'vigilante':
-        return Colors.orange;
-      case 'administrador':
-        return Colors.purple;
-      default:
-        return Colors.grey;
     }
   }
 
@@ -103,7 +90,9 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
             const Text('Personal de la Finca'),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -164,9 +153,13 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.all(16).copyWith(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _isOffline ? Colors.orange[100] : Colors.green[100],
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
-                        color: _isOffline ? Colors.orange : Colors.green,
+                        color: _isOffline
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -175,7 +168,9 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                       children: [
                         Icon(
                           _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                          color: _isOffline
+                              ? Colors.orange[800]
+                              : Colors.green[800],
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -183,7 +178,9 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                           child: Text(
                             _dataSourceMessage!,
                             style: TextStyle(
-                              color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -194,16 +191,21 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
 
                 // Count info
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.people, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.people,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${_personal.length} empleado${_personal.length != 1 ? 's' : ''} registrado${_personal.length != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -224,16 +226,14 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 'No hay personal registrado',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Agrega el primer empleado',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[500],
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[500]),
                               ),
                             ],
                           ),
@@ -257,9 +257,8 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
           final result = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => CreatePersonalFincaScreen(
-                finca: widget.finca,
-              ),
+              builder: (context) =>
+                  CreatePersonalFincaScreen(finca: widget.finca),
             ),
           );
 
@@ -267,15 +266,14 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
             _loadPersonal();
           }
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
         tooltip: 'Agregar empleado',
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   Widget _buildPersonalCard(PersonalFinca persona) {
-    final tipoColor = _getTipoTrabajadorColor(persona.tipoTrabajador);
-    
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 2,
@@ -287,13 +285,10 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
             // Header with name and type
             Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: tipoColor.withOpacity(0.1),
-                  child: Icon(
-                    Icons.person,
-                    color: tipoColor,
-                    size: 20,
-                  ),
+                Icon(
+                  Icons.person,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -302,25 +297,8 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
                     children: [
                       Text(
                         '${persona.nombre} ${persona.apellido}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: tipoColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: tipoColor.withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          persona.tipoTrabajador,
-                          style: TextStyle(
-                            color: tipoColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 12,
-                          ),
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -331,22 +309,16 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
 
             // Contact info
             _buildInfoRow(
-              Icons.badge,
-              'Cédula',
-              persona.cedula.toString(),
+              Icons.work,
+              'Tipo',
+              persona.tipoTrabajador.toString(),
             ),
+            const SizedBox(height: 8), // Contact info
+            _buildInfoRow(Icons.badge, 'Cédula', persona.cedula.toString()),
             const SizedBox(height: 8),
-            _buildInfoRow(
-              Icons.phone,
-              'Teléfono',
-              persona.telefono,
-            ),
+            _buildInfoRow(Icons.phone, 'Teléfono', persona.telefono),
             const SizedBox(height: 8),
-            _buildInfoRow(
-              Icons.email,
-              'Correo',
-              persona.correo,
-            ),
+            _buildInfoRow(Icons.email, 'Correo', persona.correo),
           ],
         ),
       ),
@@ -356,11 +328,7 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.grey[600],
-        ),
+        Icon(icon, size: 16, color: Colors.grey[600]),
         const SizedBox(width: 8),
         Text(
           '$label:',
@@ -371,10 +339,7 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ],
     );

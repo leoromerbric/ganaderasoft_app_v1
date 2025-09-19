@@ -79,7 +79,10 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
         animalId: _selectedAnimal?.idAnimal,
         activa: activaParam,
         fechaInicio: '2023-01-01',
-        fechaFin: DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
+        fechaFin: DateTime.now()
+            .add(const Duration(days: 365))
+            .toIso8601String()
+            .split('T')[0],
       );
 
       LoggingService.info(
@@ -95,7 +98,11 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
         _applyFilters();
       });
     } catch (e) {
-      LoggingService.error('Error loading lactancias', 'LactanciaListScreen', e);
+      LoggingService.error(
+        'Error loading lactancias',
+        'LactanciaListScreen',
+        e,
+      );
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -109,13 +116,18 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
     // First, filter by finca animals (only show lactations for animals that belong to this finca)
     final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
     _filteredLactancias = _filteredLactancias
-        .where((lactancia) => fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid))
+        .where(
+          (lactancia) => fincaAnimalIds.contains(lactancia.lactanciaEtapaAnid),
+        )
         .toList();
 
     // Apply animal filter if one is selected
     if (_selectedAnimal != null) {
       _filteredLactancias = _filteredLactancias
-          .where((lactancia) => lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal)
+          .where(
+            (lactancia) =>
+                lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal,
+          )
           .toList();
     }
 
@@ -131,7 +143,11 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
     }
 
     // Sort by start date descending (most recent first)
-    _filteredLactancias.sort((a, b) => DateTime.parse(b.lactanciaFechaInicio).compareTo(DateTime.parse(a.lactanciaFechaInicio)));
+    _filteredLactancias.sort(
+      (a, b) => DateTime.parse(
+        b.lactanciaFechaInicio,
+      ).compareTo(DateTime.parse(a.lactanciaFechaInicio)),
+    );
   }
 
   void _filterByAnimal(Animal? animal) {
@@ -173,7 +189,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
   String _getCountDisplayText() {
     final count = _filteredLactancias.length;
     final plural = count != 1;
-    
+
     String statusText = '';
     switch (_selectedStatus) {
       case 'activas':
@@ -185,7 +201,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
       default:
         statusText = '';
     }
-    
+
     return '$count lactancia${plural ? 's' : ''}$statusText${plural ? ' encontradas' : ' encontrada'}';
   }
 
@@ -213,7 +229,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
 
   int _getLactanciaDuration(Lactancia lactancia) {
     final startDate = DateTime.parse(lactancia.lactanciaFechaInicio);
-    final endDate = lactancia.lactanciaFechaFin != null 
+    final endDate = lactancia.lactanciaFechaFin != null
         ? DateTime.parse(lactancia.lactanciaFechaFin!)
         : DateTime.now();
     return endDate.difference(startDate).inDays;
@@ -233,7 +249,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
             ),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -294,9 +312,13 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.all(16).copyWith(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _isOffline ? Colors.orange[100] : Colors.green[100],
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
-                        color: _isOffline ? Colors.orange : Colors.green,
+                        color: _isOffline
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -305,7 +327,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                       children: [
                         Icon(
                           _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                          color: _isOffline
+                              ? Colors.orange[800]
+                              : Colors.green[800],
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -313,7 +337,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                           child: Text(
                             _dataSourceMessage!,
                             style: TextStyle(
-                              color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -324,7 +350,10 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
 
                 // Filter section
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Column(
                     children: [
                       // Status filter
@@ -338,7 +367,10 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                               decoration: const InputDecoration(
                                 hintText: 'Filtrar por estado',
                                 border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                contentPadding: EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
                               ),
                               items: const [
                                 DropdownMenuItem<String>(
@@ -363,7 +395,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                           ),
                         ],
                       ),
-                      
+
                       // Animal filter (only show if there are animals)
                       if (_animales.isNotEmpty) ...[
                         const SizedBox(height: 8),
@@ -377,7 +409,10 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                                 decoration: const InputDecoration(
                                   hintText: 'Filtrar por animal',
                                   border: OutlineInputBorder(),
-                                  contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                  contentPadding: EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
                                 ),
                                 items: [
                                   const DropdownMenuItem<Animal?>(
@@ -387,7 +422,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                                   ..._animales.map((animal) {
                                     return DropdownMenuItem<Animal>(
                                       value: animal,
-                                      child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                                      child: Text(
+                                        '${animal.nombre} (${animal.codigoAnimal})',
+                                      ),
                                     );
                                   }),
                                 ],
@@ -403,17 +440,22 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
 
                 // Count info
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.local_drink, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.local_drink,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           _getCountDisplayText(),
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.bold),
                         ),
                       ),
                     ],
@@ -435,16 +477,14 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 _getEmptyStateTitle(),
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 _getEmptyStateSubtitle(),
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[500],
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[500]),
                               ),
                             ],
                           ),
@@ -468,7 +508,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
           if (_animales.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No hay animales disponibles. Crea un animal primero.'),
+                content: Text(
+                  'No hay animales disponibles. Crea un animal primero.',
+                ),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -490,8 +532,9 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
             _loadLactancias();
           }
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
         tooltip: 'Agregar lactancia',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -499,7 +542,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
   Widget _buildLactanciaCard(Lactancia lactancia) {
     final isActive = _isLactanciaActive(lactancia);
     final duration = _getLactanciaDuration(lactancia);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 2,
@@ -523,9 +566,8 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                     children: [
                       Text(
                         _getAnimalName(lactancia.lactanciaEtapaAnid),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Inicio: ${_formatDate(lactancia.lactanciaFechaInicio)}',
@@ -538,9 +580,14 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                 ),
                 // Status indicator
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.green.withOpacity(0.1) : Colors.grey.withOpacity(0.1),
+                    color: isActive
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isActive ? Colors.green : Colors.grey,
@@ -595,11 +642,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Icon(
-                    Icons.info,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.info, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -618,17 +661,13 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
             // Footer with created date
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 14,
-                  color: Colors.grey[500],
-                ),
+                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
                   'Registrado: ${_formatDate(lactancia.createdAt)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -638,7 +677,12 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
     );
   }
 
-  Widget _buildInfoChip(String label, String value, IconData icon, Color color) {
+  Widget _buildInfoChip(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

@@ -14,10 +14,7 @@ import 'lactancia_list_screen.dart';
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
 
-  const FarmDetailsScreen({
-    super.key,
-    required this.finca,
-  });
+  const FarmDetailsScreen({super.key, required this.finca});
 
   @override
   State<FarmDetailsScreen> createState() => _FarmDetailsScreenState();
@@ -46,10 +43,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
   }
 
   Future<void> _loadData() async {
-    await Future.wait([
-      _loadRebanos(),
-      _loadAnimales(),
-    ]);
+    await Future.wait([_loadRebanos(), _loadAnimales()]);
   }
 
   Future<void> _loadRebanos() async {
@@ -154,9 +148,8 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                           Expanded(
                             child: Text(
                               widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
                         ],
@@ -209,9 +202,9 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               // Navigation Section
               Text(
                 'Gestión de la Finca',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
@@ -228,7 +221,8 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => RebanosListScreen(finca: widget.finca),
+                          builder: (context) =>
+                              RebanosListScreen(finca: widget.finca),
                         ),
                       ),
                     ),
@@ -258,9 +252,9 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               // Additional Management Cards
               Text(
                 'Gestión Avanzada',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
 
@@ -321,9 +315,8 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                       () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PersonalFincaListScreen(
-                            finca: widget.finca,
-                          ),
+                          builder: (context) =>
+                              PersonalFincaListScreen(finca: widget.finca),
                         ),
                       ),
                     ),
@@ -365,19 +358,31 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
                       children: [
-                        _buildStatRow('Total Rebaños', _rebanos.length.toString()),
+                        _buildStatRow(
+                          'Total Rebaños',
+                          _rebanos.length.toString(),
+                        ),
                         const Divider(height: 24),
-                        _buildStatRow('Total Animales', _animales.length.toString()),
+                        _buildStatRow(
+                          'Total Animales',
+                          _animales.length.toString(),
+                        ),
                         if (_animales.isNotEmpty) ...[
                           const Divider(height: 24),
                           _buildStatRow(
                             'Animales Hembras',
-                            _animales.where((a) => a.sexo.toUpperCase() == 'F').length.toString(),
+                            _animales
+                                .where((a) => a.sexo.toUpperCase() == 'F')
+                                .length
+                                .toString(),
                           ),
                           const Divider(height: 24),
                           _buildStatRow(
                             'Animales Machos',
-                            _animales.where((a) => a.sexo.toUpperCase() == 'M').length.toString(),
+                            _animales
+                                .where((a) => a.sexo.toUpperCase() == 'M')
+                                .length
+                                .toString(),
                           ),
                         ],
                       ],
@@ -395,11 +400,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
   Widget _buildDetailRow(String label, String value, IconData icon) {
     return Row(
       children: [
-        Icon(
-          icon,
-          size: 16,
-          color: Colors.grey[600],
-        ),
+        Icon(icon, size: 16, color: Colors.grey[600]),
         const SizedBox(width: 8),
         Text(
           label,
@@ -410,10 +411,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
         ),
         const SizedBox(width: 8),
         Expanded(
-          child: Text(
-            value,
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
         ),
       ],
     );
@@ -431,10 +429,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          date,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
+        Text(date, style: Theme.of(context).textTheme.bodySmall),
       ],
     );
   }
@@ -459,16 +454,16 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               Icon(
                 icon,
                 size: 32,
-                color: isLoading 
-                    ? Colors.grey[400] 
+                color: isLoading
+                    ? Colors.grey[400]
                     : Theme.of(context).colorScheme.primary,
               ),
               const SizedBox(height: 8),
               Text(
                 title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 4),
@@ -481,9 +476,9 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
               else
                 Text(
                   subtitle,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[600],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
                   textAlign: TextAlign.center,
                 ),
             ],
@@ -499,9 +494,9 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
       children: [
         Text(
           label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
         ),
         Text(
           value,

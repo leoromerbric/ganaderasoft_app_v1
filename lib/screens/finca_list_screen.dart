@@ -3,7 +3,7 @@ import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import '../models/finca.dart';
-import 'farm_details_screen.dart';
+import 'finca_administracion_screen.dart';
 
 class FincasScreen extends StatefulWidget {
   const FincasScreen({super.key});
@@ -162,9 +162,11 @@ class _FincasScreenState extends State<FincasScreen> {
                     decoration: BoxDecoration(
                       color: _isOffline
                           ? Colors.orange[100]
-                          : Colors.green[100],
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
-                        color: _isOffline ? Colors.orange : Colors.green,
+                        color: _isOffline
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(8),

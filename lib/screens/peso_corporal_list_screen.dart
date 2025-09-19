@@ -68,7 +68,10 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
       final pesosResponse = await _authService.getPesoCorporal(
         animalId: _selectedAnimal?.idAnimal,
         fechaInicio: '2023-01-01',
-        fechaFin: DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
+        fechaFin: DateTime.now()
+            .add(const Duration(days: 365))
+            .toIso8601String()
+            .split('T')[0],
       );
 
       LoggingService.info(
@@ -91,10 +94,18 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
         }
 
         // Sort by date descending (most recent first)
-        _filteredPesos.sort((a, b) => DateTime.parse(b.fechaPeso).compareTo(DateTime.parse(a.fechaPeso)));
+        _filteredPesos.sort(
+          (a, b) => DateTime.parse(
+            b.fechaPeso,
+          ).compareTo(DateTime.parse(a.fechaPeso)),
+        );
       });
     } catch (e) {
-      LoggingService.error('Error loading peso corporal', 'PesoCorporalListScreen', e);
+      LoggingService.error(
+        'Error loading peso corporal',
+        'PesoCorporalListScreen',
+        e,
+      );
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -112,9 +123,12 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
             .where((peso) => peso.pesoEtapaAnid == animal.idAnimal)
             .toList();
       }
-      
+
       // Sort by date descending
-      _filteredPesos.sort((a, b) => DateTime.parse(b.fechaPeso).compareTo(DateTime.parse(a.fechaPeso)));
+      _filteredPesos.sort(
+        (a, b) =>
+            DateTime.parse(b.fechaPeso).compareTo(DateTime.parse(a.fechaPeso)),
+      );
     });
   }
 
@@ -137,22 +151,24 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
   }
 
   Color _getPesoTrendColor(int index) {
-    if (index == _filteredPesos.length - 1) return Colors.grey; // No previous weight to compare
-    
+    if (index == _filteredPesos.length - 1)
+      return Colors.grey; // No previous weight to compare
+
     final currentWeight = _filteredPesos[index].peso;
     final previousWeight = _filteredPesos[index + 1].peso;
-    
+
     if (currentWeight > previousWeight) return Colors.green;
     if (currentWeight < previousWeight) return Colors.red;
     return Colors.grey;
   }
 
   IconData _getPesoTrendIcon(int index) {
-    if (index == _filteredPesos.length - 1) return Icons.circle; // No previous weight to compare
-    
+    if (index == _filteredPesos.length - 1)
+      return Icons.circle; // No previous weight to compare
+
     final currentWeight = _filteredPesos[index].peso;
     final previousWeight = _filteredPesos[index + 1].peso;
-    
+
     if (currentWeight > previousWeight) return Icons.trending_up;
     if (currentWeight < previousWeight) return Icons.trending_down;
     return Icons.trending_flat;
@@ -172,7 +188,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
             ),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -233,9 +251,13 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.all(16).copyWith(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _isOffline ? Colors.orange[100] : Colors.green[100],
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
-                        color: _isOffline ? Colors.orange : Colors.green,
+                        color: _isOffline
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -244,7 +266,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                       children: [
                         Icon(
                           _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                          color: _isOffline
+                              ? Colors.orange[800]
+                              : Colors.green[800],
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -252,7 +276,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                           child: Text(
                             _dataSourceMessage!,
                             style: TextStyle(
-                              color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -264,7 +290,10 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                 // Filter section
                 if (_animales.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Row(
                       children: [
                         const Icon(Icons.filter_list, size: 20),
@@ -275,7 +304,10 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Filtrar por animal',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: [
                               const DropdownMenuItem<Animal?>(
@@ -285,7 +317,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                               ..._animales.map((animal) {
                                 return DropdownMenuItem<Animal>(
                                   value: animal,
-                                  child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                                  child: Text(
+                                    '${animal.nombre} (${animal.codigoAnimal})',
+                                  ),
                                 );
                               }),
                             ],
@@ -298,16 +332,21 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
 
                 // Count info
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.monitor_weight, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.monitor_weight,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${_filteredPesos.length} peso${_filteredPesos.length != 1 ? 's' : ''} registrado${_filteredPesos.length != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -328,16 +367,14 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 'No hay pesos registrados',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Agrega el primer registro de peso',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[500],
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[500]),
                               ),
                             ],
                           ),
@@ -361,7 +398,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
           if (_animales.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No hay animales disponibles. Crea un animal primero.'),
+                content: Text(
+                  'No hay animales disponibles. Crea un animal primero.',
+                ),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -383,8 +422,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
             _loadPesos();
           }
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
         tooltip: 'Agregar peso',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -392,7 +432,7 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
   Widget _buildPesoCard(PesoCorporal peso, int index) {
     final trendColor = _getPesoTrendColor(index);
     final trendIcon = _getPesoTrendIcon(index);
-    
+
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),
       elevation: 2,
@@ -416,9 +456,8 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                     children: [
                       Text(
                         _getAnimalName(peso.pesoEtapaAnid),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         _formatDate(peso.fechaPeso),
@@ -431,19 +470,20 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
                 ),
                 // Weight with trend indicator
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(
-                        trendIcon,
-                        color: trendColor,
-                        size: 16,
-                      ),
+                      Icon(trendIcon, color: trendColor, size: 16),
                       const SizedBox(width: 4),
                       Text(
                         '${peso.peso} kg',
@@ -465,11 +505,7 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.comment,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.comment, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -488,17 +524,13 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
             // Footer with created date
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 14,
-                  color: Colors.grey[500],
-                ),
+                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
                   'Registrado: ${_formatDate(peso.createdAt)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                 ),
               ],
             ),

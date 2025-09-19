@@ -20,7 +20,8 @@ class CambiosAnimalListScreen extends StatefulWidget {
   });
 
   @override
-  State<CambiosAnimalListScreen> createState() => _CambiosAnimalListScreenState();
+  State<CambiosAnimalListScreen> createState() =>
+      _CambiosAnimalListScreenState();
 }
 
 class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
@@ -68,7 +69,10 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
       final cambiosResponse = await _authService.getCambiosAnimal(
         animalId: _selectedAnimal?.idAnimal,
         fechaInicio: '2023-01-01',
-        fechaFin: DateTime.now().add(const Duration(days: 365)).toIso8601String().split('T')[0],
+        fechaFin: DateTime.now()
+            .add(const Duration(days: 365))
+            .toIso8601String()
+            .split('T')[0],
       );
 
       LoggingService.info(
@@ -82,7 +86,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
         _dataSourceMessage = cambiosResponse.message;
 
         // Filter by finca animals (only show changes for animals that belong to this finca)
-        final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
+        final fincaAnimalIds = _animales
+            .map((animal) => animal.idAnimal)
+            .toSet();
         _filteredCambios = _cambios
             .where((cambio) => fincaAnimalIds.contains(cambio.cambiosEtapaAnid))
             .toList();
@@ -90,12 +96,19 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
         // Apply animal filter if one is selected
         if (_selectedAnimal != null) {
           _filteredCambios = _filteredCambios
-              .where((cambio) => cambio.cambiosEtapaAnid == _selectedAnimal!.idAnimal)
+              .where(
+                (cambio) =>
+                    cambio.cambiosEtapaAnid == _selectedAnimal!.idAnimal,
+              )
               .toList();
         }
       });
     } catch (e) {
-      LoggingService.error('Error loading cambios animal', 'CambiosAnimalListScreen', e);
+      LoggingService.error(
+        'Error loading cambios animal',
+        'CambiosAnimalListScreen',
+        e,
+      );
       setState(() {
         _error = e.toString();
         _isLoading = false;
@@ -106,13 +119,13 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
   void _filterByAnimal(Animal? animal) {
     setState(() {
       _selectedAnimal = animal;
-      
+
       // First, filter by finca animals
       final fincaAnimalIds = _animales.map((animal) => animal.idAnimal).toSet();
       _filteredCambios = _cambios
           .where((cambio) => fincaAnimalIds.contains(cambio.cambiosEtapaAnid))
           .toList();
-      
+
       // Then apply specific animal filter if one is selected
       if (animal != null) {
         _filteredCambios = _filteredCambios
@@ -154,7 +167,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             ),
             Text(
               widget.finca.nombre,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
             ),
           ],
         ),
@@ -215,9 +230,13 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.all(16).copyWith(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _isOffline ? Colors.orange[100] : Colors.green[100],
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
-                        color: _isOffline ? Colors.orange : Colors.green,
+                        color: _isOffline
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
                       borderRadius: BorderRadius.circular(8),
@@ -226,7 +245,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                       children: [
                         Icon(
                           _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                          color: _isOffline
+                              ? Colors.orange[800]
+                              : Colors.green[800],
                           size: 20,
                         ),
                         const SizedBox(width: 8),
@@ -234,7 +255,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                           child: Text(
                             _dataSourceMessage!,
                             style: TextStyle(
-                              color: _isOffline ? Colors.orange[800] : Colors.green[800],
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -246,7 +269,10 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                 // Filter section
                 if (_animales.isNotEmpty)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 8.0,
+                    ),
                     child: Row(
                       children: [
                         const Icon(Icons.filter_list, size: 20),
@@ -257,7 +283,10 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                             decoration: const InputDecoration(
                               hintText: 'Filtrar por animal',
                               border: OutlineInputBorder(),
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              contentPadding: EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 8,
+                              ),
                             ),
                             items: [
                               const DropdownMenuItem<Animal?>(
@@ -267,7 +296,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                               ..._animales.map((animal) {
                                 return DropdownMenuItem<Animal>(
                                   value: animal,
-                                  child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                                  child: Text(
+                                    '${animal.nombre} (${animal.codigoAnimal})',
+                                  ),
                                 );
                               }),
                             ],
@@ -280,16 +311,21 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
 
                 // Count info
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
-                      Icon(Icons.update, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        Icons.update,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       const SizedBox(width: 8),
                       Text(
                         '${_filteredCambios.length} cambio${_filteredCambios.length != 1 ? 's' : ''} encontrado${_filteredCambios.length != 1 ? 's' : ''}',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -310,16 +346,14 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                               const SizedBox(height: 16),
                               Text(
                                 'No hay cambios registrados',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+                                style: Theme.of(context).textTheme.titleLarge
+                                    ?.copyWith(color: Colors.grey[600]),
                               ),
                               const SizedBox(height: 8),
                               Text(
                                 'Agrega el primer cambio de animal',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.grey[500],
-                                ),
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(color: Colors.grey[500]),
                               ),
                             ],
                           ),
@@ -343,7 +377,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
           if (_animales.isEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(
-                content: Text('No hay animales disponibles. Crea un animal primero.'),
+                content: Text(
+                  'No hay animales disponibles. Crea un animal primero.',
+                ),
                 backgroundColor: Colors.orange,
               ),
             );
@@ -365,8 +401,9 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             _loadCambios();
           }
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
         tooltip: 'Agregar cambio de animal',
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -395,9 +432,8 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                     children: [
                       Text(
                         _getAnimalName(cambio.cambiosEtapaAnid),
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                       Text(
                         'Etapa: ${cambio.etapaCambio}',
@@ -409,9 +445,14 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                   ),
                 ),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
@@ -456,11 +497,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Icon(
-                    Icons.comment,
-                    size: 16,
-                    color: Colors.grey[600],
-                  ),
+                  Icon(Icons.comment, size: 16, color: Colors.grey[600]),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
@@ -479,17 +516,13 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
             // Footer with created date
             Row(
               children: [
-                Icon(
-                  Icons.access_time,
-                  size: 14,
-                  color: Colors.grey[500],
-                ),
+                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
                   'Registrado: ${_formatDate(cambio.createdAt)}',
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey[500],
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
                 ),
               ],
             ),
@@ -499,7 +532,12 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
     );
   }
 
-  Widget _buildMeasurementChip(String label, String value, IconData icon, Color color) {
+  Widget _buildMeasurementChip(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(

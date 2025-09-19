@@ -4,7 +4,7 @@ import '../services/connectivity_service.dart';
 import '../models/user.dart';
 import '../constants/app_constants.dart';
 import 'profile_screen.dart';
-import 'fincas_screen.dart';
+import 'finca_list_screen.dart';
 import 'configuration_data_screen.dart';
 import 'pending_sync_screen.dart';
 import 'login_screen.dart';

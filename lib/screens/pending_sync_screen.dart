@@ -86,7 +86,10 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
   Future<void> _syncPendingRecords() async {
     // Prevent multiple sync operations running simultaneously
     if (_isSyncing) {
-      LoggingService.warning('Sync already in progress, ignoring duplicate request', 'PendingSyncScreen');
+      LoggingService.warning(
+        'Sync already in progress, ignoring duplicate request',
+        'PendingSyncScreen',
+      );
       return;
     }
 
@@ -165,7 +168,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
         final tempId = animalData['id_animal'] as int;
 
         // Check if animal is already synced to prevent duplicates
-        final isAlreadySynced = await DatabaseService.isAnimalAlreadySynced(tempId);
+        final isAlreadySynced = await DatabaseService.isAnimalAlreadySynced(
+          tempId,
+        );
         if (isAlreadySynced) {
           LoggingService.info(
             'Animal ${animalData['nombre']} is already synced, skipping',
@@ -207,7 +212,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
 
     setState(() {
-      _syncMessage = 'Sincronización completada: $successfulSyncs exitosos${skippedSyncs > 0 ? ', $skippedSyncs omitidos (ya sincronizados)' : ''}';
+      _syncMessage =
+          'Sincronización completada: $successfulSyncs exitosos${skippedSyncs > 0 ? ', $skippedSyncs omitidos (ya sincronizados)' : ''}';
       _syncProgress = 1.0;
     });
   }
@@ -310,12 +316,12 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: _pendingRecords.isEmpty
-                  ? Colors.green[50]
-                  : Colors.orange[50],
+                  ? Color.fromARGB(255, 192, 212, 59)
+                  : Colors.orange[100],
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _pendingRecords.isEmpty
-                    ? Colors.green[200]!
+                    ? Color.fromARGB(255, 192, 212, 59)
                     : Colors.orange[200]!,
                 width: 1,
               ),
@@ -330,8 +336,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                           ? Icons.check_circle
                           : Icons.sync_problem,
                       color: _pendingRecords.isEmpty
-                          ? Colors.green[700]
-                          : Colors.orange[700],
+                          ? Colors.green[800]
+                          : Colors.orange[800],
                     ),
                     const SizedBox(width: 8),
                     Text(
@@ -341,8 +347,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: _pendingRecords.isEmpty
-                            ? Colors.green[700]
-                            : Colors.orange[700],
+                            ? Colors.green[800]
+                            : Colors.orange[800],
                       ),
                     ),
                   ],
@@ -351,7 +357,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                   const SizedBox(height: 8),
                   Text(
                     'Estos registros se crearon sin conexión y se sincronizarán con el servidor cuando presiones "Sincronizar mis cambios".',
-                    style: TextStyle(color: Colors.orange[700]),
+                    style: TextStyle(color: Colors.orange[800]),
                   ),
                 ],
               ],

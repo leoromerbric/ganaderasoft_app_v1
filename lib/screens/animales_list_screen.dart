@@ -119,28 +119,6 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
     }
   }
 
-  String _getSexoIcon(String sexo) {
-    switch (sexo.toUpperCase()) {
-      case 'M':
-        return '♂';
-      case 'F':
-        return '♀';
-      default:
-        return '?';
-    }
-  }
-
-  Color _getSexoColor(String sexo) {
-    switch (sexo.toUpperCase()) {
-      case 'M':
-        return Colors.blue;
-      case 'F':
-        return Colors.pink;
-      default:
-        return Colors.grey;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -217,30 +195,31 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
                     padding: const EdgeInsets.all(12),
                     margin: const EdgeInsets.all(16).copyWith(bottom: 8),
                     decoration: BoxDecoration(
-                      color: _isOffline ? Colors.orange[50] : Colors.green[50],
-                      borderRadius: BorderRadius.circular(8),
+                      color: _isOffline
+                          ? Colors.orange[100]
+                          : Color.fromARGB(255, 192, 212, 59),
                       border: Border.all(
                         color: _isOffline
-                            ? Colors.orange[200]!
-                            : Colors.green[200]!,
+                            ? Colors.orange
+                            : Color.fromARGB(255, 192, 212, 59),
                         width: 1,
                       ),
+                      borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          size: 16,
                           color: _isOffline
-                              ? Colors.orange[700]
-                              : Colors.green[700],
+                              ? Colors.orange[800]
+                              : Colors.green[800],
+                          size: 20,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             _dataSourceMessage!,
                             style: TextStyle(
-                              fontSize: 12,
                               color: _isOffline
                                   ? Colors.orange[800]
                                   : Colors.green[800],
@@ -386,20 +365,10 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
             // Header
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: _getSexoColor(animal.sexo).withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Text(
-                    _getSexoIcon(animal.sexo),
-                    style: TextStyle(
-                      color: _getSexoColor(animal.sexo),
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                Icon(
+                  Icons.pets,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
                 ),
                 const SizedBox(width: 12),
                 Expanded(

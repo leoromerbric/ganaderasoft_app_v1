@@ -1088,6 +1088,98 @@ class AuthService {
     }
   }
 
+  // Update Animal
+  Future<Animal> updateAnimal({
+    required int idAnimal,
+    required int idRebano,
+    required String nombre,
+    required String codigoAnimal,
+    required String sexo,
+    required String fechaNacimiento,
+    required String procedencia,
+    required int fkComposicionRaza,
+    required int estadoId,
+    required int etapaId,
+  }) async {
+    LoggingService.debug('Updating animal: $nombre', 'AuthService');
+
+    try {
+      // Restore original token if we have connectivity and are using offline token
+      final isConnected = await ConnectivityService.isConnected();
+      if (isConnected) {
+        await _restoreOriginalTokenIfNeeded();
+      }
+
+      final token = await getToken();
+      if (token == null) {
+        throw Exception('No authentication token found');
+      }
+
+      final requestData = {
+        'id_Rebano': idRebano,
+        'Nombre': nombre,
+        'codigo_animal': codigoAnimal,
+        'Sexo': sexo,
+        'fecha_nacimiento': fechaNacimiento,
+        'Procedencia': procedencia,
+        'archivado': false,
+        'fk_composicion_raza': fkComposicionRaza,
+        'estado_inicial': {'estado_id': estadoId, 'fecha_ini': fechaNacimiento},
+        'etapa_inicial': {'etapa_id': etapaId, 'fecha_ini': fechaNacimiento},
+      };
+
+      final response = await http
+          .put(
+            Uri.parse('${AppConfig.animalesUrl}/$idAnimal'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Accept': 'application/json',
+              'Authorization': 'Bearer $token',
+            },
+            body: jsonEncode(requestData),
+          )
+          .timeout(_httpTimeout);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final jsonData = jsonDecode(response.body);
+
+        if (jsonData['success'] == true) {
+          final animal = Animal.fromJson(jsonData['data']);
+
+          LoggingService.info(
+            'Animal updated successfully: ${animal.nombre}',
+            'AuthService',
+          );
+
+          return animal;
+        } else {
+          throw Exception('Server returned error: ${jsonData['message']}');
+        }
+      } else {
+        LoggingService.error(
+          'Animal update failed with status: ${response.statusCode}',
+          'AuthService',
+        );
+        throw Exception('Failed to update animal: ${response.body}');
+      }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Animal update timeout',
+        'AuthService',
+      );
+      throw Exception('Timeout al actualizar animal');
+    } on SocketException {
+      LoggingService.warning(
+        'Animal update socket error',
+        'AuthService',
+      );
+      throw Exception('Sin conexión para actualizar animal');
+    } catch (e) {
+      LoggingService.error('Animal update error', 'AuthService', e);
+      throw Exception('Error al actualizar animal: $e');
+    }
+  }
+
   // Create Rebano
   Future<Rebano> createRebano({
     required int idFinca,

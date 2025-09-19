@@ -284,16 +284,6 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
       return;
     }
 
-    if (_selectedSexo == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Por favor selecciona el sexo'),
-          backgroundColor: Colors.red,
-        ),
-      );
-      return;
-    }
-
     if (_selectedTipoAnimal == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -339,26 +329,53 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     });
 
     try {
-      final animal = await _authService.createAnimal(
-        idRebano: _selectedRebano!.idRebano,
-        nombre: _nombreController.text.trim(),
-        codigoAnimal: _codigoAnimalController.text.trim(),
-        sexo: _selectedSexo!,
-        fechaNacimiento: _fechaNacimientoController.text,
-        procedencia: _procedenciaController.text.trim(),
-        fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
-        estadoId: _selectedEstadoSalud!.estadoId,
-        etapaId: _selectedEtapa!.etapaId,
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Animal creado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+      if (_isOffline) {
+        // Save locally for later sync
+        await DatabaseService.savePendingAnimalOffline(
+          idRebano: _selectedRebano!.idRebano,
+          nombre: _nombreController.text.trim(),
+          codigoAnimal: _codigoAnimalController.text.trim(),
+          sexo: _selectedSexo!,
+          fechaNacimiento: _fechaNacimientoController.text,
+          procedencia: _procedenciaController.text.trim(),
+          fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
+          estadoId: _selectedEstadoSalud!.estadoId,
+          etapaId: _selectedEtapa!.etapaId,
         );
-        Navigator.of(context).pop(animal);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Animal guardado localmente. Se sincronizará cuando haya conexión.'),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+          Navigator.of(context).pop(true); // Return true to indicate success
+        }
+      } else {
+        // Create online as usual
+        final animal = await _authService.createAnimal(
+          idRebano: _selectedRebano!.idRebano,
+          nombre: _nombreController.text.trim(),
+          codigoAnimal: _codigoAnimalController.text.trim(),
+          sexo: _selectedSexo!,
+          fechaNacimiento: _fechaNacimientoController.text,
+          procedencia: _procedenciaController.text.trim(),
+          fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
+          estadoId: _selectedEstadoSalud!.estadoId,
+          etapaId: _selectedEtapa!.etapaId,
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Animal creado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.of(context).pop(animal);
+        }
       }
     } catch (e) {
       LoggingService.error('Error creating animal', 'CreateAnimalScreen', e);

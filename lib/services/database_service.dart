@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 7,
+      version: 8,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -189,6 +189,11 @@ class DatabaseService {
         fk_composicion_raza INTEGER NOT NULL,
         rebano_data TEXT,
         composicion_raza_data TEXT,
+        synced INTEGER DEFAULT 1,
+        is_pending INTEGER DEFAULT 0,
+        pending_operation TEXT,
+        estado_id INTEGER,
+        etapa_id INTEGER,
         local_updated_at INTEGER NOT NULL
       )
     ''');
@@ -556,6 +561,31 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Farm management tables added successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 8) {
+      // Add sync columns to animales table for version 8
+      await db.execute('''
+        ALTER TABLE animales ADD COLUMN synced INTEGER DEFAULT 1
+      ''');
+      
+      await db.execute('''
+        ALTER TABLE animales ADD COLUMN is_pending INTEGER DEFAULT 0
+      ''');
+      
+      await db.execute('''
+        ALTER TABLE animales ADD COLUMN pending_operation TEXT
+      ''');
+      
+      await db.execute('''
+        ALTER TABLE animales ADD COLUMN estado_id INTEGER
+      ''');
+      
+      await db.execute('''
+        ALTER TABLE animales ADD COLUMN etapa_id INTEGER
+      ''');
+      
+      LoggingService.info('Sync columns added to animales table successfully', 'DatabaseService');
     }
   }
 
@@ -1555,6 +1585,180 @@ class DatabaseService {
     } catch (e) {
       LoggingService.error('Error getting animales last updated time', 'DatabaseService', e);
       return null;
+    }
+  }
+
+  // Pending Animal operations
+  static Future<void> savePendingAnimalOffline({
+    required int idRebano,
+    required String nombre,
+    required String codigoAnimal,
+    required String sexo,
+    required String fechaNacimiento,
+    required String procedencia,
+    required int fkComposicionRaza,
+    required int estadoId,
+    required int etapaId,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending animal offline: $nombre', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      // Generate a temporary negative ID for offline animals
+      final tempId = -currentTime;
+      
+      await db.insert(
+        'animales',
+        {
+          'id_animal': tempId,
+          'id_rebano': idRebano,
+          'nombre': nombre,
+          'codigo_animal': codigoAnimal,
+          'sexo': sexo,
+          'fecha_nacimiento': fechaNacimiento,
+          'procedencia': procedencia,
+          'archivado': 0,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'fk_composicion_raza': fkComposicionRaza,
+          'rebano_data': null,
+          'composicion_raza_data': null,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'estado_id': estadoId,
+          'etapa_id': etapaId,
+          'local_updated_at': currentTime,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending animal saved offline: $nombre (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending animal offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingAnimalsOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending animals from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'animales',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending animals retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending animals from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markAnimalAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking animal as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      await db.update(
+        'animales',
+        {
+          'id_animal': realId,
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id_animal = ?',
+        whereArgs: [tempId],
+      );
+      
+      LoggingService.info('Animal marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking animal as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getAllPendingRecords() async {
+    try {
+      LoggingService.debug('Retrieving all pending records', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> pendingRecords = [];
+      
+      // Get pending animals
+      final pendingAnimals = await db.query(
+        'animales',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final animal in pendingAnimals) {
+        pendingRecords.add({
+          'type': 'Animal',
+          'id': animal['id_animal'],
+          'name': animal['nombre'],
+          'operation': animal['pending_operation'],
+          'created_at': animal['local_updated_at'],
+          'data': animal,
+        });
+      }
+      
+      // Get pending cambios animal
+      final pendingCambios = await db.query(
+        'cambios_animal',
+        where: 'synced = ?',
+        whereArgs: [0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final cambio in pendingCambios) {
+        pendingRecords.add({
+          'type': 'CambiosAnimal',
+          'id': cambio['id_cambio'],
+          'name': 'Cambio Animal ${cambio['id_cambio']}',
+          'operation': 'CREATE',
+          'created_at': cambio['local_updated_at'],
+          'data': cambio,
+        });
+      }
+      
+      // Get pending personal finca
+      final pendingPersonal = await db.query(
+        'personal_finca',
+        where: 'synced = ?',
+        whereArgs: [0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final personal in pendingPersonal) {
+        pendingRecords.add({
+          'type': 'PersonalFinca',
+          'id': personal['id_tecnico'],
+          'name': '${personal['nombre']} ${personal['apellido']}',
+          'operation': 'CREATE',
+          'created_at': personal['local_updated_at'],
+          'data': personal,
+        });
+      }
+      
+      // Sort by creation time
+      pendingRecords.sort((a, b) => (b['created_at'] as int).compareTo(a['created_at'] as int));
+      
+      LoggingService.info('${pendingRecords.length} pending records retrieved', 'DatabaseService');
+      return pendingRecords;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending records', 'DatabaseService', e);
+      return [];
     }
   }
 

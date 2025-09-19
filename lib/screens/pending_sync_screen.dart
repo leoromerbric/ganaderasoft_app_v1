@@ -22,12 +22,27 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
   String _syncMessage = '';
   StreamSubscription<SyncData>? _syncSubscription;
   final _authService = AuthService();
+  
+  // TODO: Temporary flag to disable auto-loading on screen open per issue #79
+  // This prevents immediate sync operations when the screen loads
+  static const bool _autoLoadOnInit = false;
 
   @override
   void initState() {
     super.initState();
-    _loadPendingRecords();
+    if (_autoLoadOnInit) {
+      _loadPendingRecords();
+    } else {
+      // Set initial state without loading records
+      setState(() {
+        _isLoading = false;
+        _pendingRecords = [];
+      });
+    }
     _subscribeToSync();
+    // TODO: Automatic sync temporarily disabled per issue #79
+    // Auto-sync will be re-enabled after fixing sync reliability issues
+    // _startAutoSync();
   }
 
   @override
@@ -563,6 +578,24 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                     },
                   ),
           ),
+
+          // Load records button (when auto-load is disabled)
+          if (!_autoLoadOnInit && _pendingRecords.isEmpty && !_isLoading)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              child: ElevatedButton(
+                onPressed: _loadPendingRecords,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green[600],
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                ),
+                child: const Text(
+                  'Cargar Registros Pendientes',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+              ),
+            ),
 
           // Sync button
           if (_pendingRecords.isNotEmpty)

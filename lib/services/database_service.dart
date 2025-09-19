@@ -1708,7 +1708,25 @@ class DatabaseService {
         
         if (updatedRows == 0) {
           LoggingService.warning('No rows updated when marking animal as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
-          throw Exception('Animal with tempId $tempId not found or already synced');
+          
+          // Add diagnostic information to help debug the issue
+          final existingRecords = await txn.query(
+            'animales',
+            where: 'id_animal = ?',
+            whereArgs: [tempId],
+          );
+          
+          if (existingRecords.isEmpty) {
+            LoggingService.error('Diagnostic: No animal record found with tempId $tempId', 'DatabaseService');
+            throw Exception('Animal with tempId $tempId not found');
+          } else {
+            final record = existingRecords.first;
+            LoggingService.error(
+              'Diagnostic: Animal $tempId exists but is_pending=${record['is_pending']}, synced=${record['synced']}',
+              'DatabaseService',
+            );
+            throw Exception('Animal with tempId $tempId already synced (is_pending=${record['is_pending']}, synced=${record['synced']})');
+          }
         }
       });
       

@@ -86,6 +86,23 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
     }
   }
 
+  String _formatDateForApi(String dateString) {
+    try {
+      // Parse DD/MM/YYYY format and convert to ISO format
+      final parts = dateString.split('/');
+      if (parts.length == 3) {
+        final day = int.parse(parts[0]);
+        final month = int.parse(parts[1]);
+        final year = int.parse(parts[2]);
+        final date = DateTime(year, month, day);
+        return date.toIso8601String();
+      }
+      return dateString;
+    } catch (e) {
+      return dateString;
+    }
+  }
+
   @override
   void dispose() {
     _nombreController.dispose();
@@ -117,12 +134,60 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         await _loadOfflineConfigurationData();
       }
 
-      // Set the selected composition race based on animal data
-      if (_composicionesRaza.isNotEmpty) {
-        _selectedComposicionRaza = _composicionesRaza.firstWhere(
-          (comp) => comp.idComposicion == widget.animal.fkComposicionRaza,
-          orElse: () => _composicionesRaza.first,
-        );
+      // Get animal detail to get current estado and etapa
+      try {
+        final animalDetailResponse = await _authService.getAnimalDetail(widget.animal.idAnimal);
+        final animalDetail = animalDetailResponse.data;
+        
+        // Set the selected composition race based on animal data
+        if (_composicionesRaza.isNotEmpty) {
+          _selectedComposicionRaza = _composicionesRaza.firstWhere(
+            (comp) => comp.idComposicion == widget.animal.fkComposicionRaza,
+            orElse: () => _composicionesRaza.first,
+          );
+        }
+
+        // Set current estado and etapa from animal detail
+        if (animalDetail.estados.isNotEmpty && _estadosSalud.isNotEmpty) {
+          final currentEstado = animalDetail.estados.last; // Get most recent estado
+          _selectedEstadoSalud = _estadosSalud.firstWhere(
+            (estado) => estado.estadoId == currentEstado.esanFkEstadoId,
+            orElse: () => _estadosSalud.first,
+          );
+        }
+
+        if (animalDetail.etapaActual != null && _etapas.isNotEmpty) {
+          _selectedEtapa = _etapas.firstWhere(
+            (etapa) => etapa.etapaId == animalDetail.etapaActual!.etanEtapaId,
+            orElse: () => _etapas.first,
+          );
+          
+          // Also set the tipo animal based on the etapa
+          if (_tiposAnimal.isNotEmpty && _selectedEtapa != null) {
+            _selectedTipoAnimal = _tiposAnimal.firstWhere(
+              (tipo) => tipo.tipoAnimalId == _selectedEtapa!.fkTipoAnimalId,
+              orElse: () => _tiposAnimal.first,
+            );
+          }
+        }
+      } catch (e) {
+        LoggingService.warning('Could not load animal detail, using defaults', 'EditAnimalScreen');
+        // Set defaults if animal detail fails
+        if (_composicionesRaza.isNotEmpty) {
+          _selectedComposicionRaza = _composicionesRaza.firstWhere(
+            (comp) => comp.idComposicion == widget.animal.fkComposicionRaza,
+            orElse: () => _composicionesRaza.first,
+          );
+        }
+        if (_estadosSalud.isNotEmpty) {
+          _selectedEstadoSalud = _estadosSalud.first;
+        }
+        if (_tiposAnimal.isNotEmpty) {
+          _selectedTipoAnimal = _tiposAnimal.first;
+        }
+        if (_etapas.isNotEmpty) {
+          _selectedEtapa = _etapas.first;
+        }
       }
 
     } catch (e) {
@@ -287,7 +352,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
         nombre: _nombreController.text.trim(),
         codigoAnimal: _codigoAnimalController.text.trim(),
         sexo: _selectedSexo!,
-        fechaNacimiento: _fechaNacimientoController.text,
+        fechaNacimiento: _formatDateForApi(_fechaNacimientoController.text),
         procedencia: _procedenciaController.text.trim(),
         fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
         estadoId: _selectedEstadoSalud!.estadoId,

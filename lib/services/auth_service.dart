@@ -1115,6 +1115,9 @@ class AuthService {
         throw Exception('No authentication token found');
       }
 
+      // Use current date for estado and etapa changes
+      final currentDate = DateTime.now().toIso8601String();
+
       final requestData = {
         'id_Rebano': idRebano,
         'Nombre': nombre,
@@ -1124,8 +1127,8 @@ class AuthService {
         'Procedencia': procedencia,
         'archivado': false,
         'fk_composicion_raza': fkComposicionRaza,
-        'estado_inicial': {'estado_id': estadoId, 'fecha_ini': fechaNacimiento},
-        'etapa_inicial': {'etapa_id': etapaId, 'fecha_ini': fechaNacimiento},
+        'estado_inicial': {'estado_id': estadoId, 'fecha_ini': currentDate},
+        'etapa_inicial': {'etapa_id': etapaId, 'fecha_ini': currentDate},
       };
 
       final response = await http

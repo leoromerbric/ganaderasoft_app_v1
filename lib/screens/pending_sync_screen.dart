@@ -84,6 +84,12 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
   }
 
   Future<void> _syncPendingRecords() async {
+    // Prevent multiple sync operations running simultaneously
+    if (_isSyncing) {
+      LoggingService.warning('Sync already in progress, ignoring duplicate request', 'PendingSyncScreen');
+      return;
+    }
+
     // Check connectivity first
     final isConnected = await ConnectivityService.isConnected();
     if (!isConnected) {
@@ -143,6 +149,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       _syncMessage = 'Sincronizando ${pendingAnimals.length} animales...';
     });
 
+    int successfulSyncs = 0;
+    int skippedSyncs = 0;
+
     for (int i = 0; i < pendingAnimals.length; i++) {
       final animalData = pendingAnimals[i];
 
@@ -154,6 +163,17 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
       try {
         final tempId = animalData['id_animal'] as int;
+
+        // Check if animal is already synced to prevent duplicates
+        final isAlreadySynced = await DatabaseService.isAnimalAlreadySynced(tempId);
+        if (isAlreadySynced) {
+          LoggingService.info(
+            'Animal ${animalData['nombre']} is already synced, skipping',
+            'PendingSyncScreen',
+          );
+          skippedSyncs++;
+          continue;
+        }
 
         // Create the animal on the server
         final animal = await _authService.createAnimal(
@@ -175,6 +195,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
           'Animal synced successfully: ${animal.nombre}',
           'PendingSyncScreen',
         );
+        successfulSyncs++;
       } catch (e) {
         LoggingService.error(
           'Error syncing animal: ${animalData['nombre']}',
@@ -186,7 +207,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
 
     setState(() {
-      _syncMessage = 'Sincronización de animales completada';
+      _syncMessage = 'Sincronización completada: $successfulSyncs exitosos${skippedSyncs > 0 ? ', $skippedSyncs omitidos (ya sincronizados)' : ''}';
       _syncProgress = 1.0;
     });
   }

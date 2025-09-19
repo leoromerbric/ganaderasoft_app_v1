@@ -5,6 +5,7 @@ import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
 import 'create_animal_screen.dart';
+import 'edit_animal_screen.dart';
 
 class AnimalesListScreen extends StatefulWidget {
   final Finca finca;
@@ -390,6 +391,12 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
                     ],
                   ),
                 ),
+                IconButton(
+                  onPressed: () => _editAnimal(animal),
+                  icon: const Icon(Icons.edit),
+                  color: Theme.of(context).colorScheme.primary,
+                  tooltip: 'Editar Animal',
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -452,6 +459,24 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _editAnimal(Animal animal) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditAnimalScreen(
+          finca: widget.finca,
+          rebanos: _rebanos,
+          animal: animal,
+        ),
+      ),
+    );
+
+    if (result != null) {
+      // Refresh the list
+      _loadAnimales();
+    }
   }
 
   Widget _buildDetailRow(String label, String value, IconData icon) {

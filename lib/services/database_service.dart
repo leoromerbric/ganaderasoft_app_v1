@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 8,
+      version: 9,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -295,6 +295,8 @@ class DatabaseService {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
+        is_pending INTEGER DEFAULT 0,
+        pending_operation TEXT,
         local_updated_at INTEGER NOT NULL
       )
     ''');
@@ -586,6 +588,19 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Sync columns added to animales table successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 9) {
+      // Add pending operation columns to personal_finca table for version 9
+      await db.execute('''
+        ALTER TABLE personal_finca ADD COLUMN is_pending INTEGER DEFAULT 0
+      ''');
+      
+      await db.execute('''
+        ALTER TABLE personal_finca ADD COLUMN pending_operation TEXT
+      ''');
+      
+      LoggingService.info('Pending operation columns added to personal_finca table successfully', 'DatabaseService');
     }
   }
 
@@ -1642,6 +1657,53 @@ class DatabaseService {
     }
   }
 
+  static Future<void> savePendingAnimalUpdateOffline({
+    required int idAnimal,
+    required int idRebano,
+    required String nombre,
+    required String codigoAnimal,
+    required String sexo,
+    required String fechaNacimiento,
+    required String procedencia,
+    required int fkComposicionRaza,
+    required int estadoId,
+    required int etapaId,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending animal update offline: $nombre (ID: $idAnimal)', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      await db.update(
+        'animales',
+        {
+          'id_rebano': idRebano,
+          'nombre': nombre,
+          'codigo_animal': codigoAnimal,
+          'sexo': sexo,
+          'fecha_nacimiento': fechaNacimiento,
+          'procedencia': procedencia,
+          'fk_composicion_raza': fkComposicionRaza,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'UPDATE',
+          'estado_id': estadoId,
+          'etapa_id': etapaId,
+          'local_updated_at': currentTime,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id_animal = ?',
+        whereArgs: [idAnimal],
+      );
+      
+      LoggingService.info('Pending animal update saved offline: $nombre (ID: $idAnimal)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending animal update offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getPendingAnimalsOffline() async {
     try {
       LoggingService.debug('Retrieving pending animals from offline storage', 'DatabaseService');
@@ -1737,6 +1799,64 @@ class DatabaseService {
     }
   }
 
+  static Future<void> markAnimalUpdateAsSynced(int animalId) async {
+    try {
+      LoggingService.debug('Marking animal update as synced: $animalId', 'DatabaseService');
+      
+      final db = await database;
+      
+      final updateCount = await db.update(
+        'animales',
+        {
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id_animal = ? AND is_pending = ? AND synced = ?',
+        whereArgs: [animalId, 1, 0],
+      );
+      
+      if (updateCount == 0) {
+        throw Exception('Animal with ID $animalId not found or already synced');
+      }
+      
+      LoggingService.info('Animal update marked as synced: $animalId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking animal update as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<void> markPersonalFincaUpdateAsSynced(int personalId) async {
+    try {
+      LoggingService.debug('Marking personal finca update as synced: $personalId', 'DatabaseService');
+      
+      final db = await database;
+      
+      final updateCount = await db.update(
+        'personal_finca',
+        {
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
+        whereArgs: [personalId, 1, 0],
+      );
+      
+      if (updateCount == 0) {
+        throw Exception('Personal finca with ID $personalId not found or already synced');
+      }
+      
+      LoggingService.info('Personal finca update marked as synced: $personalId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking personal finca update as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getAllPendingRecords() async {
     try {
       LoggingService.debug('Retrieving all pending records', 'DatabaseService');
@@ -1785,8 +1905,8 @@ class DatabaseService {
       // Get pending personal finca
       final pendingPersonal = await db.query(
         'personal_finca',
-        where: 'synced = ?',
-        whereArgs: [0],
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
         orderBy: 'local_updated_at DESC',
       );
       
@@ -1795,7 +1915,7 @@ class DatabaseService {
           'type': 'PersonalFinca',
           'id': personal['id_tecnico'],
           'name': '${personal['nombre']} ${personal['apellido']}',
-          'operation': 'CREATE',
+          'operation': personal['pending_operation'] ?? 'CREATE',
           'created_at': personal['local_updated_at'],
           'data': personal,
         });
@@ -2345,6 +2465,147 @@ class DatabaseService {
     } catch (e) {
       LoggingService.error('Error retrieving personal finca from offline storage', 'DatabaseService', e);
       return [];
+    }
+  }
+
+  // Pending Personal Finca operations
+  static Future<void> savePendingPersonalFincaOffline({
+    required int idFinca,
+    required int cedula,
+    required String nombre,
+    required String apellido,
+    required String telefono,
+    required String correo,
+    required String tipoTrabajador,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending personal finca offline: $nombre $apellido', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final now = DateTime.now().toIso8601String();
+      
+      // Generate a temporary negative ID for the new record
+      final tempId = -currentTime; // Negative timestamp as temp ID
+      
+      await db.insert(
+        'personal_finca',
+        {
+          'id_tecnico': tempId,
+          'id_finca': idFinca,
+          'cedula': cedula,
+          'nombre': nombre,
+          'apellido': apellido,
+          'telefono': telefono,
+          'correo': correo,
+          'tipo_trabajador': tipoTrabajador,
+          'created_at': now,
+          'updated_at': now,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'local_updated_at': currentTime,
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending personal finca saved offline: $nombre $apellido (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending personal finca offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<void> savePendingPersonalFincaUpdateOffline({
+    required int idTecnico,
+    required int idFinca,
+    required int cedula,
+    required String nombre,
+    required String apellido,
+    required String telefono,
+    required String correo,
+    required String tipoTrabajador,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending personal finca update offline: $nombre $apellido (ID: $idTecnico)', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      await db.update(
+        'personal_finca',
+        {
+          'id_finca': idFinca,
+          'cedula': cedula,
+          'nombre': nombre,
+          'apellido': apellido,
+          'telefono': telefono,
+          'correo': correo,
+          'tipo_trabajador': tipoTrabajador,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'UPDATE',
+          'local_updated_at': currentTime,
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        where: 'id_tecnico = ?',
+        whereArgs: [idTecnico],
+      );
+      
+      LoggingService.info('Pending personal finca update saved offline: $nombre $apellido (ID: $idTecnico)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending personal finca update offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingPersonalFincaOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending personal finca from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'personal_finca',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending personal finca retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending personal finca from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markPersonalFincaAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking personal finca as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      
+      // Update the record with the real ID and mark as synced
+      final updateCount = await db.update(
+        'personal_finca',
+        {
+          'id_tecnico': realId,
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+        },
+        where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
+        whereArgs: [tempId, 1, 0],
+      );
+      
+      if (updateCount == 0) {
+        throw Exception('Personal finca with tempId $tempId not found or already synced');
+      }
+      
+      LoggingService.info('Personal finca marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking personal finca as synced', 'DatabaseService', e);
+      rethrow;
     }
   }
 }

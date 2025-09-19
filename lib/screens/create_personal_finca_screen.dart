@@ -3,6 +3,7 @@ import '../models/finca.dart';
 import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/database_service.dart';
 import '../services/logging_service.dart';
 
 class CreatePersonalFincaScreen extends StatefulWidget {
@@ -89,6 +90,36 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
     });
 
     try {
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        // Save the personal finca offline
+        await DatabaseService.savePendingPersonalFincaOffline(
+          idFinca: widget.finca.idFinca,
+          cedula: int.parse(_cedulaController.text),
+          nombre: _nombreController.text.trim(),
+          apellido: _apellidoController.text.trim(),
+          telefono: _telefonoController.text.trim(),
+          correo: _correoController.text.trim(),
+          tipoTrabajador: _selectedTipoTrabajador!,
+        );
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Empleado registrado en modo offline. Se sincronizará cuando tengas conexión.',
+              ),
+              backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+        return;
+      }
+
+      // Create online
       final personalFinca = PersonalFinca(
         idTecnico: 0, // Will be assigned by server
         idFinca: widget.finca.idFinca,

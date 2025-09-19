@@ -354,17 +354,31 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
       final isConnected = await ConnectivityService.isConnected();
 
       if (!isConnected) {
-        // For offline mode, you might want to implement local storage updates
+        // Save the animal update offline
+        await DatabaseService.savePendingAnimalUpdateOffline(
+          idAnimal: widget.animal.idAnimal,
+          idRebano: _selectedRebano!.idRebano,
+          nombre: _nombreController.text.trim(),
+          codigoAnimal: _codigoAnimalController.text.trim(),
+          sexo: _selectedSexo!,
+          fechaNacimiento: _formatDateForApi(_fechaNacimientoController.text),
+          procedencia: _procedenciaController.text.trim(),
+          fkComposicionRaza: _selectedComposicionRaza!.idComposicion,
+          estadoId: _selectedEstadoSalud!.estadoId,
+          etapaId: _selectedEtapa!.etapaId,
+        );
+        
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Sin conexión. La actualización requiere conexión a internet.',
+                'Animal actualizado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
             ),
           );
+          Navigator.of(context).pop(true); // Return true to indicate success
         }
         return;
       }
@@ -482,7 +496,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                             Icon(Icons.wifi_off, color: Colors.orange[800]),
                             const SizedBox(width: 8),
                             Text(
-                              'Modo offline - La actualización requiere conexión',
+                              'Modo offline - Los cambios se sincronizarán cuando tengas conexión',
                               style: TextStyle(
                                 color: Colors.orange[800],
                                 fontWeight: FontWeight.w500,

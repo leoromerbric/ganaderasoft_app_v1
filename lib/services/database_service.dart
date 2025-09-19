@@ -2585,22 +2585,86 @@ class DatabaseService {
       
       final db = await database;
       
-      // Update the record with the real ID and mark as synced
-      final updateCount = await db.update(
-        'personal_finca',
-        {
-          'id_tecnico': realId,
-          'synced': 1,
-          'is_pending': 0,
-          'pending_operation': null,
-        },
-        where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
-        whereArgs: [tempId, 1, 0],
-      );
-      
-      if (updateCount == 0) {
-        throw Exception('Personal finca with tempId $tempId not found or already synced');
-      }
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        // Check if a record with the real ID already exists (from AuthService.createPersonalFinca)
+        final existingRealIdRecords = await txn.query(
+          'personal_finca',
+          where: 'id_tecnico = ?',
+          whereArgs: [realId],
+        );
+        
+        if (existingRealIdRecords.isNotEmpty) {
+          // Real ID record already exists, just delete the temp record
+          LoggingService.debug('Real ID record already exists, removing temp record: $tempId', 'DatabaseService');
+          
+          final deletedCount = await txn.delete(
+            'personal_finca',
+            where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
+            whereArgs: [tempId, 1, 0],
+          );
+          
+          if (deletedCount == 0) {
+            LoggingService.warning('No temp record found to delete: $tempId (may already be synced)', 'DatabaseService');
+            
+            // Add diagnostic information to help debug the issue
+            final tempRecords = await txn.query(
+              'personal_finca',
+              where: 'id_tecnico = ?',
+              whereArgs: [tempId],
+            );
+            
+            if (tempRecords.isEmpty) {
+              LoggingService.error('Diagnostic: No personal finca record found with tempId $tempId', 'DatabaseService');
+              throw Exception('Personal finca with tempId $tempId not found');
+            } else {
+              final record = tempRecords.first;
+              LoggingService.error(
+                'Diagnostic: Personal finca $tempId exists but is_pending=${record['is_pending']}, synced=${record['synced']}',
+                'DatabaseService',
+              );
+              throw Exception('Personal finca with tempId $tempId already synced (is_pending=${record['is_pending']}, synced=${record['synced']})');
+            }
+          }
+        } else {
+          // No real ID record exists, update the temp record with the real ID
+          final updatedRows = await txn.update(
+            'personal_finca',
+            {
+              'id_tecnico': realId,
+              'synced': 1,
+              'is_pending': 0,
+              'pending_operation': null,
+              'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            },
+            where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
+            whereArgs: [tempId, 1, 0],
+          );
+          
+          if (updatedRows == 0) {
+            LoggingService.warning('No rows updated when marking personal finca as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+            
+            // Add diagnostic information to help debug the issue
+            final existingRecords = await txn.query(
+              'personal_finca',
+              where: 'id_tecnico = ?',
+              whereArgs: [tempId],
+            );
+            
+            if (existingRecords.isEmpty) {
+              LoggingService.error('Diagnostic: No personal finca record found with tempId $tempId', 'DatabaseService');
+              throw Exception('Personal finca with tempId $tempId not found');
+            } else {
+              final record = existingRecords.first;
+              LoggingService.error(
+                'Diagnostic: Personal finca $tempId exists but is_pending=${record['is_pending']}, synced=${record['synced']}',
+                'DatabaseService',
+              );
+              throw Exception('Personal finca with tempId $tempId already synced (is_pending=${record['is_pending']}, synced=${record['synced']})');
+            }
+          }
+        }
+      });
       
       LoggingService.info('Personal finca marked as synced: $tempId -> $realId', 'DatabaseService');
     } catch (e) {

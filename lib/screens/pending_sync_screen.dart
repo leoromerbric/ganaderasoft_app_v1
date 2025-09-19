@@ -5,6 +5,7 @@ import '../services/sync_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/auth_service.dart';
 import '../services/logging_service.dart';
+import '../models/farm_management_models.dart';
 
 class PendingSyncScreen extends StatefulWidget {
   const PendingSyncScreen({super.key});
@@ -115,6 +116,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
     try {
       await _syncPendingAnimals();
+      await _syncPendingPersonalFinca();
       await _loadPendingRecords(); // Refresh the list
     } catch (e) {
       LoggingService.error(
@@ -159,13 +161,14 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       final animalData = pendingAnimals[i];
 
       setState(() {
-        _syncProgress = (i + 1) / pendingAnimals.length;
+        _syncProgress = (i + 1) / pendingAnimals.length * 0.5; // Animals take 50% of progress
         _syncMessage =
             'Sincronizando animal ${i + 1} de ${pendingAnimals.length}...';
       });
 
       try {
         final tempId = animalData['id_animal'] as int;
+        final operation = animalData['pending_operation'] as String?;
 
         // Check if animal is already synced to prevent duplicates
         final isAlreadySynced = await DatabaseService.isAnimalAlreadySynced(
@@ -180,24 +183,43 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
           continue;
         }
 
-        // Create the animal on the server
-        final animal = await _authService.createAnimal(
-          idRebano: animalData['id_rebano'] as int,
-          nombre: animalData['nombre'] as String,
-          codigoAnimal: animalData['codigo_animal'] as String,
-          sexo: animalData['sexo'] as String,
-          fechaNacimiento: animalData['fecha_nacimiento'] as String,
-          procedencia: animalData['procedencia'] as String,
-          fkComposicionRaza: animalData['fk_composicion_raza'] as int,
-          estadoId: animalData['estado_id'] as int,
-          etapaId: animalData['etapa_id'] as int,
-        );
+        if (operation == 'CREATE') {
+          // Create the animal on the server
+          final animal = await _authService.createAnimal(
+            idRebano: animalData['id_rebano'] as int,
+            nombre: animalData['nombre'] as String,
+            codigoAnimal: animalData['codigo_animal'] as String,
+            sexo: animalData['sexo'] as String,
+            fechaNacimiento: animalData['fecha_nacimiento'] as String,
+            procedencia: animalData['procedencia'] as String,
+            fkComposicionRaza: animalData['fk_composicion_raza'] as int,
+            estadoId: animalData['estado_id'] as int,
+            etapaId: animalData['etapa_id'] as int,
+          );
 
-        // Mark as synced in local database
-        await DatabaseService.markAnimalAsSynced(tempId, animal.idAnimal);
+          // Mark as synced in local database
+          await DatabaseService.markAnimalAsSynced(tempId, animal.idAnimal);
+        } else if (operation == 'UPDATE') {
+          // Update the animal on the server
+          await _authService.updateAnimal(
+            idAnimal: animalData['id_animal'] as int,
+            idRebano: animalData['id_rebano'] as int,
+            nombre: animalData['nombre'] as String,
+            codigoAnimal: animalData['codigo_animal'] as String,
+            sexo: animalData['sexo'] as String,
+            fechaNacimiento: animalData['fecha_nacimiento'] as String,
+            procedencia: animalData['procedencia'] as String,
+            fkComposicionRaza: animalData['fk_composicion_raza'] as int,
+            estadoId: animalData['estado_id'] as int,
+            etapaId: animalData['etapa_id'] as int,
+          );
+
+          // Mark as synced in local database (for updates, the ID stays the same)
+          await DatabaseService.markAnimalUpdateAsSynced(tempId);
+        }
 
         LoggingService.info(
-          'Animal synced successfully: ${animal.nombre}',
+          'Animal synced successfully: ${animalData['nombre']}',
           'PendingSyncScreen',
         );
         successfulSyncs++;
@@ -213,7 +235,99 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
     setState(() {
       _syncMessage =
-          'Sincronización completada: $successfulSyncs exitosos${skippedSyncs > 0 ? ', $skippedSyncs omitidos (ya sincronizados)' : ''}';
+          'Animales sincronizados: $successfulSyncs exitosos${skippedSyncs > 0 ? ', $skippedSyncs omitidos' : ''}';
+    });
+  }
+
+  Future<void> _syncPendingPersonalFinca() async {
+    final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
+
+    if (pendingPersonal.isEmpty) {
+      setState(() {
+        _syncMessage = 'No hay personal de finca pendiente por sincronizar';
+        _syncProgress = 1.0;
+      });
+      return;
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronizando ${pendingPersonal.length} personal de finca...';
+    });
+
+    int successfulSyncs = 0;
+    int skippedSyncs = 0;
+
+    for (int i = 0; i < pendingPersonal.length; i++) {
+      final personalData = pendingPersonal[i];
+
+      setState(() {
+        _syncProgress = 0.5 + (i + 1) / pendingPersonal.length * 0.5; // Personal finca takes remaining 50%
+        _syncMessage =
+            'Sincronizando personal ${i + 1} de ${pendingPersonal.length}...';
+      });
+
+      try {
+        final tempId = personalData['id_tecnico'] as int;
+        final operation = personalData['pending_operation'] as String?;
+
+        if (operation == 'CREATE') {
+          // Create the personal finca on the server
+          final personalFinca = PersonalFinca(
+            idTecnico: 0, // Will be assigned by server
+            idFinca: personalData['id_finca'] as int,
+            cedula: personalData['cedula'] as int,
+            nombre: personalData['nombre'] as String,
+            apellido: personalData['apellido'] as String,
+            telefono: personalData['telefono'] as String,
+            correo: personalData['correo'] as String,
+            tipoTrabajador: personalData['tipo_trabajador'] as String,
+            createdAt: personalData['created_at'] as String,
+            updatedAt: personalData['updated_at'] as String,
+          );
+
+          final createdPersonal = await _authService.createPersonalFinca(personalFinca);
+
+          // Mark as synced in local database
+          await DatabaseService.markPersonalFincaAsSynced(tempId, createdPersonal.idTecnico);
+        } else if (operation == 'UPDATE') {
+          // Update the personal finca on the server
+          final personalFinca = PersonalFinca(
+            idTecnico: personalData['id_tecnico'] as int,
+            idFinca: personalData['id_finca'] as int,
+            cedula: personalData['cedula'] as int,
+            nombre: personalData['nombre'] as String,
+            apellido: personalData['apellido'] as String,
+            telefono: personalData['telefono'] as String,
+            correo: personalData['correo'] as String,
+            tipoTrabajador: personalData['tipo_trabajador'] as String,
+            createdAt: personalData['created_at'] as String,
+            updatedAt: personalData['updated_at'] as String,
+          );
+
+          await _authService.updatePersonalFinca(personalFinca);
+
+          // Mark as synced in local database (for updates, the ID stays the same)
+          await DatabaseService.markPersonalFincaUpdateAsSynced(tempId);
+        }
+
+        LoggingService.info(
+          'Personal finca synced successfully: ${personalData['nombre']} ${personalData['apellido']}',
+          'PendingSyncScreen',
+        );
+        successfulSyncs++;
+      } catch (e) {
+        LoggingService.error(
+          'Error syncing personal finca: ${personalData['nombre']} ${personalData['apellido']}',
+          'PendingSyncScreen',
+          e,
+        );
+        // Continue with other personal even if one fails
+      }
+    }
+
+    setState(() {
+      _syncMessage =
+          'Sincronización completada: $successfulSyncs personal sincronizados${skippedSyncs > 0 ? ', $skippedSyncs omitidos' : ''}';
       _syncProgress = 1.0;
     });
   }

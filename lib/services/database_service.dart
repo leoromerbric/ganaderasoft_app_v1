@@ -1799,6 +1799,64 @@ class DatabaseService {
     }
   }
 
+  static Future<void> markAnimalUpdateAsSynced(int animalId) async {
+    try {
+      LoggingService.debug('Marking animal update as synced: $animalId', 'DatabaseService');
+      
+      final db = await database;
+      
+      final updateCount = await db.update(
+        'animales',
+        {
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id_animal = ? AND is_pending = ? AND synced = ?',
+        whereArgs: [animalId, 1, 0],
+      );
+      
+      if (updateCount == 0) {
+        throw Exception('Animal with ID $animalId not found or already synced');
+      }
+      
+      LoggingService.info('Animal update marked as synced: $animalId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking animal update as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<void> markPersonalFincaUpdateAsSynced(int personalId) async {
+    try {
+      LoggingService.debug('Marking personal finca update as synced: $personalId', 'DatabaseService');
+      
+      final db = await database;
+      
+      final updateCount = await db.update(
+        'personal_finca',
+        {
+          'synced': 1,
+          'is_pending': 0,
+          'pending_operation': null,
+          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+        },
+        where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
+        whereArgs: [personalId, 1, 0],
+      );
+      
+      if (updateCount == 0) {
+        throw Exception('Personal finca with ID $personalId not found or already synced');
+      }
+      
+      LoggingService.info('Personal finca update marked as synced: $personalId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking personal finca update as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
   static Future<List<Map<String, dynamic>>> getAllPendingRecords() async {
     try {
       LoggingService.debug('Retrieving all pending records', 'DatabaseService');

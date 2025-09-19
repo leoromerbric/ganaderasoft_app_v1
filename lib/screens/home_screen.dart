@@ -6,6 +6,7 @@ import '../constants/app_constants.dart';
 import 'profile_screen.dart';
 import 'fincas_screen.dart';
 import 'configuration_data_screen.dart';
+import 'pending_sync_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -183,6 +184,19 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.sync_problem),
+              title: const Text('Registros Pendientes'),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PendingSyncScreen(),
+                  ),
+                );
+              },
+            ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.logout),
@@ -314,6 +328,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const FincasScreen(),
+                      ),
+                    ),
+                  ),
+                  _buildQuickAccessCard(
+                    context,
+                    'Registros Pendientes',
+                    Icons.sync_problem,
+                    '',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const PendingSyncScreen(),
                       ),
                     ),
                   ),

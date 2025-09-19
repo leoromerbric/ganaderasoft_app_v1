@@ -1055,9 +1055,6 @@ class AuthService {
             'AuthService',
           );
 
-          // Save to offline storage
-          await DatabaseService.saveAnimalesOffline([animal]);
-
           return animal;
         } else {
           throw Exception('Server returned error: ${jsonData['message']}');

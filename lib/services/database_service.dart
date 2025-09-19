@@ -1662,23 +1662,55 @@ class DatabaseService {
     }
   }
 
+  static Future<bool> isAnimalAlreadySynced(int tempId) async {
+    try {
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'animales',
+        columns: ['synced', 'is_pending'],
+        where: 'id_animal = ?',
+        whereArgs: [tempId],
+        limit: 1,
+      );
+      
+      if (maps.isEmpty) {
+        return false;
+      }
+      
+      final animal = maps.first;
+      return animal['synced'] == 1 && animal['is_pending'] == 0;
+    } catch (e) {
+      LoggingService.error('Error checking if animal is already synced', 'DatabaseService', e);
+      return false;
+    }
+  }
+
   static Future<void> markAnimalAsSynced(int tempId, int realId) async {
     try {
       LoggingService.debug('Marking animal as synced: $tempId -> $realId', 'DatabaseService');
       
       final db = await database;
-      await db.update(
-        'animales',
-        {
-          'id_animal': realId,
-          'synced': 1,
-          'is_pending': 0,
-          'pending_operation': null,
-          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
-        },
-        where: 'id_animal = ?',
-        whereArgs: [tempId],
-      );
+      
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        final updatedRows = await txn.update(
+          'animales',
+          {
+            'id_animal': realId,
+            'synced': 1,
+            'is_pending': 0,
+            'pending_operation': null,
+            'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          },
+          where: 'id_animal = ? AND is_pending = ? AND synced = ?',
+          whereArgs: [tempId, 1, 0],
+        );
+        
+        if (updatedRows == 0) {
+          LoggingService.warning('No rows updated when marking animal as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+          throw Exception('Animal with tempId $tempId not found or already synced');
+        }
+      });
       
       LoggingService.info('Animal marked as synced: $tempId -> $realId', 'DatabaseService');
     } catch (e) {

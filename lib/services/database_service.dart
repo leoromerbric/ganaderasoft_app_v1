@@ -1858,6 +1858,7 @@ class DatabaseService {
             'is_pending': 0,
             'pending_operation': null,
             'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
           },
           where: 'id_animal = ? AND is_pending = ? AND synced = ?',
           whereArgs: [tempId, 1, 0],
@@ -1907,6 +1908,7 @@ class DatabaseService {
           'is_pending': 0,
           'pending_operation': null,
           'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Reset offline modification flag after successful sync
         },
         where: 'id_animal = ? AND is_pending = ? AND synced = ?',
         whereArgs: [animalId, 1, 0],
@@ -1936,6 +1938,7 @@ class DatabaseService {
           'is_pending': 0,
           'pending_operation': null,
           'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Reset offline modification flag after successful sync
         },
         where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
         whereArgs: [personalId, 1, 0],
@@ -2692,6 +2695,7 @@ class DatabaseService {
             'is_pending': 0,
             'pending_operation': null,
             'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
           },
           where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
           whereArgs: [tempId, 1, 0],

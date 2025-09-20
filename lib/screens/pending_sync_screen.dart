@@ -7,6 +7,21 @@ import '../services/auth_service.dart';
 import '../services/logging_service.dart';
 import '../models/farm_management_models.dart';
 
+/// Screen that displays pending sync records and manages automatic synchronization.
+/// 
+/// This screen automatically loads pending records and triggers synchronization 
+/// when the screen initializes, providing a seamless user experience for 
+/// managing offline data that needs to be synced to the server.
+/// 
+/// **Execution Order:**
+/// 1. `initState()` → Initialize screen, load records, subscribe to sync, trigger auto-sync
+/// 2. `_loadPendingRecords()` → Load pending records from local database  
+/// 3. `_subscribeToSync()` → Set up sync event listener
+/// 4. `_startAutoSync()` → Check connectivity and start automatic sync
+/// 5. `_syncPendingRecords()` → Main sync coordinator (auto-triggered)
+/// 6. `_syncPendingAnimals()` → Sync animals first
+/// 7. `_syncPendingPersonalFinca()` → Sync personal finca records second
+/// 8. `_loadPendingRecords()` → Refresh list after sync completion
 class PendingSyncScreen extends StatefulWidget {
   const PendingSyncScreen({super.key});
 
@@ -23,10 +38,22 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
   StreamSubscription<SyncData>? _syncSubscription;
   final _authService = AuthService();
   
-  // TODO: Temporary flag to disable auto-loading on screen open per issue #79
-  // This prevents immediate sync operations when the screen loads
-  static const bool _autoLoadOnInit = false;
+  /// Flag to enable automatic loading and syncing on screen initialization.
+  /// When true, the screen will automatically load pending records and 
+  /// trigger synchronization when it starts, providing immediate feedback
+  /// to users about their pending changes.
+  static const bool _autoLoadOnInit = true;
 
+  /// Initializes the screen state and sets up automatic synchronization.
+  /// 
+  /// **Execution Order (Method 1):**
+  /// 1. Calls parent initState()
+  /// 2. If auto-load enabled: calls `_loadPendingRecords()` to load data from local DB
+  /// 3. If auto-load disabled: sets empty initial state  
+  /// 4. Calls `_subscribeToSync()` to listen for sync status changes
+  /// 5. Calls `_startAutoSync()` to begin automatic synchronization
+  /// 
+  /// This method establishes the foundation for the entire sync process.
   @override
   void initState() {
     super.initState();
@@ -40,17 +67,30 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       });
     }
     _subscribeToSync();
-    // TODO: Automatic sync temporarily disabled per issue #79
-    // Auto-sync will be re-enabled after fixing sync reliability issues
-    // _startAutoSync();
+    // Start automatic sync when screen loads
+    _startAutoSync();
   }
 
+  /// Cleans up resources when the screen is disposed.
+  /// 
+  /// Cancels the sync subscription to prevent memory leaks and ensures
+  /// proper cleanup of stream listeners.
   @override
   void dispose() {
     _syncSubscription?.cancel();
     super.dispose();
   }
 
+  /// Sets up a subscription to listen for sync status changes.
+  /// 
+  /// **Execution Order (Method 3):**
+  /// This method establishes a persistent listener that reacts to sync events:
+  /// - Updates UI state when sync starts/stops (_isSyncing, _syncProgress, _syncMessage)
+  /// - On successful sync: refreshes pending records list and shows success message
+  /// - On sync error: displays error message to user
+  /// 
+  /// The subscription remains active throughout the screen's lifecycle and
+  /// enables real-time feedback during synchronization operations.
   void _subscribeToSync() {
     _syncSubscription = SyncService.syncStream.listen((syncData) {
       if (mounted) {
@@ -80,6 +120,19 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     });
   }
 
+  /// Loads pending records from the local database.
+  /// 
+  /// **Execution Order (Method 2 & 8):**
+  /// - Called initially in `initState()` to populate the screen with pending data
+  /// - Called again after successful sync to refresh the list and show updated state
+  /// 
+  /// This method:
+  /// 1. Retrieves all pending records from DatabaseService
+  /// 2. Updates the UI state with the loaded records
+  /// 3. Sets loading state to false to display the data
+  /// 4. Handles errors gracefully with logging and fallback state
+  /// 
+  /// The method ensures users always see current pending record information.
   Future<void> _loadPendingRecords() async {
     try {
       final records = await DatabaseService.getAllPendingRecords();
@@ -99,6 +152,66 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
   }
 
+  /// Starts automatic synchronization when the screen loads.
+  /// 
+  /// **Execution Order (Method 4):**
+  /// Called from `initState()` to begin automatic sync process:
+  /// 1. Checks for internet connectivity first
+  /// 2. If offline: logs info and exits gracefully (no error shown to user)
+  /// 3. If online: calls `_syncPendingRecords()` to start the sync process
+  /// 
+  /// This method provides seamless automatic sync without overwhelming users
+  /// with error messages when they're offline. The sync will naturally happen
+  /// when connectivity is restored through the offline manager.
+  Future<void> _startAutoSync() async {
+    try {
+      // Check connectivity before attempting sync
+      final isConnected = await ConnectivityService.isConnected();
+      if (!isConnected) {
+        LoggingService.info(
+          'Device is offline, skipping auto-sync',
+          'PendingSyncScreen',
+        );
+        return;
+      }
+
+      // Small delay to allow UI to settle before starting sync
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      LoggingService.info(
+        'Starting automatic synchronization',
+        'PendingSyncScreen',
+      );
+      
+      await _syncPendingRecords();
+    } catch (e) {
+      LoggingService.warning(
+        'Auto-sync failed, will retry manually: $e',
+        'PendingSyncScreen',
+      );
+      // Don't show error to user for auto-sync failures
+      // They can manually trigger sync if needed
+    }
+  }
+
+  /// Main coordinator method for synchronizing pending records.
+  /// 
+  /// **Execution Order (Method 5):**
+  /// - Can be called automatically from `_startAutoSync()` or manually by user
+  /// - Prevents duplicate sync operations by checking _isSyncing flag
+  /// - Verifies connectivity before proceeding
+  /// - Coordinates the sync of different record types in sequence
+  /// - Manages UI state throughout the process
+  /// 
+  /// **Sync Sequence:**
+  /// 1. Validates preconditions (not already syncing, has connectivity)
+  /// 2. Sets syncing state and progress indicators
+  /// 3. Calls `_syncPendingAnimals()` first
+  /// 4. Calls `_syncPendingPersonalFinca()` second  
+  /// 5. Calls `_loadPendingRecords()` to refresh the list
+  /// 6. Resets syncing state and clears progress indicators
+  /// 
+  /// This method ensures reliable and user-friendly synchronization.
   Future<void> _syncPendingRecords() async {
     // Prevent multiple sync operations running simultaneously
     if (_isSyncing) {
@@ -154,6 +267,25 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
   }
 
+  /// Synchronizes pending animal records with the server.
+  /// 
+  /// **Execution Order (Method 6):**
+  /// Called from `_syncPendingRecords()` as the first sync operation:
+  /// 1. Retrieves pending animals from local database
+  /// 2. If no animals: updates progress and returns early
+  /// 3. For each animal: processes CREATE or UPDATE operations
+  /// 4. Handles duplicate prevention by checking if already synced
+  /// 5. Updates server via AuthService and marks as synced locally
+  /// 6. Provides progress feedback (animals take 50% of total progress)
+  /// 
+  /// **Animal Processing Flow:**
+  /// - CREATE: sends animal data to server, gets real ID, updates local record
+  /// - UPDATE: sends changes to server, marks update as synced
+  /// - Continues processing even if individual animals fail
+  /// - Logs success/failure for each animal for debugging
+  /// 
+  /// This method ensures animals are synchronized first as they're often
+  /// referenced by other records.
   Future<void> _syncPendingAnimals() async {
     final pendingAnimals = await DatabaseService.getPendingAnimalsOffline();
 
@@ -254,6 +386,25 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     });
   }
 
+  /// Synchronizes pending personal finca (farm staff) records with the server.
+  /// 
+  /// **Execution Order (Method 7):**
+  /// Called from `_syncPendingRecords()` as the second sync operation:
+  /// 1. Retrieves pending personal finca records from local database
+  /// 2. If no records: updates progress and returns early
+  /// 3. For each record: processes CREATE or UPDATE operations
+  /// 4. Creates PersonalFinca objects for server communication
+  /// 5. Updates server via AuthService and marks as synced locally
+  /// 6. Provides progress feedback (personal finca takes remaining 50% of progress)
+  /// 
+  /// **PersonalFinca Processing Flow:**
+  /// - CREATE: sends record to server, gets real ID, updates local record
+  /// - UPDATE: sends changes to server, marks update as synced
+  /// - Continues processing even if individual records fail
+  /// - Logs success/failure for each record for debugging
+  /// 
+  /// This method runs after animals to ensure proper sequencing of
+  /// dependent data synchronization.
   Future<void> _syncPendingPersonalFinca() async {
     final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
 
@@ -347,6 +498,16 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     });
   }
 
+  /// Formats a timestamp into a human-readable relative time string.
+  /// 
+  /// **Utility Method:**
+  /// Converts millisecond timestamps to user-friendly formats:
+  /// - Less than 1 minute: "Hace menos de un minuto"
+  /// - Less than 60 minutes: "Hace X minutos"
+  /// - Less than 24 hours: "Hace X horas"  
+  /// - 24+ hours: "Hace X días"
+  /// 
+  /// Used to display when pending records were created in the UI.
   String _formatDateTime(int timestamp) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
     final now = DateTime.now();
@@ -363,6 +524,20 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
   }
 
+  /// Builds a card widget to display information about a pending record.
+  /// 
+  /// **UI Helper Method:**
+  /// Creates a card showing:
+  /// - Icon and color based on record type (Animal, CambiosAnimal, PersonalFinca)
+  /// - Record name and details (type, operation, timestamp)
+  /// - "Pendiente" (Pending) status badge
+  /// 
+  /// **Record Types:**
+  /// - Animal: green pets icon for new animal records
+  /// - CambiosAnimal: blue update icon for animal modifications
+  /// - PersonalFinca: orange person icon for farm staff records
+  /// 
+  /// Used by the ListView to display each pending record consistently.
   Widget _buildPendingRecordCard(Map<String, dynamic> record) {
     final type = record['type'] as String;
     final name = record['name'] as String;
@@ -428,6 +603,23 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     );
   }
 
+  /// Builds the main UI for the pending sync screen.
+  /// 
+  /// **UI Structure:**
+  /// 1. AppBar with screen title
+  /// 2. Summary card showing sync status (synced/pending count)
+  /// 3. Sync progress indicator (visible during active sync)
+  /// 4. List of pending records (or empty state message)
+  /// 5. Load records button (when auto-load disabled and no records)
+  /// 6. Sync button (when there are pending records)
+  /// 
+  /// **Dynamic UI Elements:**
+  /// - Summary card changes color based on sync status
+  /// - Progress bar appears during sync operations
+  /// - Buttons enable/disable based on sync state
+  /// - Empty state vs record list based on data availability
+  /// 
+  /// The UI provides clear visual feedback about sync status and progress.
   @override
   Widget build(BuildContext context) {
     return Scaffold(

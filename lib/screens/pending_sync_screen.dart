@@ -245,6 +245,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     try {
       await _syncPendingAnimals();
       await _syncPendingPersonalFinca();
+      await _syncPendingCambiosAnimal();
+      await _syncPendingLactancia();
+      await _syncPendingPesoCorporal();
       await _loadPendingRecords(); // Refresh the list
     } catch (e) {
       LoggingService.error(
@@ -498,6 +501,200 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     });
   }
 
+  /// Synchronizes pending cambios animal records with the server.
+  Future<void> _syncPendingCambiosAnimal() async {
+    final pendingCambios = await DatabaseService.getPendingCambiosAnimalOffline();
+
+    if (pendingCambios.isEmpty) {
+      setState(() {
+        _syncMessage = 'No hay cambios de animales pendientes por sincronizar';
+      });
+      return;
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronizando ${pendingCambios.length} cambios de animales...';
+    });
+
+    int successfulSyncs = 0;
+
+    for (int i = 0; i < pendingCambios.length; i++) {
+      final cambioData = pendingCambios[i];
+
+      setState(() {
+        _syncMessage = 'Sincronizando cambio ${i + 1} de ${pendingCambios.length}...';
+      });
+
+      try {
+        final tempId = cambioData['id_cambio'] as int;
+
+        // Create the cambios animal on the server
+        final cambiosAnimal = CambiosAnimal(
+          idCambio: 0, // Will be assigned by server
+          fechaCambio: cambioData['fecha_cambio'] as String,
+          etapaCambio: cambioData['etapa_cambio'] as String,
+          peso: (cambioData['peso'] as num).toDouble(),
+          altura: (cambioData['altura'] as num).toDouble(),
+          comentario: cambioData['comentario'] as String,
+          createdAt: cambioData['created_at'] as String,
+          updatedAt: cambioData['updated_at'] as String,
+          cambiosEtapaAnid: cambioData['cambios_etapa_anid'] as int,
+          cambiosEtapaEtid: cambioData['cambios_etapa_etid'] as int,
+        );
+
+        final createdCambio = await _authService.createCambiosAnimal(cambiosAnimal);
+
+        // Mark as synced in local database
+        await DatabaseService.markCambiosAnimalAsSynced(tempId, createdCambio.idCambio);
+
+        LoggingService.info(
+          'Cambios animal synced successfully: ${cambioData['fecha_cambio']}',
+          'PendingSyncScreen',
+        );
+        successfulSyncs++;
+      } catch (e) {
+        LoggingService.error(
+          'Error syncing cambios animal: ${cambioData['fecha_cambio']}',
+          'PendingSyncScreen',
+          e,
+        );
+        // Continue with other records even if one fails
+      }
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronización completada: $successfulSyncs cambios de animales sincronizados';
+    });
+  }
+
+  /// Synchronizes pending lactancia records with the server.
+  Future<void> _syncPendingLactancia() async {
+    final pendingLactancia = await DatabaseService.getPendingLactanciaOffline();
+
+    if (pendingLactancia.isEmpty) {
+      setState(() {
+        _syncMessage = 'No hay registros de lactancia pendientes por sincronizar';
+      });
+      return;
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronizando ${pendingLactancia.length} registros de lactancia...';
+    });
+
+    int successfulSyncs = 0;
+
+    for (int i = 0; i < pendingLactancia.length; i++) {
+      final lactanciaData = pendingLactancia[i];
+
+      setState(() {
+        _syncMessage = 'Sincronizando lactancia ${i + 1} de ${pendingLactancia.length}...';
+      });
+
+      try {
+        final tempId = lactanciaData['lactancia_id'] as int;
+
+        // Create the lactancia on the server
+        final lactancia = Lactancia(
+          lactanciaId: 0, // Will be assigned by server
+          lactanciaFechaInicio: lactanciaData['lactancia_fecha_inicio'] as String,
+          lactanciaFechaFin: lactanciaData['lactancia_fecha_fin'] as String?,
+          lactanciaSecado: lactanciaData['lactancia_secado'] as String?,
+          createdAt: lactanciaData['created_at'] as String,
+          updatedAt: lactanciaData['updated_at'] as String,
+          lactanciaEtapaAnid: lactanciaData['lactancia_etapa_anid'] as int,
+          lactanciaEtapaEtid: lactanciaData['lactancia_etapa_etid'] as int,
+        );
+
+        final createdLactancia = await _authService.createLactancia(lactancia);
+
+        // Mark as synced in local database
+        await DatabaseService.markLactanciaAsSynced(tempId, createdLactancia.lactanciaId);
+
+        LoggingService.info(
+          'Lactancia synced successfully: ${lactanciaData['lactancia_fecha_inicio']}',
+          'PendingSyncScreen',
+        );
+        successfulSyncs++;
+      } catch (e) {
+        LoggingService.error(
+          'Error syncing lactancia: ${lactanciaData['lactancia_fecha_inicio']}',
+          'PendingSyncScreen',
+          e,
+        );
+        // Continue with other records even if one fails
+      }
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronización completada: $successfulSyncs registros de lactancia sincronizados';
+    });
+  }
+
+  /// Synchronizes pending peso corporal records with the server.
+  Future<void> _syncPendingPesoCorporal() async {
+    final pendingPeso = await DatabaseService.getPendingPesoCorporalOffline();
+
+    if (pendingPeso.isEmpty) {
+      setState(() {
+        _syncMessage = 'No hay registros de peso corporal pendientes por sincronizar';
+      });
+      return;
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronizando ${pendingPeso.length} registros de peso corporal...';
+    });
+
+    int successfulSyncs = 0;
+
+    for (int i = 0; i < pendingPeso.length; i++) {
+      final pesoData = pendingPeso[i];
+
+      setState(() {
+        _syncMessage = 'Sincronizando peso ${i + 1} de ${pendingPeso.length}...';
+      });
+
+      try {
+        final tempId = pesoData['id_peso'] as int;
+
+        // Create the peso corporal on the server
+        final pesoCorporal = PesoCorporal(
+          idPeso: 0, // Will be assigned by server
+          fechaPeso: pesoData['fecha_peso'] as String,
+          peso: (pesoData['peso'] as num).toDouble(),
+          comentario: pesoData['comentario'] as String,
+          createdAt: pesoData['created_at'] as String,
+          updatedAt: pesoData['updated_at'] as String,
+          pesoEtapaAnid: pesoData['peso_etapa_anid'] as int,
+          pesoEtapaEtid: pesoData['peso_etapa_etid'] as int,
+        );
+
+        final createdPeso = await _authService.createPesoCorporal(pesoCorporal);
+
+        // Mark as synced in local database
+        await DatabaseService.markPesoCorporalAsSynced(tempId, createdPeso.idPeso);
+
+        LoggingService.info(
+          'Peso corporal synced successfully: ${pesoData['fecha_peso']} - ${pesoData['peso']}kg',
+          'PendingSyncScreen',
+        );
+        successfulSyncs++;
+      } catch (e) {
+        LoggingService.error(
+          'Error syncing peso corporal: ${pesoData['fecha_peso']} - ${pesoData['peso']}kg',
+          'PendingSyncScreen',
+          e,
+        );
+        // Continue with other records even if one fails
+      }
+    }
+
+    setState(() {
+      _syncMessage = 'Sincronización completada: $successfulSyncs registros de peso corporal sincronizados';
+    });
+  }
+
   /// Formats a timestamp into a human-readable relative time string.
   /// 
   /// **Utility Method:**
@@ -555,6 +752,14 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       case 'CambiosAnimal':
         icon = Icons.update;
         iconColor = Colors.blue;
+        break;
+      case 'Lactancia':
+        icon = Icons.water_drop;
+        iconColor = Colors.purple;
+        break;
+      case 'PesoCorporal':
+        icon = Icons.fitness_center;
+        iconColor = Colors.indigo;
         break;
       case 'PersonalFinca':
         icon = Icons.person;

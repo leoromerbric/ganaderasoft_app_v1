@@ -362,16 +362,23 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                   
                   return DropdownMenuItem<Lactancia>(
                     value: lactancia,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text('Lactancia ${lactancia.lactanciaId} ($estado)'),
-                        Text(
-                          'Inicio: ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}',
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
-                        ),
-                      ],
+                    child: Container(
+                      constraints: const BoxConstraints(maxHeight: 48),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Lactancia ${lactancia.lactanciaId} ($estado)',
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            'Inicio: ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}',
+                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }).toList(),

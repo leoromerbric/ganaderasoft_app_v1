@@ -1769,6 +1769,25 @@ class DatabaseService {
       final db = await database;
       final currentTime = DateTime.now().millisecondsSinceEpoch;
       
+      // Check if this record was originally created offline and is still pending CREATE
+      final existingRecord = await db.query(
+        'animales',
+        where: 'id_animal = ?',
+        whereArgs: [idAnimal],
+        limit: 1,
+      );
+      
+      // Determine the appropriate pending operation
+      String pendingOperation = 'UPDATE';
+      if (existingRecord.isNotEmpty) {
+        final currentOperation = existingRecord.first['pending_operation'] as String?;
+        // If record was created offline and still pending CREATE, preserve the CREATE operation
+        if (currentOperation == 'CREATE') {
+          pendingOperation = 'CREATE';
+          LoggingService.debug('Preserving CREATE operation for offline-created animal: $nombre (ID: $idAnimal)', 'DatabaseService');
+        }
+      }
+      
       await db.update(
         'animales',
         {
@@ -1781,7 +1800,7 @@ class DatabaseService {
           'fk_composicion_raza': fkComposicionRaza,
           'synced': 0,
           'is_pending': 1,
-          'pending_operation': 'UPDATE',
+          'pending_operation': pendingOperation,
           'estado_id': estadoId,
           'etapa_id': etapaId,
           'local_updated_at': currentTime,
@@ -1792,7 +1811,7 @@ class DatabaseService {
         whereArgs: [idAnimal],
       );
       
-      LoggingService.info('Pending animal update saved offline: $nombre (ID: $idAnimal)', 'DatabaseService');
+      LoggingService.info('Pending animal update saved offline: $nombre (ID: $idAnimal) with operation: $pendingOperation', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error saving pending animal update offline', 'DatabaseService', e);
       rethrow;
@@ -2631,6 +2650,25 @@ class DatabaseService {
       final db = await database;
       final currentTime = DateTime.now().millisecondsSinceEpoch;
       
+      // Check if this record was originally created offline and is still pending CREATE
+      final existingRecord = await db.query(
+        'personal_finca',
+        where: 'id_tecnico = ?',
+        whereArgs: [idTecnico],
+        limit: 1,
+      );
+      
+      // Determine the appropriate pending operation
+      String pendingOperation = 'UPDATE';
+      if (existingRecord.isNotEmpty) {
+        final currentOperation = existingRecord.first['pending_operation'] as String?;
+        // If record was created offline and still pending CREATE, preserve the CREATE operation
+        if (currentOperation == 'CREATE') {
+          pendingOperation = 'CREATE';
+          LoggingService.debug('Preserving CREATE operation for offline-created personal finca: $nombre $apellido (ID: $idTecnico)', 'DatabaseService');
+        }
+      }
+      
       await db.update(
         'personal_finca',
         {
@@ -2643,7 +2681,7 @@ class DatabaseService {
           'tipo_trabajador': tipoTrabajador,
           'synced': 0,
           'is_pending': 1,
-          'pending_operation': 'UPDATE',
+          'pending_operation': pendingOperation,
           'local_updated_at': currentTime,
           'updated_at': DateTime.now().toIso8601String(),
           'modifiedOffline': 1, // Mark as modified while offline
@@ -2652,7 +2690,7 @@ class DatabaseService {
         whereArgs: [idTecnico],
       );
       
-      LoggingService.info('Pending personal finca update saved offline: $nombre $apellido (ID: $idTecnico)', 'DatabaseService');
+      LoggingService.info('Pending personal finca update saved offline: $nombre $apellido (ID: $idTecnico) with operation: $pendingOperation', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error saving pending personal finca update offline', 'DatabaseService', e);
       rethrow;

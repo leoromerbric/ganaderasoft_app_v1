@@ -159,7 +159,7 @@ class SyncService {
       try {
         LoggingService.debug('Syncing animales data...', 'SyncService');
         final animalesResponse = await _authService.getAnimales();
-        await DatabaseService.saveAnimalesOffline(animalesResponse.animales);
+        await DatabaseService.saveAnimalesOfflineWithConflictResolution(animalesResponse.animales);
         
         // Sync animal details for each animal
         LoggingService.debug('Syncing animal details...', 'SyncService');
@@ -564,7 +564,7 @@ class SyncService {
       try {
         LoggingService.debug('Syncing personal finca data...', 'SyncService');
         final personalResponse = await _authService.getPersonalFinca();
-        await DatabaseService.savePersonalFincaOffline(personalResponse.data);
+        await DatabaseService.savePersonalFincaOfflineWithConflictResolution(personalResponse.data);
         LoggingService.info(
           'Personal finca synchronized: ${personalResponse.data.length} items',
           'SyncService',

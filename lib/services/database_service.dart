@@ -6,7 +6,9 @@ import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/configuration_models.dart';
 import '../models/farm_management_models.dart';
+import '../models/sync_audit_models.dart';
 import 'logging_service.dart';
+import 'utc_timestamp_helper.dart';
 
 class DatabaseService {
   static Database? _database;
@@ -24,7 +26,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -298,6 +300,23 @@ class DatabaseService {
         is_pending INTEGER DEFAULT 0,
         pending_operation TEXT,
         local_updated_at INTEGER NOT NULL
+      )
+    ''');
+
+    // Sync audit table for tracking conflicts and resolutions
+    await db.execute('''
+      CREATE TABLE sync_audit (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        entity_type TEXT NOT NULL,
+        entity_id INTEGER,
+        entity_name TEXT NOT NULL,
+        action TEXT NOT NULL,
+        sync_timestamp INTEGER NOT NULL,
+        local_timestamp INTEGER,
+        server_timestamp INTEGER,
+        conflict_reason TEXT,
+        conflict_data TEXT,
+        resolution TEXT
       )
     ''');
     
@@ -601,6 +620,27 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Pending operation columns added to personal_finca table successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 10) {
+      // Add sync audit table for version 10
+      await db.execute('''
+        CREATE TABLE sync_audit (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          entity_type TEXT NOT NULL,
+          entity_id INTEGER,
+          entity_name TEXT NOT NULL,
+          action TEXT NOT NULL,
+          sync_timestamp INTEGER NOT NULL,
+          local_timestamp INTEGER,
+          server_timestamp INTEGER,
+          conflict_reason TEXT,
+          conflict_data TEXT,
+          resolution TEXT
+        )
+      ''');
+      
+      LoggingService.info('Sync audit table created successfully', 'DatabaseService');
     }
   }
 
@@ -1452,7 +1492,7 @@ class DatabaseService {
       
       final db = await database;
       final batch = db.batch();
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final currentTime = UtcTimestampHelper.getCurrentUtcTimestamp();
 
       for (final animal in animales) {
         batch.insert(
@@ -1498,6 +1538,130 @@ class DatabaseService {
       LoggingService.info('${animales.length} animales saved offline successfully', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error saving animales offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // New method with conflict resolution for syncing animals
+  static Future<void> saveAnimalesOfflineWithConflictResolution(List<Animal> animales) async {
+    try {
+      LoggingService.debug('Saving ${animales.length} animales offline with conflict resolution', 'DatabaseService');
+      
+      final db = await database;
+      final currentSyncTime = UtcTimestampHelper.getCurrentUtcTimestamp();
+      int syncedCount = 0;
+      int skippedCount = 0;
+
+      for (final animal in animales) {
+        // Check if animal exists locally and has pending changes
+        final existing = await db.query(
+          'animales',
+          where: 'id_animal = ?',
+          whereArgs: [animal.idAnimal],
+          limit: 1,
+        );
+
+        bool shouldSync = true;
+        SyncAuditRecord? auditRecord;
+
+        if (existing.isNotEmpty) {
+          final localRecord = existing.first;
+          final localTimestamp = UtcTimestampHelper.parseLocalTimestamp(localRecord['local_updated_at']);
+          final serverTimestamp = UtcTimestampHelper.parseServerTimestamp(animal.updatedAt);
+          
+          // Check if local data is newer
+          if (localTimestamp != null && serverTimestamp != null) {
+            final isLocalNewer = UtcTimestampHelper.isLocalNewer(localTimestamp, serverTimestamp);
+            
+            if (isLocalNewer == true) {
+              // Local data is newer, skip sync
+              shouldSync = false;
+              skippedCount++;
+              
+              auditRecord = SyncAuditRecord.localNewer(
+                entityType: 'Animal',
+                entityId: animal.idAnimal,
+                entityName: animal.nombre,
+                localTimestamp: localTimestamp,
+                serverTimestamp: serverTimestamp,
+                reason: 'Local animal data is newer than server data',
+              );
+              
+              LoggingService.info('Skipping sync for animal ${animal.nombre} (ID: ${animal.idAnimal}) - local data is newer', 'DatabaseService');
+            } else {
+              // Server data is newer or equal, sync it
+              auditRecord = SyncAuditRecord.serverNewer(
+                entityType: 'Animal',
+                entityId: animal.idAnimal,
+                entityName: animal.nombre,
+                localTimestamp: localTimestamp,
+                serverTimestamp: serverTimestamp,
+                reason: 'Server animal data is newer than local data',
+              );
+            }
+          }
+        } else {
+          // New animal from server
+          auditRecord = SyncAuditRecord.syncSuccess(
+            entityType: 'Animal',
+            entityId: animal.idAnimal,
+            entityName: animal.nombre,
+            serverTimestamp: UtcTimestampHelper.parseServerTimestamp(animal.updatedAt),
+          );
+        }
+
+        if (shouldSync) {
+          await db.insert(
+            'animales',
+            {
+              'id_animal': animal.idAnimal,
+              'id_rebano': animal.idRebano,
+              'nombre': animal.nombre,
+              'codigo_animal': animal.codigoAnimal,
+              'sexo': animal.sexo,
+              'fecha_nacimiento': animal.fechaNacimiento,
+              'procedencia': animal.procedencia,
+              'archivado': animal.archivado ? 1 : 0,
+              'created_at': animal.createdAt,
+              'updated_at': animal.updatedAt,
+              'fk_composicion_raza': animal.fkComposicionRaza,
+              'rebano_data': animal.rebano != null ? jsonEncode({
+                'id_Rebano': animal.rebano!.idRebano,
+                'id_Finca': animal.rebano!.idFinca,
+                'Nombre': animal.rebano!.nombre,
+                'archivado': animal.rebano!.archivado,
+                'created_at': animal.rebano!.createdAt,
+                'updated_at': animal.rebano!.updatedAt,
+              }) : null,
+              'composicion_raza_data': animal.composicionRaza != null ? jsonEncode({
+                'id_Composicion': animal.composicionRaza!.idComposicion,
+                'Nombre': animal.composicionRaza!.nombre,
+                'Siglas': animal.composicionRaza!.siglas,
+                'Pelaje': animal.composicionRaza!.pelaje,
+                'Proposito': animal.composicionRaza!.proposito,
+                'Tipo_Raza': animal.composicionRaza!.tipoRaza,
+                'Origen': animal.composicionRaza!.origen,
+                'Caracteristica_Especial': animal.composicionRaza!.caracteristicaEspecial,
+                'Proporcion_Raza': animal.composicionRaza!.proporcionRaza,
+              }) : null,
+              'local_updated_at': currentSyncTime,
+              'synced': 1,
+              'is_pending': 0,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+          syncedCount++;
+        }
+
+        // Save audit record
+        if (auditRecord != null) {
+          await saveSyncAuditRecord(auditRecord);
+        }
+      }
+
+      LoggingService.info('Animales sync completed: $syncedCount synced, $skippedCount skipped (newer local data)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving animales offline with conflict resolution', 'DatabaseService', e);
       rethrow;
     }
   }
@@ -1619,7 +1783,7 @@ class DatabaseService {
       LoggingService.debug('Saving pending animal offline: $nombre', 'DatabaseService');
       
       final db = await database;
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final currentTime = UtcTimestampHelper.getCurrentUtcTimestamp();
       
       // Generate a temporary negative ID for offline animals
       final tempId = -currentTime;
@@ -1635,8 +1799,8 @@ class DatabaseService {
           'fecha_nacimiento': fechaNacimiento,
           'procedencia': procedencia,
           'archivado': 0,
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
+          'created_at': UtcTimestampHelper.getCurrentUtcDateTime().toIso8601String(),
+          'updated_at': UtcTimestampHelper.getCurrentUtcDateTime().toIso8601String(),
           'fk_composicion_raza': fkComposicionRaza,
           'rebano_data': null,
           'composicion_raza_data': null,
@@ -1673,7 +1837,7 @@ class DatabaseService {
       LoggingService.debug('Saving pending animal update offline: $nombre (ID: $idAnimal)', 'DatabaseService');
       
       final db = await database;
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final currentTime = UtcTimestampHelper.getCurrentUtcTimestamp();
       
       await db.update(
         'animales',
@@ -1691,7 +1855,7 @@ class DatabaseService {
           'estado_id': estadoId,
           'etapa_id': etapaId,
           'local_updated_at': currentTime,
-          'updated_at': DateTime.now().toIso8601String(),
+          'updated_at': UtcTimestampHelper.getCurrentUtcDateTime().toIso8601String(),
         },
         where: 'id_animal = ?',
         whereArgs: [idAnimal],
@@ -2378,7 +2542,7 @@ class DatabaseService {
       
       final db = await database;
       final batch = db.batch();
-      final now = DateTime.now().millisecondsSinceEpoch;
+      final now = UtcTimestampHelper.getCurrentUtcTimestamp();
       
       for (final personal in personalFincas) {
         batch.insert(
@@ -2405,6 +2569,110 @@ class DatabaseService {
       LoggingService.info('Personal finca saved offline: ${personalFincas.length} items', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error saving personal finca offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // New method with conflict resolution for syncing personal finca
+  static Future<void> savePersonalFincaOfflineWithConflictResolution(List<PersonalFinca> personalFincas) async {
+    try {
+      LoggingService.debug('Saving ${personalFincas.length} personal finca offline with conflict resolution', 'DatabaseService');
+      
+      final db = await database;
+      final currentSyncTime = UtcTimestampHelper.getCurrentUtcTimestamp();
+      int syncedCount = 0;
+      int skippedCount = 0;
+
+      for (final personal in personalFincas) {
+        // Check if personal finca exists locally and has pending changes
+        final existing = await db.query(
+          'personal_finca',
+          where: 'id_tecnico = ?',
+          whereArgs: [personal.idTecnico],
+          limit: 1,
+        );
+
+        bool shouldSync = true;
+        SyncAuditRecord? auditRecord;
+
+        if (existing.isNotEmpty) {
+          final localRecord = existing.first;
+          final localTimestamp = UtcTimestampHelper.parseLocalTimestamp(localRecord['local_updated_at']);
+          final serverTimestamp = UtcTimestampHelper.parseServerTimestamp(personal.updatedAt);
+          
+          // Check if local data is newer
+          if (localTimestamp != null && serverTimestamp != null) {
+            final isLocalNewer = UtcTimestampHelper.isLocalNewer(localTimestamp, serverTimestamp);
+            
+            if (isLocalNewer == true) {
+              // Local data is newer, skip sync
+              shouldSync = false;
+              skippedCount++;
+              
+              auditRecord = SyncAuditRecord.localNewer(
+                entityType: 'PersonalFinca',
+                entityId: personal.idTecnico,
+                entityName: '${personal.nombre} ${personal.apellido}',
+                localTimestamp: localTimestamp,
+                serverTimestamp: serverTimestamp,
+                reason: 'Local personal finca data is newer than server data',
+              );
+              
+              LoggingService.info('Skipping sync for personal finca ${personal.nombre} ${personal.apellido} (ID: ${personal.idTecnico}) - local data is newer', 'DatabaseService');
+            } else {
+              // Server data is newer or equal, sync it
+              auditRecord = SyncAuditRecord.serverNewer(
+                entityType: 'PersonalFinca',
+                entityId: personal.idTecnico,
+                entityName: '${personal.nombre} ${personal.apellido}',
+                localTimestamp: localTimestamp,
+                serverTimestamp: serverTimestamp,
+                reason: 'Server personal finca data is newer than local data',
+              );
+            }
+          }
+        } else {
+          // New personal finca from server
+          auditRecord = SyncAuditRecord.syncSuccess(
+            entityType: 'PersonalFinca',
+            entityId: personal.idTecnico,
+            entityName: '${personal.nombre} ${personal.apellido}',
+            serverTimestamp: UtcTimestampHelper.parseServerTimestamp(personal.updatedAt),
+          );
+        }
+
+        if (shouldSync) {
+          await db.insert(
+            'personal_finca',
+            {
+              'id_tecnico': personal.idTecnico,
+              'id_finca': personal.idFinca,
+              'cedula': personal.cedula,
+              'nombre': personal.nombre,
+              'apellido': personal.apellido,
+              'telefono': personal.telefono,
+              'correo': personal.correo,
+              'tipo_trabajador': personal.tipoTrabajador,
+              'created_at': personal.createdAt,
+              'updated_at': personal.updatedAt,
+              'synced': 1,
+              'is_pending': 0,
+              'local_updated_at': currentSyncTime,
+            },
+            conflictAlgorithm: ConflictAlgorithm.replace,
+          );
+          syncedCount++;
+        }
+
+        // Save audit record
+        if (auditRecord != null) {
+          await saveSyncAuditRecord(auditRecord);
+        }
+      }
+
+      LoggingService.info('Personal finca sync completed: $syncedCount synced, $skippedCount skipped (newer local data)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving personal finca offline with conflict resolution', 'DatabaseService', e);
       rethrow;
     }
   }
@@ -2530,7 +2798,7 @@ class DatabaseService {
       LoggingService.debug('Saving pending personal finca update offline: $nombre $apellido (ID: $idTecnico)', 'DatabaseService');
       
       final db = await database;
-      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      final currentTime = UtcTimestampHelper.getCurrentUtcTimestamp();
       
       await db.update(
         'personal_finca',
@@ -2546,7 +2814,7 @@ class DatabaseService {
           'is_pending': 1,
           'pending_operation': 'UPDATE',
           'local_updated_at': currentTime,
-          'updated_at': DateTime.now().toIso8601String(),
+          'updated_at': UtcTimestampHelper.getCurrentUtcDateTime().toIso8601String(),
         },
         where: 'id_tecnico = ?',
         whereArgs: [idTecnico],
@@ -2671,5 +2939,114 @@ class DatabaseService {
       LoggingService.error('Error marking personal finca as synced', 'DatabaseService', e);
       rethrow;
     }
+  }
+
+  // Sync Audit operations
+  static Future<void> saveSyncAuditRecord(SyncAuditRecord record) async {
+    try {
+      LoggingService.debug('Saving sync audit record: ${record.entityType} ${record.entityName}', 'DatabaseService');
+      
+      final db = await database;
+      await db.insert(
+        'sync_audit',
+        record.toJson()..remove('id'), // Remove id for auto-increment
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+      
+      LoggingService.debug('Sync audit record saved successfully', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving sync audit record', 'DatabaseService', e);
+      // Don't rethrow - audit is not critical
+    }
+  }
+
+  static Future<List<SyncAuditRecord>> getSyncAuditRecords({
+    String? entityType,
+    int? limit = 100,
+    DateTime? since,
+  }) async {
+    try {
+      LoggingService.debug('Retrieving sync audit records', 'DatabaseService');
+      
+      final db = await database;
+      String where = '';
+      List<dynamic> whereArgs = [];
+      
+      List<String> conditions = [];
+      if (entityType != null) {
+        conditions.add('entity_type = ?');
+        whereArgs.add(entityType);
+      }
+      
+      if (since != null) {
+        conditions.add('sync_timestamp >= ?');
+        whereArgs.add(since.millisecondsSinceEpoch);
+      }
+      
+      if (conditions.isNotEmpty) {
+        where = 'WHERE ${conditions.join(' AND ')}';
+      }
+      
+      final maps = await db.query(
+        'sync_audit',
+        where: conditions.isNotEmpty ? conditions.join(' AND ') : null,
+        whereArgs: whereArgs.isNotEmpty ? whereArgs : null,
+        orderBy: 'sync_timestamp DESC',
+        limit: limit,
+      );
+      
+      final records = maps.map((map) => SyncAuditRecord.fromJson(map)).toList();
+      
+      LoggingService.debug('Retrieved ${records.length} sync audit records', 'DatabaseService');
+      return records;
+    } catch (e) {
+      LoggingService.error('Error retrieving sync audit records', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> cleanupOldSyncAuditRecords({int keepDays = 30}) async {
+    try {
+      LoggingService.debug('Cleaning up old sync audit records (older than $keepDays days)', 'DatabaseService');
+      
+      final db = await database;
+      final cutoffTime = DateTime.now().subtract(Duration(days: keepDays)).millisecondsSinceEpoch;
+      
+      final deletedCount = await db.delete(
+        'sync_audit',
+        where: 'sync_timestamp < ?',
+        whereArgs: [cutoffTime],
+      );
+      
+      LoggingService.info('Cleaned up $deletedCount old sync audit records', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error cleaning up old sync audit records', 'DatabaseService', e);
+      // Don't rethrow - cleanup is not critical
+    }
+  }
+
+  // Timestamp comparison utilities
+  static bool shouldSyncFromServer({
+    required DateTime? localTimestamp,
+    required DateTime? serverTimestamp,
+  }) {
+    if (localTimestamp == null && serverTimestamp == null) {
+      return false; // No data to sync
+    }
+    
+    if (localTimestamp == null) {
+      return true; // No local data, sync from server
+    }
+    
+    if (serverTimestamp == null) {
+      return false; // No server data, keep local
+    }
+    
+    // Convert both to UTC for comparison
+    final localUtc = localTimestamp.toUtc();
+    final serverUtc = serverTimestamp.toUtc();
+    
+    // Server data should be newer or equal to sync
+    return serverUtc.isAtSameMomentAs(localUtc) || serverUtc.isAfter(localUtc);
   }
 }

@@ -7,6 +7,7 @@ import 'profile_screen.dart';
 import 'finca_list_screen.dart';
 import 'configuration_data_screen.dart';
 import 'pending_sync_screen.dart';
+import 'sync_audit_screen.dart';
 import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -352,6 +353,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const ConfigurationDataScreen(),
+                      ),
+                    ),
+                  ),
+                  _buildQuickAccessCard(
+                    context,
+                    'Bitácora de Sincronización',
+                    Icons.sync_alt,
+                    '',
+                    () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const SyncAuditScreen(),
                       ),
                     ),
                   ),

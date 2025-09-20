@@ -1227,9 +1227,6 @@ class AuthService {
             'AuthService',
           );
 
-          // Save to offline storage
-          await DatabaseService.saveRebanosOffline([rebano]);
-
           return rebano;
         } else {
           throw Exception('Server returned error: ${jsonData['message']}');
@@ -1425,15 +1422,6 @@ class AuthService {
       final responseData = jsonDecode(response.body);
       final createdCambio = CambiosAnimal.fromJson(responseData['data']);
       
-      // Save to local database for offline access
-      try {
-        await DatabaseService.saveCambiosAnimalOffline([createdCambio]);
-        LoggingService.info('Cambios animal saved to local database', 'AuthService');
-      } catch (e) {
-        LoggingService.error('Failed to save cambios animal to local database', 'AuthService', e);
-        // Don't throw - the online creation was successful
-      }
-      
       LoggingService.info('Cambios animal created successfully', 'AuthService');
       return createdCambio;
     } else {
@@ -1572,15 +1560,6 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdLactancia = Lactancia.fromJson(responseData['data']);
-      
-      // Save to local database for offline access
-      try {
-        await DatabaseService.saveLactanciaOffline([createdLactancia]);
-        LoggingService.info('Lactancia saved to local database', 'AuthService');
-      } catch (e) {
-        LoggingService.error('Failed to save lactancia to local database', 'AuthService', e);
-        // Don't throw - the online creation was successful
-      }
       
       LoggingService.info('Lactancia created successfully', 'AuthService');
       return createdLactancia;
@@ -1834,15 +1813,6 @@ class AuthService {
       final responseData = jsonDecode(response.body);
       final createdPeso = PesoCorporal.fromJson(responseData['data']);
       
-      // Save to local database for offline access
-      try {
-        await DatabaseService.savePesoCorporalOffline([createdPeso]);
-        LoggingService.info('Peso corporal saved to local database', 'AuthService');
-      } catch (e) {
-        LoggingService.error('Failed to save peso corporal to local database', 'AuthService', e);
-        // Don't throw - the online creation was successful
-      }
-      
       LoggingService.info('Peso corporal created successfully', 'AuthService');
       return createdPeso;
     } else {
@@ -2085,15 +2055,6 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdPersonal = PersonalFinca.fromJson(responseData['data']);
-      
-      // Save to local database for offline access
-      try {
-        await DatabaseService.savePersonalFincaOffline([createdPersonal]);
-        LoggingService.info('Personal finca saved to local database', 'AuthService');
-      } catch (e) {
-        LoggingService.error('Failed to save personal finca to local database', 'AuthService', e);
-        // Don't throw - the online creation was successful
-      }
       
       LoggingService.info('Personal finca created successfully', 'AuthService');
       return createdPersonal;

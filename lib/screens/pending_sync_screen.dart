@@ -23,9 +23,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
   StreamSubscription<SyncData>? _syncSubscription;
   final _authService = AuthService();
   
-  // TODO: Temporary flag to disable auto-loading on screen open per issue #79
-  // This prevents immediate sync operations when the screen loads
-  static const bool _autoLoadOnInit = false;
+  // Auto-loading enabled to load pending records immediately when screen opens
+  static const bool _autoLoadOnInit = true;
 
   @override
   void initState() {
@@ -40,9 +39,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       });
     }
     _subscribeToSync();
-    // TODO: Automatic sync temporarily disabled per issue #79
-    // Auto-sync will be re-enabled after fixing sync reliability issues
-    // _startAutoSync();
+    // Enable automatic sync when screen starts if there are pending records
+    _startAutoSync();
   }
 
   @override
@@ -345,6 +343,55 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
           'Sincronización completada: $successfulSyncs personal sincronizados${skippedSyncs > 0 ? ', $skippedSyncs omitidos' : ''}';
       _syncProgress = 1.0;
     });
+  }
+
+  Future<void> _startAutoSync() async {
+    // Auto-sync should only run if we have pending records and connectivity
+    LoggingService.info(
+      'Starting automatic sync check on screen initialization',
+      'PendingSyncScreen',
+    );
+
+    try {
+      // First check if we have connectivity
+      final isConnected = await ConnectivityService.isConnected();
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity available, skipping auto-sync',
+          'PendingSyncScreen',
+        );
+        return;
+      }
+
+      // Load pending records to check if we have any
+      final records = await DatabaseService.getAllPendingRecords();
+      if (records.isEmpty) {
+        LoggingService.info(
+          'No pending records found, skipping auto-sync',
+          'PendingSyncScreen',
+        );
+        return;
+      }
+
+      LoggingService.info(
+        'Found ${records.length} pending records with connectivity, starting auto-sync',
+        'PendingSyncScreen',
+      );
+
+      // Give the UI a moment to load before starting sync
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Start the sync process
+      await _syncPendingRecords();
+    } catch (e) {
+      LoggingService.error(
+        'Error during auto-sync startup',
+        'PendingSyncScreen',
+        e,
+      );
+      // Don't show error to user for auto-sync failures
+      // They can manually sync if needed
+    }
   }
 
   String _formatDateTime(int timestamp) {

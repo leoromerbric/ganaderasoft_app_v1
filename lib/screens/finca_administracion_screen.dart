@@ -10,6 +10,7 @@ import 'cambios_animal_list_screen.dart';
 import 'personal_finca_list_screen.dart';
 import 'peso_corporal_list_screen.dart';
 import 'lactancia_list_screen.dart';
+import 'registros_leche_list_screen.dart';
 
 class FarmDetailsScreen extends StatefulWidget {
   final Finca finca;
@@ -339,6 +340,35 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                         ),
                       ),
                     ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // Third row of management cards
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildNavigationCard(
+                      context,
+                      'Registros de Leche',
+                      Icons.local_drink_outlined,
+                      'Control de producción',
+                      false,
+                      () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => RegistrosLecheListScreen(
+                            finca: widget.finca,
+                            animales: _animales,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(), // Empty space for symmetry
                   ),
                 ],
               ),

@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -294,6 +294,23 @@ class DatabaseService {
         peso_etapa_anid INTEGER NOT NULL,
         peso_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
+      )
+    ''');
+
+    // Registro lechero table
+    await db.execute('''
+      CREATE TABLE registro_lechero (
+        leche_id INTEGER PRIMARY KEY,
+        leche_fecha_pesaje TEXT NOT NULL,
+        leche_pesaje_Total TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
+        leche_lactancia_id INTEGER NOT NULL,
+        synced INTEGER DEFAULT 0,
+        is_pending INTEGER DEFAULT 0,
+        pending_operation TEXT,
         local_updated_at INTEGER NOT NULL,
         modifiedOffline INTEGER DEFAULT 0
       )
@@ -673,6 +690,27 @@ class DatabaseService {
       }
       
       LoggingService.info('Pending operation columns added to farm management tables successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 12) {
+      // Add registro_lechero table for version 12
+      await db.execute('''
+        CREATE TABLE registro_lechero (
+          leche_id INTEGER PRIMARY KEY,
+          leche_fecha_pesaje TEXT NOT NULL,
+          leche_pesaje_Total TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          leche_lactancia_id INTEGER NOT NULL,
+          synced INTEGER DEFAULT 0,
+          is_pending INTEGER DEFAULT 0,
+          pending_operation TEXT,
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
+        )
+      ''');
+      
+      LoggingService.info('registro_lechero table added successfully', 'DatabaseService');
     }
   }
 
@@ -2074,6 +2112,25 @@ class DatabaseService {
         });
       }
       
+      // Get pending registro lechero
+      final pendingRegistroLeche = await db.query(
+        'registro_lechero',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final registro in pendingRegistroLeche) {
+        pendingRecords.add({
+          'type': 'RegistroLeche',
+          'id': registro['leche_id'],
+          'name': 'Leche ${registro['leche_fecha_pesaje']} - ${registro['leche_pesaje_Total']}L',
+          'operation': registro['pending_operation'] ?? 'CREATE',
+          'created_at': registro['local_updated_at'],
+          'data': registro,
+        });
+      }
+      
       // Get pending personal finca
       final pendingPersonal = await db.query(
         'personal_finca',
@@ -3122,6 +3179,101 @@ class DatabaseService {
       LoggingService.info('Peso corporal marked as synced: $tempId -> $realId', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error marking peso corporal as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // Registro Lechero offline operations
+  static Future<void> savePendingRegistroLecheOffline({
+    required String lecheFechaPesaje,
+    required String lechePesajeTotal,
+    required int lecheLactanciaId,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending registro leche offline', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      // Generate a temporary negative ID for offline registro leche
+      final tempId = -currentTime;
+      
+      await db.insert(
+        'registro_lechero',
+        {
+          'leche_id': tempId,
+          'leche_fecha_pesaje': lecheFechaPesaje,
+          'leche_pesaje_Total': lechePesajeTotal,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'leche_lactancia_id': lecheLactanciaId,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending registro leche saved offline (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending registro leche offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingRegistroLecheOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending registro leche from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'registro_lechero',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending registro leche retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending registro leche from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markRegistroLecheAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking registro leche as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        final updatedRows = await txn.update(
+          'registro_lechero',
+          {
+            'leche_id': realId,
+            'synced': 1,
+            'is_pending': 0,
+            'pending_operation': null,
+            'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
+          },
+          where: 'leche_id = ? AND is_pending = ? AND synced = ?',
+          whereArgs: [tempId, 1, 0],
+        );
+        
+        if (updatedRows == 0) {
+          LoggingService.warning('No rows updated when marking registro leche as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+          throw Exception('Registro leche with tempId $tempId not found or already synced');
+        }
+      });
+      
+      LoggingService.info('Registro leche marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking registro leche as synced', 'DatabaseService', e);
       rethrow;
     }
   }

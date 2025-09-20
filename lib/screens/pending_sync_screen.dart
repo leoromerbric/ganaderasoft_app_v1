@@ -248,6 +248,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       await _syncPendingCambiosAnimal();
       await _syncPendingLactancia();
       await _syncPendingPesoCorporal();
+      await _syncPendingRegistroLeche();
       await _loadPendingRecords(); // Refresh the list
     } catch (e) {
       LoggingService.error(
@@ -730,6 +731,75 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     setState(() {
       _syncMessage =
           'Sincronización completada: $successfulSyncs registros de peso corporal sincronizados';
+    });
+  }
+
+  /// Synchronizes pending registro leche records with the server.
+  Future<void> _syncPendingRegistroLeche() async {
+    final pendingRegistroLeche = await DatabaseService.getPendingRegistroLecheOffline();
+
+    if (pendingRegistroLeche.isEmpty) {
+      setState(() {
+        _syncMessage =
+            'No hay registros de leche pendientes por sincronizar';
+      });
+      return;
+    }
+
+    setState(() {
+      _syncMessage =
+          'Sincronizando ${pendingRegistroLeche.length} registros de leche...';
+    });
+
+    int successfulSyncs = 0;
+
+    for (int i = 0; i < pendingRegistroLeche.length; i++) {
+      final registroData = pendingRegistroLeche[i];
+
+      setState(() {
+        _syncMessage =
+            'Sincronizando registro de leche ${i + 1} de ${pendingRegistroLeche.length}...';
+      });
+
+      try {
+        final tempId = registroData['leche_id'] as int;
+
+        // Create the registro leche on the server
+        final registroLeche = RegistroLechero(
+          lecheId: 0, // Will be assigned by server
+          lecheFechaPesaje: registroData['leche_fecha_pesaje'] as String,
+          lechePesajeTotal: registroData['leche_pesaje_Total'] as String,
+          createdAt: registroData['created_at'] as String,
+          updatedAt: registroData['updated_at'] as String,
+          lecheLactanciaId: registroData['leche_lactancia_id'] as int,
+        );
+
+        final createdRegistroLeche = await _authService.createRegistroLechero(registroLeche);
+
+        // Mark as synced in local database
+        await DatabaseService.markRegistroLecheAsSynced(
+          tempId,
+          createdRegistroLeche.lecheId,
+        );
+
+        LoggingService.info(
+          'Registro leche synced successfully: ${registroData['leche_fecha_pesaje']} - ${registroData['leche_pesaje_Total']}L',
+          'PendingSyncScreen',
+        );
+        successfulSyncs++;
+      } catch (e) {
+        LoggingService.error(
+          'Error syncing registro leche: ${registroData['leche_fecha_pesaje']} - ${registroData['leche_pesaje_Total']}L',
+          'PendingSyncScreen',
+          e,
+        );
+        // Continue with other records even if one fails
+      }
+    }
+
+    setState(() {
+      _syncMessage =
+          'Sincronización completada: $successfulSyncs registros de leche sincronizados';
     });
   }
 

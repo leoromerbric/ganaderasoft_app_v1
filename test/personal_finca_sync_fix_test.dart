@@ -18,8 +18,8 @@ void main() {
       await DatabaseService.clearAllData();
     });
 
-    test('should handle sync when real ID record already exists', () async {
-      print('\n=== Testing sync when real ID record already exists ===');
+    test('should handle sync with current flow (no redundant save) - Issue #89 fix', () async {
+      print('\n=== Testing sync with current flow (AuthService no longer saves to DB) ===');
 
       // Step 1: Create a pending personal finca with temp ID
       await DatabaseService.savePendingPersonalFincaOffline(
@@ -40,55 +40,34 @@ void main() {
       
       print('Created pending personal finca with temp ID: $tempId');
 
-      // Step 2: Simulate AuthService.createPersonalFinca saving the real record
-      // This simulates what happens when the server responds with a real ID
-      final realId = 1011;
+      // Step 2: Verify only temp record exists (AuthService no longer saves real ID record)
       final db = await DatabaseService.database;
-      await db.insert(
-        'personal_finca',
-        {
-          'id_tecnico': realId,
-          'id_finca': 1,
-          'cedula': 12345678,
-          'nombre': 'Test',
-          'apellido': 'Personal',
-          'telefono': '3001234567',
-          'correo': 'test@example.com',
-          'tipo_trabajador': 'Administrador',
-          'created_at': DateTime.now().toIso8601String(),
-          'updated_at': DateTime.now().toIso8601String(),
-          'synced': 1,
-          'is_pending': 0,
-          'local_updated_at': DateTime.now().millisecondsSinceEpoch,
-        },
-      );
-      
-      print('Simulated AuthService saving real record with ID: $realId');
-
-      // Verify both records exist
       final allPersonal = await db.query('personal_finca');
-      expect(allPersonal.length, equals(2));
-      print('Verified both temp and real records exist');
+      expect(allPersonal.length, equals(1));
+      expect(allPersonal.first['id_tecnico'], equals(tempId));
+      
+      print('Verified only temp record exists (no redundant save from AuthService)');
 
-      // Step 3: Call markPersonalFincaAsSynced (this should not fail)
+      // Step 3: Call markPersonalFincaAsSynced (should update temp record with real ID)
+      final realId = 1011;
       await DatabaseService.markPersonalFincaAsSynced(tempId, realId);
       print('Successfully called markPersonalFincaAsSynced');
 
-      // Step 4: Verify the temp record is removed and only real record remains
+      // Step 4: Verify the temp record is updated with real ID (not removed)
       final finalPersonal = await db.query('personal_finca');
-      expect(finalPersonal.length, equals(1));
-      expect(finalPersonal.first['id_tecnico'], equals(realId));
+      expect(finalPersonal.length, equals(1)); // Still 1 record (updated, not removed)
+      expect(finalPersonal.first['id_tecnico'], equals(realId)); // Now has real ID
       expect(finalPersonal.first['synced'], equals(1));
       expect(finalPersonal.first['is_pending'], equals(0));
       
-      print('✓ Temp record removed, only real record remains');
+      print('✓ Temp record updated with real ID: $realId');
 
       // Step 5: Verify no pending records remain
       final stillPending = await DatabaseService.getPendingPersonalFincaOffline();
       expect(stillPending.length, equals(0));
       
       print('✓ No pending records remain');
-      print('=== Test PASSED ===');
+      print('=== Test PASSED - Issue #89 Fixed ===');
     });
 
     test('should handle sync when real ID record does not exist', () async {

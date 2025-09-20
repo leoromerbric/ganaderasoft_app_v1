@@ -19,10 +19,11 @@ class OfflineManager {
         }
         _wasOffline = true;
       } else if (_wasOffline) {
-        // Came back online, trigger sync
-        LoggingService.info('Device came back online - triggering auto-sync', 'OfflineManager');
+        // Came back online - log but don't auto-sync per requirements
+        LoggingService.info('Device came back online - auto-sync disabled per requirements', 'OfflineManager');
         _wasOffline = false;
-        _autoSync();
+        // Auto-sync disabled: _autoSync(); 
+        // All synchronization must be manually triggered via "Sincronizar cambios" button
       }
     });
   }

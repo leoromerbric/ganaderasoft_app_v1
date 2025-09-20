@@ -6,6 +6,7 @@ import '../models/configuration_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
+import '../services/database_service.dart';
 
 class CreateCambiosAnimalScreen extends StatefulWidget {
   final Finca finca;
@@ -152,38 +153,75 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
     });
 
     try {
-      final cambiosAnimal = CambiosAnimal(
-        idCambio: 0, // Will be assigned by server
-        fechaCambio: _fechaCambioController.text,
-        etapaCambio: _selectedEtapa!.etapaNombre,
-        peso: double.parse(_pesoController.text),
-        altura: double.parse(_alturaController.text),
-        comentario: _comentarioController.text,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        cambiosEtapaAnid: _selectedAnimal!.idAnimal,
-        cambiosEtapaEtid: _selectedEtapa!.etapaId,
-      );
+      // Check connectivity first
+      await _checkConnectivity();
 
-      LoggingService.info(
-        'Creating cambios animal',
-        'CreateCambiosAnimalScreen',
-      );
-      await _authService.createCambiosAnimal(cambiosAnimal);
-
-      LoggingService.info(
-        'Cambios animal created successfully',
-        'CreateCambiosAnimalScreen',
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Cambio de animal registrado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+      if (_isOffline) {
+        // Save offline
+        LoggingService.info(
+          'Creating cambios animal offline',
+          'CreateCambiosAnimalScreen',
         );
-        Navigator.pop(context, true);
+        
+        await DatabaseService.savePendingCambiosAnimalOffline(
+          fechaCambio: _fechaCambioController.text,
+          etapaCambio: _selectedEtapa!.etapaNombre,
+          peso: double.parse(_pesoController.text),
+          altura: double.parse(_alturaController.text),
+          comentario: _comentarioController.text,
+          cambiosEtapaAnid: _selectedAnimal!.idAnimal,
+          cambiosEtapaEtid: _selectedEtapa!.etapaId,
+        );
+
+        LoggingService.info(
+          'Cambios animal saved offline successfully',
+          'CreateCambiosAnimalScreen',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cambio de animal guardado offline. Se sincronizará cuando tengas conexión.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // Save online
+        final cambiosAnimal = CambiosAnimal(
+          idCambio: 0, // Will be assigned by server
+          fechaCambio: _fechaCambioController.text,
+          etapaCambio: _selectedEtapa!.etapaNombre,
+          peso: double.parse(_pesoController.text),
+          altura: double.parse(_alturaController.text),
+          comentario: _comentarioController.text,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+          cambiosEtapaAnid: _selectedAnimal!.idAnimal,
+          cambiosEtapaEtid: _selectedEtapa!.etapaId,
+        );
+
+        LoggingService.info(
+          'Creating cambios animal',
+          'CreateCambiosAnimalScreen',
+        );
+        await _authService.createCambiosAnimal(cambiosAnimal);
+
+        LoggingService.info(
+          'Cambios animal created successfully',
+          'CreateCambiosAnimalScreen',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cambio de animal registrado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       LoggingService.error(

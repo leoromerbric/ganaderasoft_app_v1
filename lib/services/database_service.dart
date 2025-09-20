@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 10,
+      version: 11,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -656,6 +656,23 @@ class DatabaseService {
       }
       
       LoggingService.info('modifiedOffline columns added to all tables successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 11) {
+      // Add pending operation columns to farm management tables for version 11
+      final farmTables = ['cambios_animal', 'lactancia', 'peso_corporal'];
+      
+      for (final table in farmTables) {
+        await db.execute('''
+          ALTER TABLE $table ADD COLUMN is_pending INTEGER DEFAULT 0
+        ''');
+        
+        await db.execute('''
+          ALTER TABLE $table ADD COLUMN pending_operation TEXT
+        ''');
+      }
+      
+      LoggingService.info('Pending operation columns added to farm management tables successfully', 'DatabaseService');
     }
   }
 
@@ -2003,8 +2020,8 @@ class DatabaseService {
       // Get pending cambios animal
       final pendingCambios = await db.query(
         'cambios_animal',
-        where: 'synced = ?',
-        whereArgs: [0],
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
         orderBy: 'local_updated_at DESC',
       );
       
@@ -2012,10 +2029,48 @@ class DatabaseService {
         pendingRecords.add({
           'type': 'CambiosAnimal',
           'id': cambio['id_cambio'],
-          'name': 'Cambio Animal ${cambio['id_cambio']}',
-          'operation': 'CREATE',
+          'name': 'Cambio Animal ${cambio['fecha_cambio']}',
+          'operation': cambio['pending_operation'] ?? 'CREATE',
           'created_at': cambio['local_updated_at'],
           'data': cambio,
+        });
+      }
+      
+      // Get pending lactancia
+      final pendingLactancia = await db.query(
+        'lactancia',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final lactancia in pendingLactancia) {
+        pendingRecords.add({
+          'type': 'Lactancia',
+          'id': lactancia['lactancia_id'],
+          'name': 'Lactancia ${lactancia['lactancia_fecha_inicio']}',
+          'operation': lactancia['pending_operation'] ?? 'CREATE',
+          'created_at': lactancia['local_updated_at'],
+          'data': lactancia,
+        });
+      }
+      
+      // Get pending peso corporal
+      final pendingPeso = await db.query(
+        'peso_corporal',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      for (final peso in pendingPeso) {
+        pendingRecords.add({
+          'type': 'PesoCorporal',
+          'id': peso['id_peso'],
+          'name': 'Peso ${peso['fecha_peso']} - ${peso['peso']}kg',
+          'operation': peso['pending_operation'] ?? 'CREATE',
+          'created_at': peso['local_updated_at'],
+          'data': peso,
         });
       }
       
@@ -2766,6 +2821,307 @@ class DatabaseService {
       LoggingService.info('Personal finca marked as synced: $tempId -> $realId', 'DatabaseService');
     } catch (e) {
       LoggingService.error('Error marking personal finca as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // Cambios Animal offline operations
+  static Future<void> savePendingCambiosAnimalOffline({
+    required String fechaCambio,
+    required String etapaCambio,
+    required double peso,
+    required double altura,
+    required String comentario,
+    required int cambiosEtapaAnid,
+    required int cambiosEtapaEtid,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending cambios animal offline', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      // Generate a temporary negative ID for offline cambios
+      final tempId = -currentTime;
+      
+      await db.insert(
+        'cambios_animal',
+        {
+          'id_cambio': tempId,
+          'fecha_cambio': fechaCambio,
+          'etapa_cambio': etapaCambio,
+          'peso': peso,
+          'altura': altura,
+          'comentario': comentario,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'cambios_etapa_anid': cambiosEtapaAnid,
+          'cambios_etapa_etid': cambiosEtapaEtid,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending cambios animal saved offline (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending cambios animal offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingCambiosAnimalOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending cambios animal from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'cambios_animal',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending cambios animal retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending cambios animal from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markCambiosAnimalAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking cambios animal as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        final updatedRows = await txn.update(
+          'cambios_animal',
+          {
+            'id_cambio': realId,
+            'synced': 1,
+            'is_pending': 0,
+            'pending_operation': null,
+            'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
+          },
+          where: 'id_cambio = ? AND is_pending = ? AND synced = ?',
+          whereArgs: [tempId, 1, 0],
+        );
+        
+        if (updatedRows == 0) {
+          LoggingService.warning('No rows updated when marking cambios animal as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+          throw Exception('Cambios animal with tempId $tempId not found or already synced');
+        }
+      });
+      
+      LoggingService.info('Cambios animal marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking cambios animal as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // Lactancia offline operations
+  static Future<void> savePendingLactanciaOffline({
+    required String lactanciaFechaInicio,
+    String? lactanciaFechaFin,
+    String? lactanciaSecado,
+    required int lactanciaEtapaAnid,
+    required int lactanciaEtapaEtid,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending lactancia offline', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      // Generate a temporary negative ID for offline lactancia
+      final tempId = -currentTime;
+      
+      await db.insert(
+        'lactancia',
+        {
+          'lactancia_id': tempId,
+          'lactancia_fecha_inicio': lactanciaFechaInicio,
+          'lactancia_fecha_fin': lactanciaFechaFin,
+          'lactancia_secado': lactanciaSecado,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'lactancia_etapa_anid': lactanciaEtapaAnid,
+          'lactancia_etapa_etid': lactanciaEtapaEtid,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending lactancia saved offline (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending lactancia offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingLactanciaOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending lactancia from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'lactancia',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending lactancia retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending lactancia from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markLactanciaAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking lactancia as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        final updatedRows = await txn.update(
+          'lactancia',
+          {
+            'lactancia_id': realId,
+            'synced': 1,
+            'is_pending': 0,
+            'pending_operation': null,
+            'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
+          },
+          where: 'lactancia_id = ? AND is_pending = ? AND synced = ?',
+          whereArgs: [tempId, 1, 0],
+        );
+        
+        if (updatedRows == 0) {
+          LoggingService.warning('No rows updated when marking lactancia as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+          throw Exception('Lactancia with tempId $tempId not found or already synced');
+        }
+      });
+      
+      LoggingService.info('Lactancia marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking lactancia as synced', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  // Peso Corporal offline operations
+  static Future<void> savePendingPesoCorporalOffline({
+    required String fechaPeso,
+    required double peso,
+    required String comentario,
+    required int pesoEtapaAnid,
+    required int pesoEtapaEtid,
+  }) async {
+    try {
+      LoggingService.debug('Saving pending peso corporal offline', 'DatabaseService');
+      
+      final db = await database;
+      final currentTime = DateTime.now().millisecondsSinceEpoch;
+      
+      // Generate a temporary negative ID for offline peso corporal
+      final tempId = -currentTime;
+      
+      await db.insert(
+        'peso_corporal',
+        {
+          'id_peso': tempId,
+          'fecha_peso': fechaPeso,
+          'peso': peso,
+          'comentario': comentario,
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+          'peso_etapa_anid': pesoEtapaAnid,
+          'peso_etapa_etid': pesoEtapaEtid,
+          'synced': 0,
+          'is_pending': 1,
+          'pending_operation': 'CREATE',
+          'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
+        },
+        conflictAlgorithm: ConflictAlgorithm.replace,
+      );
+      
+      LoggingService.info('Pending peso corporal saved offline (temp ID: $tempId)', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error saving pending peso corporal offline', 'DatabaseService', e);
+      rethrow;
+    }
+  }
+
+  static Future<List<Map<String, dynamic>>> getPendingPesoCorporalOffline() async {
+    try {
+      LoggingService.debug('Retrieving pending peso corporal from offline storage', 'DatabaseService');
+      
+      final db = await database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'peso_corporal',
+        where: 'is_pending = ? AND synced = ?',
+        whereArgs: [1, 0],
+        orderBy: 'local_updated_at DESC',
+      );
+      
+      LoggingService.info('${maps.length} pending peso corporal retrieved from offline storage', 'DatabaseService');
+      return maps;
+    } catch (e) {
+      LoggingService.error('Error retrieving pending peso corporal from offline storage', 'DatabaseService', e);
+      return [];
+    }
+  }
+
+  static Future<void> markPesoCorporalAsSynced(int tempId, int realId) async {
+    try {
+      LoggingService.debug('Marking peso corporal as synced: $tempId -> $realId', 'DatabaseService');
+      
+      final db = await database;
+      
+      // Use a transaction to ensure atomicity and check for successful update
+      await db.transaction((txn) async {
+        final updatedRows = await txn.update(
+          'peso_corporal',
+          {
+            'id_peso': realId,
+            'synced': 1,
+            'is_pending': 0,
+            'pending_operation': null,
+            'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
+          },
+          where: 'id_peso = ? AND is_pending = ? AND synced = ?',
+          whereArgs: [tempId, 1, 0],
+        );
+        
+        if (updatedRows == 0) {
+          LoggingService.warning('No rows updated when marking peso corporal as synced: $tempId -> $realId (may already be synced)', 'DatabaseService');
+          throw Exception('Peso corporal with tempId $tempId not found or already synced');
+        }
+      });
+      
+      LoggingService.info('Peso corporal marked as synced: $tempId -> $realId', 'DatabaseService');
+    } catch (e) {
+      LoggingService.error('Error marking peso corporal as synced', 'DatabaseService', e);
       rethrow;
     }
   }

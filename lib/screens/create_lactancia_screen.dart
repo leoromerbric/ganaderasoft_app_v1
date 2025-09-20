@@ -5,6 +5,7 @@ import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
+import '../services/database_service.dart';
 
 class CreateLactanciaScreen extends StatefulWidget {
   final Finca finca;
@@ -174,30 +175,65 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
     });
 
     try {
-      final lactancia = Lactancia(
-        lactanciaId: 0, // Will be assigned by server
-        lactanciaFechaInicio: _fechaInicioController.text,
-        lactanciaFechaFin: _isActive ? null : (_fechaFinController.text.isNotEmpty ? _fechaFinController.text : null),
-        lactanciaSecado: _secadoController.text.isNotEmpty ? _secadoController.text : null,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        lactanciaEtapaAnid: _selectedAnimal!.idAnimal,
-        lactanciaEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
-      );
+      // Check connectivity first
+      await _checkConnectivity();
 
-      LoggingService.info('Creating lactancia', 'CreateLactanciaScreen');
-      await _authService.createLactancia(lactancia);
-
-      LoggingService.info('Lactancia created successfully', 'CreateLactanciaScreen');
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Lactancia registrada exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+      if (_isOffline) {
+        // Save offline
+        LoggingService.info(
+          'Creating lactancia offline',
+          'CreateLactanciaScreen',
         );
-        Navigator.pop(context, true);
+        
+        await DatabaseService.savePendingLactanciaOffline(
+          lactanciaFechaInicio: _fechaInicioController.text,
+          lactanciaFechaFin: _isActive ? null : (_fechaFinController.text.isNotEmpty ? _fechaFinController.text : null),
+          lactanciaSecado: _secadoController.text.isNotEmpty ? _secadoController.text : null,
+          lactanciaEtapaAnid: _selectedAnimal!.idAnimal,
+          lactanciaEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
+        );
+
+        LoggingService.info(
+          'Lactancia saved offline successfully',
+          'CreateLactanciaScreen',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lactancia guardada offline. Se sincronizará cuando tengas conexión.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // Save online
+        final lactancia = Lactancia(
+          lactanciaId: 0, // Will be assigned by server
+          lactanciaFechaInicio: _fechaInicioController.text,
+          lactanciaFechaFin: _isActive ? null : (_fechaFinController.text.isNotEmpty ? _fechaFinController.text : null),
+          lactanciaSecado: _secadoController.text.isNotEmpty ? _secadoController.text : null,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+          lactanciaEtapaAnid: _selectedAnimal!.idAnimal,
+          lactanciaEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
+        );
+
+        LoggingService.info('Creating lactancia', 'CreateLactanciaScreen');
+        await _authService.createLactancia(lactancia);
+
+        LoggingService.info('Lactancia created successfully', 'CreateLactanciaScreen');
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Lactancia registrada exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       LoggingService.error('Error creating lactancia', 'CreateLactanciaScreen', e);

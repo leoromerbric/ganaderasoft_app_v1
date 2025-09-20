@@ -5,6 +5,7 @@ import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
+import '../services/database_service.dart';
 
 class CreatePesoCorporalScreen extends StatefulWidget {
   final Finca finca;
@@ -155,33 +156,68 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
     });
 
     try {
-      final pesoCorporal = PesoCorporal(
-        idPeso: 0, // Will be assigned by server
-        fechaPeso: _fechaPesoController.text,
-        peso: double.parse(_pesoController.text),
-        comentario: _comentarioController.text,
-        createdAt: DateTime.now().toIso8601String(),
-        updatedAt: DateTime.now().toIso8601String(),
-        pesoEtapaAnid: _selectedAnimal!.idAnimal,
-        pesoEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
-      );
+      // Check connectivity first
+      await _checkConnectivity();
 
-      LoggingService.info('Creating peso corporal', 'CreatePesoCorporalScreen');
-      await _authService.createPesoCorporal(pesoCorporal);
-
-      LoggingService.info(
-        'Peso corporal created successfully',
-        'CreatePesoCorporalScreen',
-      );
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Peso registrado exitosamente'),
-            backgroundColor: Colors.green,
-          ),
+      if (_isOffline) {
+        // Save offline
+        LoggingService.info(
+          'Creating peso corporal offline',
+          'CreatePesoCorporalScreen',
         );
-        Navigator.pop(context, true);
+        
+        await DatabaseService.savePendingPesoCorporalOffline(
+          fechaPeso: _fechaPesoController.text,
+          peso: double.parse(_pesoController.text),
+          comentario: _comentarioController.text,
+          pesoEtapaAnid: _selectedAnimal!.idAnimal,
+          pesoEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
+        );
+
+        LoggingService.info(
+          'Peso corporal saved offline successfully',
+          'CreatePesoCorporalScreen',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Peso guardado offline. Se sincronizará cuando tengas conexión.'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        // Save online
+        final pesoCorporal = PesoCorporal(
+          idPeso: 0, // Will be assigned by server
+          fechaPeso: _fechaPesoController.text,
+          peso: double.parse(_pesoController.text),
+          comentario: _comentarioController.text,
+          createdAt: DateTime.now().toIso8601String(),
+          updatedAt: DateTime.now().toIso8601String(),
+          pesoEtapaAnid: _selectedAnimal!.idAnimal,
+          pesoEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
+        );
+
+        LoggingService.info('Creating peso corporal', 'CreatePesoCorporalScreen');
+        await _authService.createPesoCorporal(pesoCorporal);
+
+        LoggingService.info(
+          'Peso corporal created successfully',
+          'CreatePesoCorporalScreen',
+        );
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Peso registrado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
       }
     } catch (e) {
       LoggingService.error(

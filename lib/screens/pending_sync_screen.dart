@@ -67,8 +67,8 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
       });
     }
     _subscribeToSync();
-    // Start automatic sync when screen loads
-    _startAutoSync();
+    // Auto-sync disabled per requirements - users must manually click "Sincronizar cambios"
+    // _startAutoSync();
   }
 
   /// Cleans up resources when the screen is disposed.

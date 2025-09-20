@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 9,
+      version: 10,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -42,7 +42,8 @@ class DatabaseService {
         type_user TEXT NOT NULL,
         image TEXT NOT NULL,
         password_hash TEXT,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -57,7 +58,8 @@ class DatabaseService {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         propietario_data TEXT,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -67,7 +69,8 @@ class DatabaseService {
         estado_id INTEGER PRIMARY KEY,
         estado_nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -76,7 +79,8 @@ class DatabaseService {
         tipo_animal_id INTEGER PRIMARY KEY,
         tipo_animal_nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -90,7 +94,8 @@ class DatabaseService {
         etapa_sexo TEXT NOT NULL,
         tipo_animal_data TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -99,7 +104,8 @@ class DatabaseService {
         codigo TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -108,7 +114,8 @@ class DatabaseService {
         codigo TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -118,7 +125,8 @@ class DatabaseService {
         nombre TEXT NOT NULL,
         descripcion TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -127,7 +135,8 @@ class DatabaseService {
         codigo TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -136,7 +145,8 @@ class DatabaseService {
         codigo TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -145,7 +155,8 @@ class DatabaseService {
         codigo TEXT PRIMARY KEY,
         nombre TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -155,7 +166,8 @@ class DatabaseService {
         valor TEXT NOT NULL,
         descripcion TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        updated_at INTEGER NOT NULL
+        updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -169,7 +181,8 @@ class DatabaseService {
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
         finca_data TEXT,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -194,7 +207,8 @@ class DatabaseService {
         pending_operation TEXT,
         estado_id INTEGER,
         etapa_id INTEGER,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -214,7 +228,8 @@ class DatabaseService {
         fk_id_finca INTEGER,
         fk_tipo_animal_id INTEGER,
         synced INTEGER DEFAULT 0,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -226,11 +241,11 @@ class DatabaseService {
         etapa_animales_data TEXT NOT NULL,
         etapa_actual_data TEXT,
         estados_data TEXT,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
-    // Farm management tables
     // Cambios de animales table
     await db.execute('''
       CREATE TABLE cambios_animal (
@@ -245,7 +260,8 @@ class DatabaseService {
         cambios_etapa_anid INTEGER NOT NULL,
         cambios_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -261,7 +277,8 @@ class DatabaseService {
         lactancia_etapa_anid INTEGER NOT NULL,
         lactancia_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -277,7 +294,8 @@ class DatabaseService {
         peso_etapa_anid INTEGER NOT NULL,
         peso_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
 
@@ -297,7 +315,8 @@ class DatabaseService {
         synced INTEGER DEFAULT 0,
         is_pending INTEGER DEFAULT 0,
         pending_operation TEXT,
-        local_updated_at INTEGER NOT NULL
+        local_updated_at INTEGER NOT NULL,
+        modifiedOffline INTEGER DEFAULT 0
       )
     ''');
     
@@ -314,7 +333,8 @@ class DatabaseService {
           estado_id INTEGER PRIMARY KEY,
           estado_nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -323,7 +343,8 @@ class DatabaseService {
           tipo_animal_id INTEGER PRIMARY KEY,
           tipo_animal_nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -337,7 +358,8 @@ class DatabaseService {
           etapa_sexo TEXT NOT NULL,
           tipo_animal_data TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -346,7 +368,8 @@ class DatabaseService {
           codigo TEXT PRIMARY KEY,
           nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -355,7 +378,8 @@ class DatabaseService {
           codigo TEXT PRIMARY KEY,
           nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -365,7 +389,8 @@ class DatabaseService {
           nombre TEXT NOT NULL,
           descripcion TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -374,7 +399,8 @@ class DatabaseService {
           codigo TEXT PRIMARY KEY,
           nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -383,7 +409,8 @@ class DatabaseService {
           codigo TEXT PRIMARY KEY,
           nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -392,7 +419,8 @@ class DatabaseService {
           codigo TEXT PRIMARY KEY,
           nombre TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -402,7 +430,8 @@ class DatabaseService {
           valor TEXT NOT NULL,
           descripcion TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          updated_at INTEGER NOT NULL
+          updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
       
@@ -420,7 +449,8 @@ class DatabaseService {
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL,
           finca_data TEXT,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -439,7 +469,8 @@ class DatabaseService {
           fk_composicion_raza INTEGER NOT NULL,
           rebano_data TEXT,
           composicion_raza_data TEXT,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
       
@@ -464,7 +495,8 @@ class DatabaseService {
           fk_id_finca INTEGER,
           fk_tipo_animal_id INTEGER,
           synced INTEGER DEFAULT 0,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
       
@@ -489,7 +521,8 @@ class DatabaseService {
           etapa_animales_data TEXT NOT NULL,
           etapa_actual_data TEXT,
           estados_data TEXT,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
       
@@ -511,7 +544,8 @@ class DatabaseService {
           cambios_etapa_anid INTEGER NOT NULL,
           cambios_etapa_etid INTEGER NOT NULL,
           synced INTEGER DEFAULT 0,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -526,7 +560,8 @@ class DatabaseService {
           lactancia_etapa_anid INTEGER NOT NULL,
           lactancia_etapa_etid INTEGER NOT NULL,
           synced INTEGER DEFAULT 0,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -541,7 +576,8 @@ class DatabaseService {
           peso_etapa_anid INTEGER NOT NULL,
           peso_etapa_etid INTEGER NOT NULL,
           synced INTEGER DEFAULT 0,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
 
@@ -558,7 +594,8 @@ class DatabaseService {
           created_at TEXT NOT NULL,
           updated_at TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
-          local_updated_at INTEGER NOT NULL
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
         )
       ''');
       
@@ -601,6 +638,24 @@ class DatabaseService {
       ''');
       
       LoggingService.info('Pending operation columns added to personal_finca table successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 10) {
+      // Add modifiedOffline column to all tables for version 10
+      final tables = [
+        'users', 'fincas', 'estado_salud', 'tipo_animal', 'etapa', 'fuente_agua',
+        'metodo_riego', 'ph_suelo', 'sexo', 'textura_suelo', 'tipo_explotacion',
+        'tipo_relieve', 'rebanos', 'animales', 'composicion_raza', 'animal_detail',
+        'cambios_animal', 'lactancia', 'peso_corporal', 'personal_finca'
+      ];
+
+      for (final table in tables) {
+        await db.execute('''
+          ALTER TABLE $table ADD COLUMN modifiedOffline INTEGER DEFAULT 0
+        ''');
+      }
+      
+      LoggingService.info('modifiedOffline columns added to all tables successfully', 'DatabaseService');
     }
   }
 
@@ -722,11 +777,26 @@ class DatabaseService {
       final db = await database;
       final batch = db.batch();
 
-      // Clear existing fincas
-      batch.delete('fincas');
+      // First, get all offline modified fincas to preserve them
+      final offlineModifiedFincas = await db.query(
+        'fincas',
+        where: 'modifiedOffline = ?',
+        whereArgs: [1],
+      );
 
-      // Insert new fincas
+      // Clear existing fincas (except offline modified ones)
+      batch.delete('fincas', where: 'modifiedOffline = ? OR modifiedOffline IS NULL', whereArgs: [0]);
+
+      // Insert new fincas from server
       for (final finca in fincas) {
+        // Check if this finca is in the offline modified list
+        final isOfflineModified = offlineModifiedFincas.any((f) => f['id_finca'] == finca.idFinca);
+        
+        if (isOfflineModified) {
+          LoggingService.info('Skipping overwrite of finca ${finca.nombre} (ID: ${finca.idFinca}) - modified offline', 'DatabaseService');
+          continue;
+        }
+
         batch.insert('fincas', {
           'id_finca': finca.idFinca,
           'id_propietario': finca.idPropietario,
@@ -746,6 +816,7 @@ class DatabaseService {
                 })
               : null,
           'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Server data is not modified offline
         });
       }
 
@@ -851,7 +922,8 @@ class DatabaseService {
       final db = await database;
       final batch = db.batch();
 
-      batch.delete('estado_salud');
+      // Delete only non-offline modified records
+      batch.delete('estado_salud', where: 'modifiedOffline = ? OR modifiedOffline IS NULL', whereArgs: [0]);
 
       for (final estado in estados) {
         batch.insert('estado_salud', {
@@ -859,6 +931,7 @@ class DatabaseService {
           'estado_nombre': estado.estadoNombre,
           'synced': estado.synced == true ? 1 : 0,
           'updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Server data is not modified offline
         });
       }
 
@@ -1012,11 +1085,14 @@ class DatabaseService {
       final db = await database;
       final batch = db.batch();
 
-      batch.delete(tableName);
+      // Configuration tables generally shouldn't be modified offline,
+      // but we respect the modifiedOffline flag just in case
+      batch.delete(tableName, where: 'modifiedOffline = ? OR modifiedOffline IS NULL', whereArgs: [0]);
 
       for (final item in items) {
         final map = toMap(item);
         map['updated_at'] = DateTime.now().millisecondsSinceEpoch;
+        map['modifiedOffline'] = 0; // Server data is not modified offline
         batch.insert(tableName, map);
       }
 
@@ -1237,7 +1313,8 @@ class DatabaseService {
       final batch = db.batch();
       final currentTime = DateTime.now().millisecondsSinceEpoch;
 
-      batch.delete('composicion_raza');
+      // Delete only non-offline modified records
+      batch.delete('composicion_raza', where: 'modifiedOffline = ? OR modifiedOffline IS NULL', whereArgs: [0]);
 
       for (final item in items) {
         batch.insert('composicion_raza', {
@@ -1256,6 +1333,7 @@ class DatabaseService {
           'fk_tipo_animal_id': item.fkTipoAnimalId,
           'synced': item.synced == true ? 1 : 0,
           'local_updated_at': currentTime,
+          'modifiedOffline': 0, // Server data is not modified offline
         });
       }
 
@@ -1455,6 +1533,20 @@ class DatabaseService {
       final currentTime = DateTime.now().millisecondsSinceEpoch;
 
       for (final animal in animales) {
+        // Check if this animal was modified offline
+        final existingAnimal = await db.query(
+          'animales',
+          where: 'id_animal = ?',
+          whereArgs: [animal.idAnimal],
+          limit: 1,
+        );
+        
+        // If the animal exists and was modified offline, skip overwriting it
+        if (existingAnimal.isNotEmpty && existingAnimal.first['modifiedOffline'] == 1) {
+          LoggingService.info('Skipping overwrite of animal ${animal.nombre} (ID: ${animal.idAnimal}) - modified offline', 'DatabaseService');
+          continue;
+        }
+
         batch.insert(
           'animales',
           {
@@ -1489,6 +1581,7 @@ class DatabaseService {
               'Proporcion_Raza': animal.composicionRaza!.proporcionRaza,
             }) : null,
             'local_updated_at': currentTime,
+            'modifiedOffline': 0, // Server data is not modified offline
           },
           conflictAlgorithm: ConflictAlgorithm.replace,
         );
@@ -1646,6 +1739,7 @@ class DatabaseService {
           'estado_id': estadoId,
           'etapa_id': etapaId,
           'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -1692,6 +1786,7 @@ class DatabaseService {
           'etapa_id': etapaId,
           'local_updated_at': currentTime,
           'updated_at': DateTime.now().toIso8601String(),
+          'modifiedOffline': 1, // Mark as modified while offline
         },
         where: 'id_animal = ?',
         whereArgs: [idAnimal],
@@ -1763,6 +1858,7 @@ class DatabaseService {
             'is_pending': 0,
             'pending_operation': null,
             'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
           },
           where: 'id_animal = ? AND is_pending = ? AND synced = ?',
           whereArgs: [tempId, 1, 0],
@@ -1812,6 +1908,7 @@ class DatabaseService {
           'is_pending': 0,
           'pending_operation': null,
           'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Reset offline modification flag after successful sync
         },
         where: 'id_animal = ? AND is_pending = ? AND synced = ?',
         whereArgs: [animalId, 1, 0],
@@ -1841,6 +1938,7 @@ class DatabaseService {
           'is_pending': 0,
           'pending_operation': null,
           'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+          'modifiedOffline': 0, // Reset offline modification flag after successful sync
         },
         where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
         whereArgs: [personalId, 1, 0],
@@ -2505,6 +2603,7 @@ class DatabaseService {
           'is_pending': 1,
           'pending_operation': 'CREATE',
           'local_updated_at': currentTime,
+          'modifiedOffline': 1, // Mark as created while offline
         },
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
@@ -2547,6 +2646,7 @@ class DatabaseService {
           'pending_operation': 'UPDATE',
           'local_updated_at': currentTime,
           'updated_at': DateTime.now().toIso8601String(),
+          'modifiedOffline': 1, // Mark as modified while offline
         },
         where: 'id_tecnico = ?',
         whereArgs: [idTecnico],
@@ -2595,6 +2695,7 @@ class DatabaseService {
             'is_pending': 0,
             'pending_operation': null,
             'local_updated_at': DateTime.now().millisecondsSinceEpoch,
+            'modifiedOffline': 0, // Reset offline modification flag after successful sync
           },
           where: 'id_tecnico = ? AND is_pending = ? AND synced = ?',
           whereArgs: [tempId, 1, 0],

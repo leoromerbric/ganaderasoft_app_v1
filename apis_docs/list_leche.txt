@@ -1,5 +1,5 @@
 Request:
-curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/leche?lactancia_id=7&fecha_inicio=2024-01-01&fecha_fin=2025-12-31' \
+curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/api/leche?lactancia_id=7' \
 --header 'Authorization: Bearer 37|Lwz2Hu1siYEx4qrrOBGzxhDDjk3diuuRRHjwDCIlab9b56d8' \
 --header 'Accept: application/json'
 

@@ -24,7 +24,7 @@ class DatabaseService {
     
     return await openDatabase(
       path,
-      version: 11,
+      version: 12,
       onCreate: _createDatabase,
       onUpgrade: _upgradeDatabase,
     );
@@ -690,6 +690,27 @@ class DatabaseService {
       }
       
       LoggingService.info('Pending operation columns added to farm management tables successfully', 'DatabaseService');
+    }
+
+    if (oldVersion < 12) {
+      // Add registro_lechero table for version 12
+      await db.execute('''
+        CREATE TABLE registro_lechero (
+          leche_id INTEGER PRIMARY KEY,
+          leche_fecha_pesaje TEXT NOT NULL,
+          leche_pesaje_Total TEXT NOT NULL,
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          leche_lactancia_id INTEGER NOT NULL,
+          synced INTEGER DEFAULT 0,
+          is_pending INTEGER DEFAULT 0,
+          pending_operation TEXT,
+          local_updated_at INTEGER NOT NULL,
+          modifiedOffline INTEGER DEFAULT 0
+        )
+      ''');
+      
+      LoggingService.info('registro_lechero table added successfully', 'DatabaseService');
     }
   }
 

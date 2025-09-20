@@ -5,8 +5,8 @@ curl --location 'http://ec2-52-53-127-245.us-west-1.compute.amazonaws.com:8000/a
 --header 'Accept: application/json' \
 --data '{
     "lactancia_fecha_inicio": "2026-02-01",
-    "Lactancia_fecha_fin": null,
-    "lactancia_secado": null,
+    "Lactancia_fecha_fin": "2026-02-01",
+    "lactancia_secado": "2026-02-01",
     "lactancia_etapa_anid": 13,
     "lactancia_etapa_etid": 15
 }'

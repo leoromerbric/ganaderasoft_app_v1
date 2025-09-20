@@ -737,7 +737,10 @@ class AuthService {
 
   // Get animal detail with stages (with offline support)
   Future<AnimalDetailResponse> getAnimalDetail(int animalId) async {
-    LoggingService.debug('Getting animal detail for ID: $animalId', 'AuthService');
+    LoggingService.debug(
+      'Getting animal detail for ID: $animalId',
+      'AuthService',
+    );
 
     try {
       // Check connectivity first
@@ -784,12 +787,19 @@ class AuthService {
       if (response.statusCode == 200) {
         try {
           final responseBody = jsonDecode(response.body);
-          final animalDetailResponse = AnimalDetailResponse.fromJson(responseBody);
+          final animalDetailResponse = AnimalDetailResponse.fromJson(
+            responseBody,
+          );
 
-          LoggingService.info('Animal detail retrieved successfully', 'AuthService');
+          LoggingService.info(
+            'Animal detail retrieved successfully',
+            'AuthService',
+          );
 
           // Cache the animal detail data for offline use
-          await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
+          await DatabaseService.saveAnimalDetailOffline(
+            animalDetailResponse.data,
+          );
 
           return animalDetailResponse;
         } catch (parseError) {
@@ -841,8 +851,10 @@ class AuthService {
   // Get animal detail offline
   Future<AnimalDetailResponse> _getOfflineAnimalDetail(int animalId) async {
     try {
-      final cachedAnimalDetail = await DatabaseService.getAnimalDetailOffline(animalId);
-      
+      final cachedAnimalDetail = await DatabaseService.getAnimalDetailOffline(
+        animalId,
+      );
+
       if (cachedAnimalDetail == null) {
         throw Exception('No cached animal detail found for ID: $animalId');
       }
@@ -858,7 +870,11 @@ class AuthService {
         data: cachedAnimalDetail,
       );
     } catch (e) {
-      LoggingService.error('Error getting offline animal detail', 'AuthService', e);
+      LoggingService.error(
+        'Error getting offline animal detail',
+        'AuthService',
+        e,
+      );
       throw Exception('No hay datos locales disponibles para el animal');
     }
   }
@@ -1166,16 +1182,10 @@ class AuthService {
         throw Exception('Failed to update animal: ${response.body}');
       }
     } on TimeoutException {
-      LoggingService.warning(
-        'Animal update timeout',
-        'AuthService',
-      );
+      LoggingService.warning('Animal update timeout', 'AuthService');
       throw Exception('Timeout al actualizar animal');
     } on SocketException {
-      LoggingService.warning(
-        'Animal update socket error',
-        'AuthService',
-      );
+      LoggingService.warning('Animal update socket error', 'AuthService');
       throw Exception('Sin conexión para actualizar animal');
     } catch (e) {
       LoggingService.error('Animal update error', 'AuthService', e);
@@ -1362,18 +1372,27 @@ class AuthService {
           'Cambios animal fetched successfully (${cambiosResponse.data.length} items)',
           'AuthService',
         );
-        
+
         // Save to offline storage for future offline access
         if (cambiosResponse.data.isNotEmpty) {
           try {
-            await DatabaseService.saveCambiosAnimalOffline(cambiosResponse.data);
-            LoggingService.info('Cambios animal saved to local database', 'AuthService');
+            await DatabaseService.saveCambiosAnimalOffline(
+              cambiosResponse.data,
+            );
+            LoggingService.info(
+              'Cambios animal saved to local database',
+              'AuthService',
+            );
           } catch (e) {
-            LoggingService.error('Failed to save cambios animal to local database', 'AuthService', e);
+            LoggingService.error(
+              'Failed to save cambios animal to local database',
+              'AuthService',
+              e,
+            );
             // Don't throw - the online fetch was successful
           }
         }
-        
+
         return cambiosResponse;
       } else {
         throw Exception('Failed to get cambios animal: ${response.body}');
@@ -1421,7 +1440,7 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdCambio = CambiosAnimal.fromJson(responseData['data']);
-      
+
       LoggingService.info('Cambios animal created successfully', 'AuthService');
       return createdCambio;
     } else {
@@ -1502,18 +1521,25 @@ class AuthService {
           'Lactancia fetched successfully (${lactanciaResponse.data.length} items)',
           'AuthService',
         );
-        
+
         // Save to offline storage for future offline access
         if (lactanciaResponse.data.isNotEmpty) {
           try {
             await DatabaseService.saveLactanciaOffline(lactanciaResponse.data);
-            LoggingService.info('Lactancia saved to local database', 'AuthService');
+            LoggingService.info(
+              'Lactancia saved to local database',
+              'AuthService',
+            );
           } catch (e) {
-            LoggingService.error('Failed to save lactancia to local database', 'AuthService', e);
+            LoggingService.error(
+              'Failed to save lactancia to local database',
+              'AuthService',
+              e,
+            );
             // Don't throw - the online fetch was successful
           }
         }
-        
+
         return lactanciaResponse;
       } else {
         throw Exception('Failed to get lactancia: ${response.body}');
@@ -1560,7 +1586,7 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdLactancia = Lactancia.fromJson(responseData['data']);
-      
+
       LoggingService.info('Lactancia created successfully', 'AuthService');
       return createdLactancia;
     } else {
@@ -1755,18 +1781,25 @@ class AuthService {
           'Peso corporal fetched successfully (${pesoResponse.data.length} items)',
           'AuthService',
         );
-        
+
         // Save to offline storage for future offline access
         if (pesoResponse.data.isNotEmpty) {
           try {
             await DatabaseService.savePesoCorporalOffline(pesoResponse.data);
-            LoggingService.info('Peso corporal saved to local database', 'AuthService');
+            LoggingService.info(
+              'Peso corporal saved to local database',
+              'AuthService',
+            );
           } catch (e) {
-            LoggingService.error('Failed to save peso corporal to local database', 'AuthService', e);
+            LoggingService.error(
+              'Failed to save peso corporal to local database',
+              'AuthService',
+              e,
+            );
             // Don't throw - the online fetch was successful
           }
         }
-        
+
         return pesoResponse;
       } else {
         throw Exception('Failed to get peso corporal: ${response.body}');
@@ -1812,7 +1845,7 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdPeso = PesoCorporal.fromJson(responseData['data']);
-      
+
       LoggingService.info('Peso corporal created successfully', 'AuthService');
       return createdPeso;
     } else {
@@ -2000,18 +2033,27 @@ class AuthService {
           'Personal finca fetched successfully (${personalResponse.data.length} items)',
           'AuthService',
         );
-        
+
         // Save to offline storage for future offline access
         if (personalResponse.data.isNotEmpty) {
           try {
-            await DatabaseService.savePersonalFincaOffline(personalResponse.data);
-            LoggingService.info('Personal finca saved to local database', 'AuthService');
+            await DatabaseService.savePersonalFincaOffline(
+              personalResponse.data,
+            );
+            LoggingService.info(
+              'Personal finca saved to local database',
+              'AuthService',
+            );
           } catch (e) {
-            LoggingService.error('Failed to save personal finca to local database', 'AuthService', e);
+            LoggingService.error(
+              'Failed to save personal finca to local database',
+              'AuthService',
+              e,
+            );
             // Don't throw - the online fetch was successful
           }
         }
-        
+
         return personalResponse;
       } else {
         throw Exception('Failed to get personal finca: ${response.body}');
@@ -2055,7 +2097,7 @@ class AuthService {
     if (response.statusCode == 201 || response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final createdPersonal = PersonalFinca.fromJson(responseData['data']);
-      
+
       LoggingService.info('Personal finca created successfully', 'AuthService');
       return createdPersonal;
     } else {
@@ -2091,16 +2133,23 @@ class AuthService {
     if (response.statusCode == 200) {
       final responseData = jsonDecode(response.body);
       final updatedPersonal = PersonalFinca.fromJson(responseData['data']);
-      
+
       // Update local database for offline access
       try {
         await DatabaseService.savePersonalFincaOffline([updatedPersonal]);
-        LoggingService.info('Personal finca updated in local database', 'AuthService');
+        LoggingService.info(
+          'Personal finca updated in local database',
+          'AuthService',
+        );
       } catch (e) {
-        LoggingService.error('Failed to update personal finca in local database', 'AuthService', e);
+        LoggingService.error(
+          'Failed to update personal finca in local database',
+          'AuthService',
+          e,
+        );
         // Don't throw - the online update was successful
       }
-      
+
       LoggingService.info('Personal finca updated successfully', 'AuthService');
       return updatedPersonal;
     } else {

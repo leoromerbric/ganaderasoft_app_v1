@@ -119,14 +119,14 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
           .toSet();
       
       _filteredRegistrosLeche = _filteredRegistrosLeche
-          .where((registro) => animalLactancias.contains(registro.registroLecheroLacid))
+          .where((registro) => animalLactancias.contains(registro.lecheLactanciaId))
           .toList();
     }
 
     // Filter by selected lactancia
     if (_selectedLactancia != null) {
       _filteredRegistrosLeche = _filteredRegistrosLeche
-          .where((registro) => registro.registroLecheroLacid == _selectedLactancia!.lactanciaId)
+          .where((registro) => registro.lecheLactanciaId == _selectedLactancia!.lactanciaId)
           .toList();
     }
 
@@ -524,9 +524,9 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
   Widget _buildRegistroCard(RegistroLechero registro) {
     final fechaPesaje = DateTime.parse(registro.lecheFechaPesaje).toLocal();
     final animalName = _getAnimalName(_lactancias
-        .firstWhere((l) => l.lactanciaId == registro.registroLecheroLacid)
+        .firstWhere((l) => l.lactanciaId == registro.lecheLactanciaId)
         .lactanciaEtapaAnid);
-    final lactanciaName = _getLactanciaName(registro.registroLecheroLacid);
+    final lactanciaName = _getLactanciaName(registro.lecheLactanciaId);
     
     return Card(
       margin: const EdgeInsets.only(bottom: 16.0),

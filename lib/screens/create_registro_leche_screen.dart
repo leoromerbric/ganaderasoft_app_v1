@@ -22,7 +22,8 @@ class CreateRegistroLecheScreen extends StatefulWidget {
   });
 
   @override
-  State<CreateRegistroLecheScreen> createState() => _CreateRegistroLecheScreenState();
+  State<CreateRegistroLecheScreen> createState() =>
+      _CreateRegistroLecheScreenState();
 }
 
 class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
@@ -48,7 +49,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
     super.initState();
     _selectedAnimal = widget.selectedAnimal;
     _selectedLactancia = widget.selectedLactancia;
-    
+
     if (_selectedAnimal != null) {
       _loadLactanciasForAnimal(_selectedAnimal!);
     }
@@ -79,21 +80,27 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
       final lactanciaResponse = await _authService.getLactancia(
         animalId: animal.idAnimal,
       );
-      
+
       setState(() {
         _availableLactancias = lactanciaResponse.data;
         // Auto-select if there's only one lactancia or if we have a pre-selected one
-        if (widget.selectedLactancia != null && 
-            _availableLactancias.any((l) => l.lactanciaId == widget.selectedLactancia!.lactanciaId)) {
+        if (widget.selectedLactancia != null &&
+            _availableLactancias.any(
+              (l) => l.lactanciaId == widget.selectedLactancia!.lactanciaId,
+            )) {
           _selectedLactancia = _availableLactancias.firstWhere(
-            (l) => l.lactanciaId == widget.selectedLactancia!.lactanciaId
+            (l) => l.lactanciaId == widget.selectedLactancia!.lactanciaId,
           );
         } else if (_availableLactancias.length == 1) {
           _selectedLactancia = _availableLactancias.first;
         }
       });
     } catch (e) {
-      LoggingService.error('Error loading lactancias for animal', 'CreateRegistroLecheScreen', e);
+      LoggingService.error(
+        'Error loading lactancias for animal',
+        'CreateRegistroLecheScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -162,7 +169,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
           'Creating registro leche offline',
           'CreateRegistroLecheScreen',
         );
-        
+
         await DatabaseService.savePendingRegistroLecheOffline(
           lecheFechaPesaje: _fechaPesajeController.text,
           lechePesajeTotal: _pesajeTotalController.text,
@@ -177,7 +184,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registro de leche guardado offline. Se sincronizará cuando tengas conexión.'),
+              content: Text(
+                'Registro de leche guardado offline. Se sincronizará cuando tengas conexión.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -194,10 +203,16 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
           lecheLactanciaId: _selectedLactancia!.lactanciaId,
         );
 
-        LoggingService.info('Creating registro leche', 'CreateRegistroLecheScreen');
+        LoggingService.info(
+          'Creating registro leche',
+          'CreateRegistroLecheScreen',
+        );
         await _authService.createRegistroLechero(registro);
 
-        LoggingService.info('Registro leche created successfully', 'CreateRegistroLecheScreen');
+        LoggingService.info(
+          'Registro leche created successfully',
+          'CreateRegistroLecheScreen',
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -210,7 +225,11 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
         }
       }
     } catch (e) {
-      LoggingService.error('Error creating registro leche', 'CreateRegistroLecheScreen', e);
+      LoggingService.error(
+        'Error creating registro leche',
+        'CreateRegistroLecheScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -277,15 +296,13 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                           children: [
                             Text(
                               widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Registro de producción de leche',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -299,9 +316,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               // Animal selection
               Text(
                 'Animal *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
@@ -339,27 +356,31 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               // Lactancia selection
               Text(
                 'Lactancia *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 14),
               DropdownButtonFormField<Lactancia>(
                 value: _selectedLactancia,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  hintText: _selectedAnimal == null 
+                  hintText: _selectedAnimal == null
                       ? 'Primero selecciona un animal'
-                      : _isLoadingLactancias 
-                          ? 'Cargando lactancias...'
-                          : 'Selecciona una lactancia',
+                      : _isLoadingLactancias
+                      ? 'Cargando lactancias...'
+                      : 'Selecciona una lactancia',
                   prefixIcon: const Icon(Icons.local_drink),
                 ),
                 items: _availableLactancias.map((lactancia) {
-                  final fechaInicio = DateTime.parse(lactancia.lactanciaFechaInicio).toLocal();
-                  final fechaFin = lactancia.lactanciaFechaFin != null ? DateTime.parse(lactancia.lactanciaFechaFin!).toLocal() : null;
+                  final fechaInicio = DateTime.parse(
+                    lactancia.lactanciaFechaInicio,
+                  ).toLocal();
+                  final fechaFin = lactancia.lactanciaFechaFin != null
+                      ? DateTime.parse(lactancia.lactanciaFechaFin!).toLocal()
+                      : null;
                   final estado = fechaFin == null ? 'Activa' : 'Finalizada';
-                  
+
                   return DropdownMenuItem<Lactancia>(
                     value: lactancia,
                     child: Container(
@@ -369,12 +390,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            'Lactancia ${lactancia.lactanciaId} ($estado)',
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          Text(
-                            'Inicio: ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}',
-                            style: const TextStyle(fontSize: 11, color: Colors.grey),
+                            'Lactancia ${lactancia.lactanciaId} ($estado) - ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}',
                             overflow: TextOverflow.ellipsis,
                           ),
                         ],
@@ -401,9 +417,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               // Fecha de pesaje
               Text(
                 'Fecha de Pesaje *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -431,9 +447,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               // Pesaje total
               Text(
                 'Pesaje Total (litros) *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -444,7 +460,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                   prefixIcon: Icon(Icons.scale),
                   suffixText: 'L',
                 ),
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingresa el pesaje total';
@@ -476,10 +494,11 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                           const SizedBox(width: 8),
                           Text(
                             'Información sobre registros de leche',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                            ),
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue[700],
+                                ),
                           ),
                         ],
                       ),
@@ -514,7 +533,10 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                         )
                       : const Text(
                           'Guardar Registro',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

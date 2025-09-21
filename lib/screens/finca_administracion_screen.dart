@@ -265,7 +265,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                   Expanded(
                     child: _buildNavigationCard(
                       context,
-                      'Cambios de Animales',
+                      'Cambios',
                       Icons.update,
                       'Cambios de etapa',
                       false,

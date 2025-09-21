@@ -152,48 +152,6 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
     }
   }
 
-  /// Starts automatic synchronization when the screen loads.
-  ///
-  /// **Execution Order (Method 4):**
-  /// Called from `initState()` to begin automatic sync process:
-  /// 1. Checks for internet connectivity first
-  /// 2. If offline: logs info and exits gracefully (no error shown to user)
-  /// 3. If online: calls `_syncPendingRecords()` to start the sync process
-  ///
-  /// This method provides seamless automatic sync without overwhelming users
-  /// with error messages when they're offline. The sync will naturally happen
-  /// when connectivity is restored through the offline manager.
-  Future<void> _startAutoSync() async {
-    try {
-      // Check connectivity before attempting sync
-      final isConnected = await ConnectivityService.isConnected();
-      if (!isConnected) {
-        LoggingService.info(
-          'Device is offline, skipping auto-sync',
-          'PendingSyncScreen',
-        );
-        return;
-      }
-
-      // Small delay to allow UI to settle before starting sync
-      await Future.delayed(const Duration(milliseconds: 500));
-
-      LoggingService.info(
-        'Starting automatic synchronization',
-        'PendingSyncScreen',
-      );
-
-      await _syncPendingRecords();
-    } catch (e) {
-      LoggingService.warning(
-        'Auto-sync failed, will retry manually: $e',
-        'PendingSyncScreen',
-      );
-      // Don't show error to user for auto-sync failures
-      // They can manually trigger sync if needed
-    }
-  }
-
   /// Main coordinator method for synchronizing pending records.
   ///
   /// **Execution Order (Method 5):**
@@ -736,12 +694,12 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
 
   /// Synchronizes pending registro leche records with the server.
   Future<void> _syncPendingRegistroLeche() async {
-    final pendingRegistroLeche = await DatabaseService.getPendingRegistroLecheOffline();
+    final pendingRegistroLeche =
+        await DatabaseService.getPendingRegistroLecheOffline();
 
     if (pendingRegistroLeche.isEmpty) {
       setState(() {
-        _syncMessage =
-            'No hay registros de leche pendientes por sincronizar';
+        _syncMessage = 'No hay registros de leche pendientes por sincronizar';
       });
       return;
     }
@@ -774,7 +732,9 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
           lecheLactanciaId: registroData['leche_lactancia_id'] as int,
         );
 
-        final createdRegistroLeche = await _authService.createRegistroLechero(registroLeche);
+        final createdRegistroLeche = await _authService.createRegistroLechero(
+          registroLeche,
+        );
 
         // Mark as synced in local database
         await DatabaseService.markRegistroLecheAsSynced(

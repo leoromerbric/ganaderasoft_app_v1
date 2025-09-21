@@ -367,7 +367,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
           estadoId: _selectedEstadoSalud!.estadoId,
           etapaId: _selectedEtapa!.etapaId,
         );
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
@@ -384,7 +384,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
       }
 
       // Update online
-      final updatedAnimal = await _authService.updateAnimal(
+      await _authService.updateAnimal(
         idAnimal: widget.animal.idAnimal,
         idRebano: _selectedRebano!.idRebano,
         nombre: _nombreController.text.trim(),

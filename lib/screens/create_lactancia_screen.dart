@@ -47,9 +47,11 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
   void initState() {
     super.initState();
     _selectedAnimal = widget.selectedAnimal;
-    _fechaInicioController.text = DateTime.now().toIso8601String().split('T')[0];
+    _fechaInicioController.text = DateTime.now().toIso8601String().split(
+      'T',
+    )[0];
     _checkConnectivity();
-    
+
     // Load animal detail if an animal is pre-selected
     if (_selectedAnimal != null) {
       _loadAnimalDetail(_selectedAnimal!.idAnimal);
@@ -90,11 +92,17 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         }
       });
     } catch (e) {
-      LoggingService.error('Error loading animal detail', 'CreateLactanciaScreen', e);
+      LoggingService.error(
+        'Error loading animal detail',
+        'CreateLactanciaScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al cargar detalle del animal: ${e.toString()}'),
+            content: Text(
+              'Error al cargar detalle del animal: ${e.toString()}',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -198,11 +206,17 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
           'Creating lactancia offline',
           'CreateLactanciaScreen',
         );
-        
+
         await DatabaseService.savePendingLactanciaOffline(
           lactanciaFechaInicio: _fechaInicioController.text,
-          lactanciaFechaFin: _isActive ? null : (_fechaFinController.text.isNotEmpty ? _fechaFinController.text : null),
-          lactanciaSecado: _fechaSecadoController.text.isNotEmpty ? _fechaSecadoController.text : null,
+          lactanciaFechaFin: _isActive
+              ? null
+              : (_fechaFinController.text.isNotEmpty
+                    ? _fechaFinController.text
+                    : null),
+          lactanciaSecado: _fechaSecadoController.text.isNotEmpty
+              ? _fechaSecadoController.text
+              : null,
           lactanciaEtapaAnid: _selectedAnimal!.idAnimal,
           lactanciaEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
         );
@@ -215,7 +229,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Lactancia guardada offline. Se sincronizará cuando tengas conexión.'),
+              content: Text(
+                'Lactancia guardada offline. Se sincronizará cuando tengas conexión.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -226,8 +242,14 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         final lactancia = Lactancia(
           lactanciaId: 0, // Will be assigned by server
           lactanciaFechaInicio: _fechaInicioController.text,
-          lactanciaFechaFin: _isActive ? null : (_fechaFinController.text.isNotEmpty ? _fechaFinController.text : null),
-          lactanciaSecado: _fechaSecadoController.text.isNotEmpty ? _fechaSecadoController.text : null,
+          lactanciaFechaFin: _isActive
+              ? null
+              : (_fechaFinController.text.isNotEmpty
+                    ? _fechaFinController.text
+                    : null),
+          lactanciaSecado: _fechaSecadoController.text.isNotEmpty
+              ? _fechaSecadoController.text
+              : null,
           createdAt: DateTime.now().toIso8601String(),
           updatedAt: DateTime.now().toIso8601String(),
           lactanciaEtapaAnid: _selectedAnimal!.idAnimal,
@@ -237,7 +259,10 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         LoggingService.info('Creating lactancia', 'CreateLactanciaScreen');
         await _authService.createLactancia(lactancia);
 
-        LoggingService.info('Lactancia created successfully', 'CreateLactanciaScreen');
+        LoggingService.info(
+          'Lactancia created successfully',
+          'CreateLactanciaScreen',
+        );
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -250,7 +275,11 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         }
       }
     } catch (e) {
-      LoggingService.error('Error creating lactancia', 'CreateLactanciaScreen', e);
+      LoggingService.error(
+        'Error creating lactancia',
+        'CreateLactanciaScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -317,15 +346,13 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                           children: [
                             Text(
                               widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                             Text(
                               'Registro de período de lactancia',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(color: Colors.grey[600]),
                             ),
                           ],
                         ),
@@ -339,9 +366,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Animal selection
               Text(
                 'Animal *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
@@ -351,19 +378,24 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                   hintText: 'Selecciona el animal',
                   prefixIcon: Icon(Icons.pets),
                 ),
-                items: widget.animales.where((animal) => animal.sexo.toUpperCase() == 'F').map((animal) {
-                  return DropdownMenuItem<Animal>(
-                    value: animal,
-                    child: Text('${animal.nombre} (${animal.codigoAnimal})'),
-                  );
-                }).toList(),
+                items: widget.animales
+                    .where((animal) => animal.sexo.toUpperCase() == 'F')
+                    .map((animal) {
+                      return DropdownMenuItem<Animal>(
+                        value: animal,
+                        child: Text(
+                          '${animal.nombre} (${animal.codigoAnimal})',
+                        ),
+                      );
+                    })
+                    .toList(),
                 onChanged: (Animal? value) {
                   setState(() {
                     _selectedAnimal = value;
                     _selectedAnimalDetail = null;
                     _selectedEtapaAnimal = null;
                   });
-                  
+
                   if (value != null) {
                     _loadAnimalDetail(value.idAnimal);
                   }
@@ -380,33 +412,37 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Etapa selection
               Text(
                 'Etapa del Animal *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<EtapaAnimal>(
                 value: _selectedEtapaAnimal,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
-                  hintText: _isLoadingAnimalDetail 
-                      ? 'Cargando etapas...' 
+                  hintText: _isLoadingAnimalDetail
+                      ? 'Cargando etapas...'
                       : 'Selecciona la etapa del animal',
                   prefixIcon: const Icon(Icons.timeline),
                 ),
-                items: _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
-                  return DropdownMenuItem<EtapaAnimal>(
-                    value: etapaAnimal,
-                    child: Text(
-                      '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
-                    ),
-                  );
-                }).toList() ?? [],
-                onChanged: _isLoadingAnimalDetail ? null : (EtapaAnimal? value) {
-                  setState(() {
-                    _selectedEtapaAnimal = value;
-                  });
-                },
+                items:
+                    _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
+                      return DropdownMenuItem<EtapaAnimal>(
+                        value: etapaAnimal,
+                        child: Text(
+                          '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
+                        ),
+                      );
+                    }).toList() ??
+                    [],
+                onChanged: _isLoadingAnimalDetail
+                    ? null
+                    : (EtapaAnimal? value) {
+                        setState(() {
+                          _selectedEtapaAnimal = value;
+                        });
+                      },
                 validator: (value) {
                   if (value == null) {
                     return 'Por favor selecciona la etapa del animal';
@@ -419,9 +455,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Estado de lactancia
               Text(
                 'Estado de la Lactancia *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Row(
@@ -462,9 +498,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Fecha inicio
               Text(
                 'Fecha de Inicio *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -492,9 +528,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Fecha fin - Always show
               Text(
                 'Fecha de Fin',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -516,9 +552,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               // Fecha de secado - Always show as date picker
               Text(
                 'Fecha de Secado',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -534,51 +570,8 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                 ),
                 readOnly: true,
                 onTap: _selectFechaSecado,
-                readOnly: true,
-                onTap: _selectFechaSecado,
               ),
               const SizedBox(height: 32),
-
-              // Info card
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb,
-                            color: Colors.blue[700],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Información sobre lactancia',
-                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue[700],
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '• Solo las hembras pueden tener períodos de lactancia\n'
-                        '• Una lactancia activa significa que la vaca está produciendo leche\n'
-                        '• El secado es el período de descanso antes del siguiente parto',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Save button
               SizedBox(
                 width: double.infinity,
@@ -595,7 +588,10 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                         )
                       : const Text(
                           'Registrar Lactancia',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
                 ),
               ),

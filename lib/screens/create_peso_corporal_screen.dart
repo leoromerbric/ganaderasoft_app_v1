@@ -165,7 +165,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
           'Creating peso corporal offline',
           'CreatePesoCorporalScreen',
         );
-        
+
         await DatabaseService.savePendingPesoCorporalOffline(
           fechaPeso: _fechaPesoController.text,
           peso: double.parse(_pesoController.text),
@@ -182,7 +182,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Peso guardado offline. Se sincronizará cuando tengas conexión.'),
+              content: Text(
+                'Peso guardado offline. Se sincronizará cuando tengas conexión.',
+              ),
               backgroundColor: Colors.orange,
             ),
           );
@@ -201,7 +203,10 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
           pesoEtapaEtid: _selectedEtapaAnimal!.etanEtapaId,
         );
 
-        LoggingService.info('Creating peso corporal', 'CreatePesoCorporalScreen');
+        LoggingService.info(
+          'Creating peso corporal',
+          'CreatePesoCorporalScreen',
+        );
         await _authService.createPesoCorporal(pesoCorporal);
 
         LoggingService.info(
@@ -473,53 +478,11 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Comentarios adicionales sobre el pesaje',
-                  prefixIcon: Icon(Icons.comment),
                 ),
                 maxLines: 3,
                 maxLength: 500,
               ),
               const SizedBox(height: 32),
-
-              // Tips card
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb,
-                            color: Colors.blue[700],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Consejos para el pesaje',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '• Pese al animal en ayunas para mayor precisión\n'
-                        '• Registre el peso a la misma hora cada vez\n'
-                        '• Anote condiciones especiales en comentarios',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
 
               // Save button
               SizedBox(

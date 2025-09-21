@@ -280,7 +280,9 @@ class DatabaseService {
         lactancia_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
         local_updated_at INTEGER NOT NULL,
-        modifiedOffline INTEGER DEFAULT 0
+        modifiedOffline INTEGER DEFAULT 0,
+        is_pending INTEGER DEFAULT 0,
+        pending_operation TEXT
       )
     ''');
 
@@ -584,7 +586,9 @@ class DatabaseService {
           lactancia_etapa_etid INTEGER NOT NULL,
           synced INTEGER DEFAULT 0,
           local_updated_at INTEGER NOT NULL,
-          modifiedOffline INTEGER DEFAULT 0
+          modifiedOffline INTEGER DEFAULT 0,
+          is_pending INTEGER DEFAULT 0,
+          pending_operation TEXT
         )
       ''');
 
@@ -620,7 +624,9 @@ class DatabaseService {
           updated_at TEXT NOT NULL,
           synced INTEGER DEFAULT 0,
           local_updated_at INTEGER NOT NULL,
-          modifiedOffline INTEGER DEFAULT 0
+          modifiedOffline INTEGER DEFAULT 0,
+          is_pending INTEGER DEFAULT 0,
+          pending_operation TEXT
         )
       ''');
       

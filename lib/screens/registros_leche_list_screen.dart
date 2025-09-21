@@ -24,12 +24,15 @@ class RegistrosLecheListScreen extends StatefulWidget {
 class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
   final _authService = AuthService();
   List<Animal> _femaleAnimals = [];
-  Map<int, List<Lactancia>> _animalLactancias = {};
-  Map<int, List<RegistroLechero>> _lactanciaRegistros = {};
+  List<Lactancia> _lactancias = [];
+  List<RegistroLechero> _registrosLeche = [];
+  List<RegistroLechero> _filteredRegistrosLeche = [];
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
   String? _dataSourceMessage;
+  Animal? _selectedAnimal;
+  Lactancia? _selectedLactancia;
 
   @override
   void initState() {
@@ -59,34 +62,40 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
 
     try {
       await _checkConnectivity();
-
-      // Load lactancias for each female animal
+      
+      // Load lactancias for female animals
+      _lactancias.clear();
+      _registrosLeche.clear();
+      
       for (final animal in _femaleAnimals) {
         try {
           final lactanciaResponse = await _authService.getLactancia(
             animalId: animal.idAnimal,
           );
-          _animalLactancias[animal.idAnimal] = lactanciaResponse.data;
-
-          // Load milk records for each lactancia
-          for (final lactancia in lactanciaResponse.data) {
-            try {
-              final lecheResponse = await _authService.getRegistroLechero(
-                lactanciaId: lactancia.lactanciaId,
-              );
-              _lactanciaRegistros[lactancia.lactanciaId] = lecheResponse.data;
-            } catch (e) {
-              LoggingService.error('Error loading milk records for lactancia ${lactancia.lactanciaId}', 'RegistrosLecheListScreen', e);
-              _lactanciaRegistros[lactancia.lactanciaId] = [];
-            }
-          }
+          _lactancias.addAll(lactanciaResponse.data);
         } catch (e) {
           LoggingService.error('Error loading lactancias for animal ${animal.idAnimal}', 'RegistrosLecheListScreen', e);
-          _animalLactancias[animal.idAnimal] = [];
         }
       }
 
-      LoggingService.info('Milk records data loaded successfully', 'RegistrosLecheListScreen');
+      // Load all milk records for all lactancias
+      for (final lactancia in _lactancias) {
+        try {
+          final lecheResponse = await _authService.getRegistroLechero(
+            lactanciaId: lactancia.lactanciaId,
+          );
+          _registrosLeche.addAll(lecheResponse.data);
+        } catch (e) {
+          LoggingService.error('Error loading milk records for lactancia ${lactancia.lactanciaId}', 'RegistrosLecheListScreen', e);
+        }
+      }
+
+      setState(() {
+        _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+        _applyFilters();
+      });
+
+      LoggingService.info('Milk records data loaded successfully (${_registrosLeche.length} records)', 'RegistrosLecheListScreen');
     } catch (e) {
       LoggingService.error('Error loading milk records data', 'RegistrosLecheListScreen', e);
       setState(() {
@@ -99,11 +108,108 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
     }
   }
 
+  void _applyFilters() {
+    _filteredRegistrosLeche = _registrosLeche;
+
+    // Filter by selected animal
+    if (_selectedAnimal != null) {
+      final animalLactancias = _lactancias
+          .where((lactancia) => lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal)
+          .map((lactancia) => lactancia.lactanciaId)
+          .toSet();
+      
+      _filteredRegistrosLeche = _filteredRegistrosLeche
+          .where((registro) => animalLactancias.contains(registro.registroLecheroLacid))
+          .toList();
+    }
+
+    // Filter by selected lactancia
+    if (_selectedLactancia != null) {
+      _filteredRegistrosLeche = _filteredRegistrosLeche
+          .where((registro) => registro.registroLecheroLacid == _selectedLactancia!.lactanciaId)
+          .toList();
+    }
+
+    // Sort by date descending (most recent first)
+    _filteredRegistrosLeche.sort(
+      (a, b) => DateTime.parse(b.lecheFechaPesaje).compareTo(DateTime.parse(a.lecheFechaPesaje)),
+    );
+  }
+
+  void _filterByAnimal(Animal? animal) {
+    setState(() {
+      _selectedAnimal = animal;
+      _selectedLactancia = null; // Reset lactancia selection when animal changes
+      _applyFilters();
+    });
+  }
+
+  void _filterByLactancia(Lactancia? lactancia) {
+    setState(() {
+      _selectedLactancia = lactancia;
+      _applyFilters();
+    });
+  }
+
+  List<Lactancia> _getAvailableLactancias() {
+    if (_selectedAnimal == null) return [];
+    return _lactancias
+        .where((lactancia) => lactancia.lactanciaEtapaAnid == _selectedAnimal!.idAnimal)
+        .toList();
+  }
+
+  String _formatDate(String dateString) {
+    try {
+      final date = DateTime.parse(dateString);
+      return '${date.day}/${date.month}/${date.year}';
+    } catch (e) {
+      return dateString;
+    }
+  }
+
+  String _getAnimalName(int animalId) {
+    try {
+      final animal = _femaleAnimals.firstWhere((a) => a.idAnimal == animalId);
+      return animal.nombre;
+    } catch (e) {
+      return 'Animal #$animalId';
+    }
+  }
+
+  String _getLactanciaName(int lactanciaId) {
+    try {
+      final lactancia = _lactancias.firstWhere((l) => l.lactanciaId == lactanciaId);
+      final fechaInicio = DateTime.parse(lactancia.lactanciaFechaInicio);
+      return 'Lactancia del ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}';
+    } catch (e) {
+      return 'Lactancia #$lactanciaId';
+    }
+  }
+
+  String _getCountDisplayText() {
+    final count = _filteredRegistrosLeche.length;
+    final plural = count != 1;
+    return '$count registro${plural ? 's' : ''} de leche${plural ? ' encontrados' : ' encontrado'}';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registros de Leche'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              _selectedAnimal != null
+                  ? 'Registros de ${_selectedAnimal!.nombre}'
+                  : 'Registros de Leche',
+            ),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -124,132 +230,262 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
             ),
         ],
       ),
-      body: Column(
-        children: [
-          // Farm info card
-          Container(
-            width: double.infinity,
-            margin: const EdgeInsets.all(16.0),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.grey[400]),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Error al cargar registros',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        _error!,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        onPressed: _loadData,
+                        icon: const Icon(Icons.refresh),
+                        label: const Text('Reintentar'),
+                      ),
+                    ],
+                  ),
+                )
+              : Column(
                   children: [
-                    Icon(
-                      Icons.agriculture,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.finca.nombre,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                    // Data source info banner
+                    if (_dataSourceMessage != null)
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        margin: const EdgeInsets.all(16).copyWith(bottom: 8),
+                        decoration: BoxDecoration(
+                          color: _isOffline
+                              ? Colors.orange[100]
+                              : Color.fromARGB(255, 192, 212, 59),
+                          border: Border.all(
+                            color: _isOffline
+                                ? Colors.orange
+                                : Color.fromARGB(255, 192, 212, 59),
+                            width: 1,
                           ),
-                          Text(
-                            'Registros de producción de leche',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey[600],
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              _isOffline ? Icons.cloud_off : Icons.cloud_done,
+                              color: _isOffline
+                                  ? Colors.orange[800]
+                                  : Colors.green[800],
+                              size: 20,
                             ),
-                          ),
-                          if (_dataSourceMessage != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              _dataSourceMessage!,
-                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: _isOffline ? Colors.orange[700] : Colors.green[700],
-                                fontWeight: FontWeight.bold,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _dataSourceMessage!,
+                                style: TextStyle(
+                                  color: _isOffline
+                                      ? Colors.orange[800]
+                                      : Colors.green[800],
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ),
                           ],
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-
-          // Content
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _error != null
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.error_outline,
-                              size: 64,
-                              color: Colors.red[300],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Error al cargar datos',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _error!,
-                              style: Theme.of(context).textTheme.bodyMedium,
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _loadData,
-                              child: const Text('Reintentar'),
-                            ),
-                          ],
                         ),
-                      )
-                    : _femaleAnimals.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                      ),
+
+                    // Filter section
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Column(
+                        children: [
+                          // Animal filter
+                          if (_femaleAnimals.isNotEmpty) ...[
+                            Row(
                               children: [
-                                Icon(
-                                  Icons.pets,
-                                  size: 64,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No hay animales hembras',
-                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Solo las hembras pueden tener registros de leche',
-                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey[500],
+                                const Icon(Icons.pets, size: 20),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: DropdownButtonFormField<Animal?>(
+                                    value: _selectedAnimal,
+                                    decoration: const InputDecoration(
+                                      hintText: 'Filtrar por animal hembra',
+                                      border: OutlineInputBorder(),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 8,
+                                      ),
+                                    ),
+                                    items: [
+                                      const DropdownMenuItem<Animal?>(
+                                        value: null,
+                                        child: Text('Todos los animales'),
+                                      ),
+                                      ..._femaleAnimals.map((animal) {
+                                        return DropdownMenuItem<Animal>(
+                                          value: animal,
+                                          child: Text(
+                                            '${animal.nombre} (${animal.codigoAnimal})',
+                                          ),
+                                        );
+                                      }),
+                                    ],
+                                    onChanged: _filterByAnimal,
                                   ),
                                 ),
                               ],
                             ),
-                          )
-                        : RefreshIndicator(
-                            onRefresh: _loadData,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.all(16.0),
-                              itemCount: _femaleAnimals.length,
-                              itemBuilder: (context, index) {
-                                final animal = _femaleAnimals[index];
-                                final lactancias = _animalLactancias[animal.idAnimal] ?? [];
-                                return _buildAnimalCard(animal, lactancias);
-                              },
+
+                            // Lactancia filter (only show if animal is selected)
+                            if (_selectedAnimal != null) ...[
+                              const SizedBox(height: 8),
+                              Row(
+                                children: [
+                                  const Icon(Icons.local_drink, size: 20),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: DropdownButtonFormField<Lactancia?>(
+                                      value: _selectedLactancia,
+                                      decoration: const InputDecoration(
+                                        hintText: 'Filtrar por lactancia',
+                                        border: OutlineInputBorder(),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 12,
+                                          vertical: 8,
+                                        ),
+                                      ),
+                                      items: [
+                                        const DropdownMenuItem<Lactancia?>(
+                                          value: null,
+                                          child: Text('Todas las lactancias'),
+                                        ),
+                                        ..._getAvailableLactancias().map((lactancia) {
+                                          final fechaInicio = DateTime.parse(lactancia.lactanciaFechaInicio);
+                                          return DropdownMenuItem<Lactancia>(
+                                            value: lactancia,
+                                            child: Text(
+                                              'Lactancia del ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}',
+                                            ),
+                                          );
+                                        }),
+                                      ],
+                                      onChanged: _filterByLactancia,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ],
+                        ],
+                      ),
+                    ),
+
+                    // Count info
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.scale,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _getCountDisplayText(),
+                              style: Theme.of(context).textTheme.titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.bold),
                             ),
                           ),
-          ),
-        ],
-      ),
+                        ],
+                      ),
+                    ),
+
+                    // List
+                    Expanded(
+                      child: _femaleAnimals.isEmpty
+                          ? Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.pets,
+                                    size: 64,
+                                    color: Colors.grey[400],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No hay animales hembras',
+                                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Solo las hembras pueden tener registros de leche',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey[500],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                          : _filteredRegistrosLeche.isEmpty
+                              ? Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.scale,
+                                        size: 64,
+                                        color: Colors.grey[400],
+                                      ),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'No hay registros de leche',
+                                        style: Theme.of(context).textTheme.titleLarge
+                                            ?.copyWith(color: Colors.grey[600]),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        _selectedAnimal != null
+                                            ? 'No se encontraron registros para los filtros seleccionados'
+                                            : 'Agrega el primer registro de producción de leche',
+                                        style: Theme.of(context).textTheme.bodyMedium
+                                            ?.copyWith(color: Colors.grey[500]),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : RefreshIndicator(
+                                  onRefresh: _loadData,
+                                  child: ListView.builder(
+                                    padding: const EdgeInsets.all(16.0),
+                                    itemCount: _filteredRegistrosLeche.length,
+                                    itemBuilder: (context, index) {
+                                      final registro = _filteredRegistrosLeche[index];
+                                      return _buildRegistroCard(registro);
+                                    },
+                                  ),
+                                ),
+                    ),
+                  ],
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () async {
           if (_femaleAnimals.isEmpty) {
@@ -268,6 +504,8 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
               builder: (context) => CreateRegistroLecheScreen(
                 finca: widget.finca,
                 animales: _femaleAnimals,
+                selectedAnimal: _selectedAnimal,
+                selectedLactancia: _selectedLactancia,
               ),
             ),
           );
@@ -276,93 +514,160 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
             _loadData();
           }
         },
+        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
+        tooltip: 'Agregar registro de leche',
         child: const Icon(Icons.add),
-      ),
-    );
-  }
-
-  Widget _buildAnimalCard(Animal animal, List<Lactancia> lactancias) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12.0),
-      child: ExpansionTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).colorScheme.primary,
-          child: Text(
-            animal.nombre.substring(0, 1).toUpperCase(),
-            style: const TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        title: Text(
-          animal.nombre,
-          style: const TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text('Código: ${animal.codigoAnimal} • ${lactancias.length} lactancia${lactancias.length != 1 ? 's' : ''}'),
-        children: lactancias.isEmpty
-            ? [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'No hay lactancias registradas para este animal',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ]
-            : lactancias.map((lactancia) => _buildLactanciaCard(animal, lactancia)).toList(),
-      ),
-    );
-  }
-
-  Widget _buildLactanciaCard(Animal animal, Lactancia lactancia) {
-    final registros = _lactanciaRegistros[lactancia.lactanciaId] ?? [];
-    final fechaInicio = DateTime.parse(lactancia.lactanciaFechaInicio).toLocal();
-    final fechaFin = lactancia.lactanciaFechaFin != null ? DateTime.parse(lactancia.lactanciaFechaFin!).toLocal() : null;
-    
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
-      child: ExpansionTile(
-        leading: Icon(
-          Icons.local_drink,
-          color: fechaFin == null ? Colors.green : Colors.grey,
-        ),
-        title: Text(
-          'Lactancia ${lactancia.lactanciaId}',
-          style: const TextStyle(fontWeight: FontWeight.w600),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Inicio: ${fechaInicio.day}/${fechaInicio.month}/${fechaInicio.year}'),
-            if (fechaFin != null)
-              Text('Fin: ${fechaFin.day}/${fechaFin.month}/${fechaFin.year}'),
-            Text('${registros.length} registro${registros.length != 1 ? 's' : ''} de leche'),
-          ],
-        ),
-        children: registros.isEmpty
-            ? [
-                const Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Text(
-                    'No hay registros de leche para esta lactancia',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                ),
-              ]
-            : registros.map((registro) => _buildRegistroCard(registro)).toList(),
       ),
     );
   }
 
   Widget _buildRegistroCard(RegistroLechero registro) {
     final fechaPesaje = DateTime.parse(registro.lecheFechaPesaje).toLocal();
+    final animalName = _getAnimalName(_lactancias
+        .firstWhere((l) => l.lactanciaId == registro.registroLecheroLacid)
+        .lactanciaEtapaAnid);
+    final lactanciaName = _getLactanciaName(registro.registroLecheroLacid);
     
-    return ListTile(
-      leading: const Icon(Icons.scale, color: Colors.blue),
-      title: Text('${registro.lechePesajeTotal} litros'),
-      subtitle: Text('${fechaPesaje.day}/${fechaPesaje.month}/${fechaPesaje.year}'),
-      trailing: const Icon(Icons.chevron_right),
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16.0),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with animal name and date
+            Row(
+              children: [
+                Icon(
+                  Icons.scale,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        animalName,
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        lactanciaName,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Production amount
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Colors.blue,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '${registro.lechePesajeTotal} L',
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Date and details
+            Row(
+              children: [
+                Expanded(
+                  child: _buildInfoChip(
+                    'Fecha',
+                    '${fechaPesaje.day}/${fechaPesaje.month}/${fechaPesaje.year}',
+                    Icons.calendar_today,
+                    Colors.green,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _buildInfoChip(
+                    'Producción',
+                    '${registro.lechePesajeTotal} litros',
+                    Icons.local_drink,
+                    Colors.blue,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 12),
+            // Footer with created date if available
+            Row(
+              children: [
+                Icon(Icons.access_time, size: 14, color: Colors.grey[500]),
+                const SizedBox(width: 4),
+                Text(
+                  'Pesaje: ${fechaPesaje.day}/${fechaPesaje.month}/${fechaPesaje.year}',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[500]),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoChip(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.w500,
+              fontSize: 12,
+            ),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: TextStyle(
+              color: color,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 }

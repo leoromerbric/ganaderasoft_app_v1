@@ -261,7 +261,9 @@ class DatabaseService {
         cambios_etapa_etid INTEGER NOT NULL,
         synced INTEGER DEFAULT 0,
         local_updated_at INTEGER NOT NULL,
-        modifiedOffline INTEGER DEFAULT 0
+        modifiedOffline INTEGER DEFAULT 0,
+        is_pending INTEGER DEFAULT 0,
+        pending_operation TEXT
       )
     ''');
 
@@ -564,7 +566,9 @@ class DatabaseService {
           cambios_etapa_etid INTEGER NOT NULL,
           synced INTEGER DEFAULT 0,
           local_updated_at INTEGER NOT NULL,
-          modifiedOffline INTEGER DEFAULT 0
+          modifiedOffline INTEGER DEFAULT 0,
+          is_pending INTEGER DEFAULT 0,
+          pending_operation TEXT
         )
       ''');
 
@@ -684,13 +688,25 @@ class DatabaseService {
       final farmTables = ['cambios_animal', 'lactancia', 'peso_corporal'];
       
       for (final table in farmTables) {
-        await db.execute('''
-          ALTER TABLE $table ADD COLUMN is_pending INTEGER DEFAULT 0
-        ''');
-        
-        await db.execute('''
-          ALTER TABLE $table ADD COLUMN pending_operation TEXT
-        ''');
+        // Check if columns already exist to avoid errors
+        try {
+          final tableInfo = await db.rawQuery("PRAGMA table_info($table)");
+          final columnNames = tableInfo.map((row) => row['name'] as String).toList();
+          
+          if (!columnNames.contains('is_pending')) {
+            await db.execute('''
+              ALTER TABLE $table ADD COLUMN is_pending INTEGER DEFAULT 0
+            ''');
+          }
+          
+          if (!columnNames.contains('pending_operation')) {
+            await db.execute('''
+              ALTER TABLE $table ADD COLUMN pending_operation TEXT
+            ''');
+          }
+        } catch (e) {
+          LoggingService.warning('Error adding pending columns to $table: $e', 'DatabaseService');
+        }
       }
       
       LoggingService.info('Pending operation columns added to farm management tables successfully', 'DatabaseService');

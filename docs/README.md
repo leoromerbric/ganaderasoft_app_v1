@@ -77,6 +77,20 @@ docs/                    # Documentación
 └── configuracion.md   # Documentación de configuración
 ```
 
+## Documentación en Formato Word
+
+Para mayor comodidad, toda la documentación también está disponible en formato Word consolidado en la carpeta `Word/`. Este documento incluye:
+
+- Toda la documentación en un solo archivo
+- Estructura y jerarquía preservadas
+- Diagramas incluidos como código
+- Formato profesional para distribución
+
+Para regenerar el documento Word:
+```bash
+python3 generate_word_doc.py
+```
+
 ## Inicio Rápido
 
 Para más información sobre instalación, configuración y uso, consulte la documentación específica en cada sección.

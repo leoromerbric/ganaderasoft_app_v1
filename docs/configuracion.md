@@ -154,7 +154,7 @@ android {
     <application
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon"
-        android:label="Ganadera Soft">
+        android:label="GanaderaSoft">
         
         <activity
             android:name=".MainActivity"
@@ -176,7 +176,7 @@ android {
 ```xml
 <dict>
     <key>CFBundleName</key>
-    <string>Ganadera Soft</string>
+    <string>GanaderaSoft</string>
     <key>CFBundleIdentifier</key>
     <string>com.ganaderasoft.app</string>
     <key>CFBundleVersion</key>
@@ -202,7 +202,7 @@ android {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ganadera Soft</title>
+  <title>GanaderaSoft</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" href="favicon.png"/>
 </head>

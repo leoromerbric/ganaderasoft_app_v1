@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ganaderasoft_app_v1/services/database_service.dart';
-import 'package:ganaderasoft_app_v1/models/pending_sync_models.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
@@ -50,7 +49,7 @@ void main() {
       // Verify the update was saved
       final pendingUpdates = await DatabaseService.getPendingAnimalsOffline();
       expect(pendingUpdates, isNotEmpty);
-      
+
       final updatedAnimal = pendingUpdates.first;
       expect(updatedAnimal['id_animal'], equals(100));
       expect(updatedAnimal['nombre'], equals('Test Animal Updated'));
@@ -62,90 +61,102 @@ void main() {
       expect(updatedAnimal['synced'], equals(0));
     });
 
-    test('should save and retrieve pending personal finca creation offline', () async {
-      // Save a pending personal finca
-      await DatabaseService.savePendingPersonalFincaOffline(
-        idFinca: 1,
-        cedula: 12345678,
-        nombre: 'Juan',
-        apellido: 'Perez',
-        telefono: '3001234567',
-        correo: 'juan.perez@test.com',
-        tipoTrabajador: 'Administrador',
-      );
+    test(
+      'should save and retrieve pending personal finca creation offline',
+      () async {
+        // Save a pending personal finca
+        await DatabaseService.savePendingPersonalFincaOffline(
+          idFinca: 1,
+          cedula: 12345678,
+          nombre: 'Juan',
+          apellido: 'Perez',
+          telefono: '3001234567',
+          correo: 'juan.perez@test.com',
+          tipoTrabajador: 'Administrador',
+        );
 
-      // Retrieve pending personal finca
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
-      expect(pendingPersonal, isNotEmpty);
-      
-      final savedPersonal = pendingPersonal.first;
-      expect(savedPersonal['nombre'], equals('Juan'));
-      expect(savedPersonal['apellido'], equals('Perez'));
-      expect(savedPersonal['cedula'], equals(12345678));
-      expect(savedPersonal['telefono'], equals('3001234567'));
-      expect(savedPersonal['correo'], equals('juan.perez@test.com'));
-      expect(savedPersonal['tipo_trabajador'], equals('Administrador'));
-      expect(savedPersonal['is_pending'], equals(1));
-      expect(savedPersonal['pending_operation'], equals('CREATE'));
-      expect(savedPersonal['synced'], equals(0));
-      
-      // Temp ID should be negative
-      final tempId = savedPersonal['id_tecnico'] as int;
-      expect(tempId, lessThan(0));
-    });
+        // Retrieve pending personal finca
+        final pendingPersonal =
+            await DatabaseService.getPendingPersonalFincaOffline();
+        expect(pendingPersonal, isNotEmpty);
 
-    test('should save and retrieve pending personal finca updates offline', () async {
-      // Create a personal finca first (simulate existing personal)
-      await DatabaseService.savePendingPersonalFincaOffline(
-        idFinca: 1,
-        cedula: 87654321,
-        nombre: 'Maria',
-        apellido: 'Garcia',
-        telefono: '3007654321',
-        correo: 'maria.garcia@test.com',
-        tipoTrabajador: 'Veterinario',
-      );
+        final savedPersonal = pendingPersonal.first;
+        expect(savedPersonal['nombre'], equals('Juan'));
+        expect(savedPersonal['apellido'], equals('Perez'));
+        expect(savedPersonal['cedula'], equals(12345678));
+        expect(savedPersonal['telefono'], equals('3001234567'));
+        expect(savedPersonal['correo'], equals('juan.perez@test.com'));
+        expect(savedPersonal['tipo_trabajador'], equals('Administrador'));
+        expect(savedPersonal['is_pending'], equals(1));
+        expect(savedPersonal['pending_operation'], equals('CREATE'));
+        expect(savedPersonal['synced'], equals(0));
 
-      // Get the created personal ID
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
-      expect(pendingPersonal, isNotEmpty);
-      final personalId = pendingPersonal.first['id_tecnico'] as int;
+        // Temp ID should be negative
+        final tempId = savedPersonal['id_tecnico'] as int;
+        expect(tempId, lessThan(0));
+      },
+    );
 
-      // Mark it as synced to simulate a real personal from server
-      await DatabaseService.markPersonalFincaAsSynced(personalId, 200); // Real ID 200
+    test(
+      'should save and retrieve pending personal finca updates offline',
+      () async {
+        // Create a personal finca first (simulate existing personal)
+        await DatabaseService.savePendingPersonalFincaOffline(
+          idFinca: 1,
+          cedula: 87654321,
+          nombre: 'Maria',
+          apellido: 'Garcia',
+          telefono: '3007654321',
+          correo: 'maria.garcia@test.com',
+          tipoTrabajador: 'Veterinario',
+        );
 
-      // Now update the personal finca offline
-      await DatabaseService.savePendingPersonalFincaUpdateOffline(
-        idTecnico: 200,
-        idFinca: 2,
-        cedula: 11111111,
-        nombre: 'Maria Updated',
-        apellido: 'Garcia Updated',
-        telefono: '3009999999',
-        correo: 'maria.updated@test.com',
-        tipoTrabajador: 'Tecnico',
-      );
+        // Get the created personal ID
+        final pendingPersonal =
+            await DatabaseService.getPendingPersonalFincaOffline();
+        expect(pendingPersonal, isNotEmpty);
+        final personalId = pendingPersonal.first['id_tecnico'] as int;
 
-      // Verify the update was saved
-      final pendingUpdates = await DatabaseService.getPendingPersonalFincaOffline();
-      expect(pendingUpdates, isNotEmpty);
-      
-      final updatedPersonal = pendingUpdates.first;
-      expect(updatedPersonal['id_tecnico'], equals(200));
-      expect(updatedPersonal['nombre'], equals('Maria Updated'));
-      expect(updatedPersonal['apellido'], equals('Garcia Updated'));
-      expect(updatedPersonal['cedula'], equals(11111111));
-      expect(updatedPersonal['telefono'], equals('3009999999'));
-      expect(updatedPersonal['correo'], equals('maria.updated@test.com'));
-      expect(updatedPersonal['tipo_trabajador'], equals('Tecnico'));
-      expect(updatedPersonal['is_pending'], equals(1));
-      expect(updatedPersonal['pending_operation'], equals('UPDATE'));
-      expect(updatedPersonal['synced'], equals(0));
-    });
+        // Mark it as synced to simulate a real personal from server
+        await DatabaseService.markPersonalFincaAsSynced(
+          personalId,
+          200,
+        ); // Real ID 200
+
+        // Now update the personal finca offline
+        await DatabaseService.savePendingPersonalFincaUpdateOffline(
+          idTecnico: 200,
+          idFinca: 2,
+          cedula: 11111111,
+          nombre: 'Maria Updated',
+          apellido: 'Garcia Updated',
+          telefono: '3009999999',
+          correo: 'maria.updated@test.com',
+          tipoTrabajador: 'Tecnico',
+        );
+
+        // Verify the update was saved
+        final pendingUpdates =
+            await DatabaseService.getPendingPersonalFincaOffline();
+        expect(pendingUpdates, isNotEmpty);
+
+        final updatedPersonal = pendingUpdates.first;
+        expect(updatedPersonal['id_tecnico'], equals(200));
+        expect(updatedPersonal['nombre'], equals('Maria Updated'));
+        expect(updatedPersonal['apellido'], equals('Garcia Updated'));
+        expect(updatedPersonal['cedula'], equals(11111111));
+        expect(updatedPersonal['telefono'], equals('3009999999'));
+        expect(updatedPersonal['correo'], equals('maria.updated@test.com'));
+        expect(updatedPersonal['tipo_trabajador'], equals('Tecnico'));
+        expect(updatedPersonal['is_pending'], equals(1));
+        expect(updatedPersonal['pending_operation'], equals('UPDATE'));
+        expect(updatedPersonal['synced'], equals(0));
+      },
+    );
 
     test('should include all pending records in getAllPendingRecords', () async {
       // Create multiple pending records
-      
+
       // Animal creation
       await DatabaseService.savePendingAnimalOffline(
         idRebano: 1,
@@ -171,11 +182,11 @@ void main() {
         estadoId: 1,
         etapaId: 1,
       );
-      
+
       final animals = await DatabaseService.getPendingAnimalsOffline();
       final updateAnimalId = animals.last['id_animal'] as int;
       await DatabaseService.markAnimalAsSynced(updateAnimalId, 300);
-      
+
       await DatabaseService.savePendingAnimalUpdateOffline(
         idAnimal: 300,
         idRebano: 2,
@@ -210,11 +221,11 @@ void main() {
         correo: 'update@test.com',
         tipoTrabajador: 'Supervisor',
       );
-      
+
       final personal = await DatabaseService.getPendingPersonalFincaOffline();
       final updatePersonalId = personal.last['id_tecnico'] as int;
       await DatabaseService.markPersonalFincaAsSynced(updatePersonalId, 400);
-      
+
       await DatabaseService.savePendingPersonalFincaUpdateOffline(
         idTecnico: 400,
         idFinca: 2,
@@ -233,15 +244,23 @@ void main() {
       expect(allPending.length, greaterThanOrEqualTo(4));
 
       // Verify we have different types and operations
-      final animalRecords = allPending.where((r) => r['type'] == 'Animal').toList();
-      final personalRecords = allPending.where((r) => r['type'] == 'PersonalFinca').toList();
+      final animalRecords = allPending
+          .where((r) => r['type'] == 'Animal')
+          .toList();
+      final personalRecords = allPending
+          .where((r) => r['type'] == 'PersonalFinca')
+          .toList();
 
       expect(animalRecords.length, greaterThanOrEqualTo(2));
       expect(personalRecords.length, greaterThanOrEqualTo(2));
 
       // Check for CREATE and UPDATE operations
-      final createRecords = allPending.where((r) => r['operation'] == 'CREATE').toList();
-      final updateRecords = allPending.where((r) => r['operation'] == 'UPDATE').toList();
+      final createRecords = allPending
+          .where((r) => r['operation'] == 'CREATE')
+          .toList();
+      final updateRecords = allPending
+          .where((r) => r['operation'] == 'UPDATE')
+          .toList();
 
       expect(createRecords.length, greaterThanOrEqualTo(2));
       expect(updateRecords.length, greaterThanOrEqualTo(2));
@@ -260,7 +279,8 @@ void main() {
       );
 
       // Get the temp ID
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
+      final pendingPersonal =
+          await DatabaseService.getPendingPersonalFincaOffline();
       expect(pendingPersonal, isNotEmpty);
       final tempId = pendingPersonal.first['id_tecnico'] as int;
       expect(tempId, lessThan(0)); // Should be negative
@@ -270,7 +290,8 @@ void main() {
       await DatabaseService.markPersonalFincaAsSynced(tempId, realId);
 
       // Verify it's no longer pending
-      final stillPending = await DatabaseService.getPendingPersonalFincaOffline();
+      final stillPending =
+          await DatabaseService.getPendingPersonalFincaOffline();
       final foundInPending = stillPending.any((p) => p['id_tecnico'] == realId);
       expect(foundInPending, isFalse);
 

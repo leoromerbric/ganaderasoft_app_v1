@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../services/auth_service.dart';
@@ -113,7 +114,7 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
@@ -185,9 +186,10 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Registro de leche guardado offline. Se sincronizará cuando tengas conexión.',
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -217,8 +219,9 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Registro de leche creado exitosamente'),
+              content: Text('Guardado exitosamente'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -251,7 +254,10 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Nuevo Registro de Leche'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [const Text("Registrar Leche")],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -262,7 +268,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -279,40 +285,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Farm info card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.agriculture,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Registro de producción de leche',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 24),
-
               // Animal selection
               Text(
                 'Animal *',
@@ -322,7 +295,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
-                value: _selectedAnimal,
+                initialValue: _selectedAnimal,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Selecciona un animal hembra',
@@ -362,7 +335,7 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<Lactancia>(
-                value: _selectedLactancia,
+                initialValue: _selectedLactancia,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: _selectedAnimal == null
@@ -475,54 +448,13 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                 },
               ),
               const SizedBox(height: 32),
-
-              // Info card
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb,
-                            color: Colors.blue[700],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Información sobre registros de leche',
-                            style: Theme.of(context).textTheme.titleSmall
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '• Solo se pueden registrar datos de animales hembras\n'
-                        '• La fecha de pesaje no puede ser futura\n'
-                        '• El animal debe tener al menos una lactancia registrada',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Save button
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveRegistroLeche,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
@@ -532,10 +464,10 @@ class _CreateRegistroLecheScreenState extends State<CreateRegistroLecheScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
-                          'Guardar Registro',
+                          'Guardar',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 38, 39, 37),
                           ),
                         ),
                 ),

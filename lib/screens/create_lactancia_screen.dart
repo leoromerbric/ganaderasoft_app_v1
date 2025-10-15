@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
@@ -230,9 +231,10 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Lactancia guardada offline. Se sincronizará cuando tengas conexión.',
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -267,8 +269,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Lactancia registrada exitosamente'),
+              content: Text('Guardado exitosamente'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -301,7 +304,18 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Lactancia'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Registrar Lactancia'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -312,7 +326,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -329,40 +343,6 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Farm info card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.agriculture,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Registro de período de lactancia',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Animal selection
               Text(
                 'Animal *',
@@ -372,7 +352,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
-                value: _selectedAnimal,
+                initialValue: _selectedAnimal,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Selecciona el animal',
@@ -418,7 +398,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<EtapaAnimal>(
-                value: _selectedEtapaAnimal,
+                initialValue: _selectedEtapaAnimal,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: _isLoadingAnimalDetail
@@ -467,7 +447,9 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                       title: const Text('Activa'),
                       subtitle: const Text('En curso'),
                       value: true,
+                      // ignore: deprecated_member_use
                       groupValue: _isActive,
+                      // ignore: deprecated_member_use
                       onChanged: (bool? value) {
                         setState(() {
                           _isActive = value ?? true;
@@ -578,6 +560,7 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _saveLactancia,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
@@ -587,10 +570,10 @@ class _CreateLactanciaScreenState extends State<CreateLactanciaScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
-                          'Registrar Lactancia',
+                          'Guardar',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 38, 39, 37),
                           ),
                         ),
                 ),

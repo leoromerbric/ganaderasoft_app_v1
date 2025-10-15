@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
 import '../services/logging_service.dart';
@@ -35,6 +36,7 @@ class _FincasScreenState extends State<FincasScreen> {
     );
     setState(() {
       _isOffline = !isConnected;
+      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -61,7 +63,7 @@ class _FincasScreenState extends State<FincasScreen> {
       setState(() {
         _fincas = fincasResponse.fincas;
         _isLoading = false;
-        _dataSourceMessage = fincasResponse.message;
+        //_dataSourceMessage = fincasResponse.message;
       });
     } catch (e) {
       LoggingService.error('Error loading fincas', 'FincasScreen', e);
@@ -76,29 +78,28 @@ class _FincasScreenState extends State<FincasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('Administrar Fincas'),
-            if (_isOffline) ...[
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.orange,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Text(
-                  'Offline',
-                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [const Text('Fincas')],
+        ),
+        actions: [
+          if (_isOffline)
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange[800],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                AppConstants.offlineMode,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            ],
-          ],
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh), onPressed: _loadFincas),
+            ),
         ],
       ),
       body: _isLoading
@@ -151,53 +152,7 @@ class _FincasScreenState extends State<FincasScreen> {
                 ],
               ),
             )
-          : Column(
-              children: [
-                // Data source info banner
-                if (_dataSourceMessage != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.all(16).copyWith(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: _isOffline
-                          ? Colors.orange[100]
-                          : Color.fromARGB(255, 192, 212, 59),
-                      border: Border.all(
-                        color: _isOffline
-                            ? Colors.orange
-                            : Color.fromARGB(255, 192, 212, 59),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline
-                              ? Colors.orange[800]
-                              : Colors.green[800],
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _dataSourceMessage!,
-                            style: TextStyle(
-                              color: _isOffline
-                                  ? Colors.orange[800]
-                                  : Colors.green[800],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                Expanded(child: _buildFincasList()),
-              ],
-            ),
+          : Column(children: [Expanded(child: _buildFincasList())]),
     );
   }
 

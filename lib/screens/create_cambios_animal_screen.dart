@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
@@ -93,11 +94,17 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
         _selectedEtapa = null;
       });
     } catch (e) {
-      LoggingService.error('Error loading animal detail', 'CreateCambiosAnimalScreen', e);
+      LoggingService.error(
+        'Error loading animal detail',
+        'CreateCambiosAnimalScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error al cargar detalle del animal: ${e.toString()}'),
+            content: Text(
+              'Error al cargar detalle del animal: ${e.toString()}',
+            ),
             backgroundColor: Colors.orange,
           ),
         );
@@ -162,7 +169,7 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
           'Creating cambios animal offline',
           'CreateCambiosAnimalScreen',
         );
-        
+
         await DatabaseService.savePendingCambiosAnimalOffline(
           fechaCambio: _fechaCambioController.text,
           etapaCambio: _selectedEtapa!.etapaNombre,
@@ -181,8 +188,11 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Cambio de animal guardado offline. Se sincronizará cuando tengas conexión.'),
+              content: Text(
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
+              ),
               backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -216,8 +226,9 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Cambio de animal registrado exitosamente'),
+              content: Text('Guardado exitosamente'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -250,7 +261,18 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Cambio de Animal'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Registrar Cambio de Animal'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -261,7 +283,7 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -278,264 +300,226 @@ class _CreateCambiosAnimalScreenState extends State<CreateCambiosAnimalScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                    // Farm info card
-                    Card(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.agriculture,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    widget.finca.nombre,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleMedium
-                                        ?.copyWith(fontWeight: FontWeight.bold),
-                                  ),
-                                  Text(
-                                    'Registro de cambio de animal',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyMedium
-                                        ?.copyWith(color: Colors.grey[600]),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+              Text(
+                'Animal *',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<Animal>(
+                initialValue: _selectedAnimal,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Selecciona el animal',
+                ),
+                items: _animales.map((animal) {
+                  return DropdownMenuItem<Animal>(
+                    value: animal,
+                    child: Text('${animal.nombre} (${animal.codigoAnimal})'),
+                  );
+                }).toList(),
+                onChanged: (Animal? value) {
+                  setState(() {
+                    _selectedAnimal = value;
+                    _selectedAnimalDetail = null;
+                    _selectedEtapa = null;
+                  });
+
+                  if (value != null) {
+                    _loadAnimalDetail(value.idAnimal);
+                  }
+                },
+                validator: (value) {
+                  if (value == null) {
+                    return 'Por favor selecciona un animal';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Fecha cambio
+              Text(
+                'Fecha del Cambio *',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _fechaCambioController,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: 'Selecciona la fecha',
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.calendar_today),
+                    onPressed: _selectDate,
+                  ),
+                ),
+                readOnly: true,
+                onTap: _selectDate,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor selecciona la fecha del cambio';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+
+              // Etapa
+              Text(
+                'Nueva Etapa *',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              DropdownButtonFormField<Etapa>(
+                initialValue: _selectedEtapa,
+                decoration: InputDecoration(
+                  border: const OutlineInputBorder(),
+                  hintText: _isLoadingAnimalDetail
+                      ? 'Cargando etapas...'
+                      : 'Selecciona la nueva etapa',
+                  prefixIcon: const Icon(Icons.timeline),
+                ),
+                items:
+                    _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
+                      return DropdownMenuItem<Etapa>(
+                        value: etapaAnimal.etapa,
+                        child: Text(
+                          '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Animal selection
-                    Text(
-                      'Animal *',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<Animal>(
-                      value: _selectedAnimal,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Selecciona el animal',
-                      ),
-                      items: _animales.map((animal) {
-                        return DropdownMenuItem<Animal>(
-                          value: animal,
-                          child: Text(
-                            '${animal.nombre} (${animal.codigoAnimal})',
-                          ),
-                        );
-                      }).toList(),
-                      onChanged: (Animal? value) {
-                        setState(() {
-                          _selectedAnimal = value;
-                          _selectedAnimalDetail = null;
-                          _selectedEtapa = null;
-                        });
-                        
-                        if (value != null) {
-                          _loadAnimalDetail(value.idAnimal);
-                        }
-                      },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Por favor selecciona un animal';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Fecha cambio
-                    Text(
-                      'Fecha del Cambio *',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _fechaCambioController,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        hintText: 'Selecciona la fecha',
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.calendar_today),
-                          onPressed: _selectDate,
-                        ),
-                      ),
-                      readOnly: true,
-                      onTap: _selectDate,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor selecciona la fecha del cambio';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Etapa
-                    Text(
-                      'Nueva Etapa *',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<Etapa>(
-                      value: _selectedEtapa,
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        hintText: _isLoadingAnimalDetail 
-                            ? 'Cargando etapas...' 
-                            : 'Selecciona la nueva etapa',
-                        prefixIcon: const Icon(Icons.timeline),
-                      ),
-                      items: _selectedAnimalDetail?.etapaAnimales.map((etapaAnimal) {
-                        return DropdownMenuItem<Etapa>(
-                          value: etapaAnimal.etapa,
-                          child: Text(
-                            '${etapaAnimal.etapa.etapaNombre}${etapaAnimal.etanFechaFin == null ? ' (Actual)' : ''}',
-                          ),
-                        );
-                      }).toList() ?? [],
-                      onChanged: _isLoadingAnimalDetail ? null : (Etapa? value) {
+                      );
+                    }).toList() ??
+                    [],
+                onChanged: _isLoadingAnimalDetail
+                    ? null
+                    : (Etapa? value) {
                         setState(() {
                           _selectedEtapa = value;
                         });
                       },
-                      validator: (value) {
-                        if (value == null) {
-                          return 'Por favor selecciona la nueva etapa';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                validator: (value) {
+                  if (value == null) {
+                    return 'Por favor selecciona la nueva etapa';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                    // Peso
-                    Text(
-                      'Peso (kg) *',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _pesoController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Ingresa el peso en kilogramos',
-                        suffixText: 'kg',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa el peso';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Por favor ingresa un número válido';
-                        }
-                        if (double.parse(value) <= 0) {
-                          return 'El peso debe ser mayor a 0';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+              // Peso
+              Text(
+                'Peso (kg) *',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _pesoController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Ingresa el peso en kilogramos',
+                  suffixText: 'kg',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingresa el peso';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Por favor ingresa un número válido';
+                  }
+                  if (double.parse(value) <= 0) {
+                    return 'El peso debe ser mayor a 0';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                    // Altura
-                    Text(
-                      'Altura (cm) *',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _alturaController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Ingresa la altura en centímetros',
-                        suffixText: 'cm',
-                      ),
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Por favor ingresa la altura';
-                        }
-                        if (double.tryParse(value) == null) {
-                          return 'Por favor ingresa un número válido';
-                        }
-                        if (double.parse(value) <= 0) {
-                          return 'La altura debe ser mayor a 0';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+              // Altura
+              Text(
+                'Altura (cm) *',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _alturaController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Ingresa la altura en centímetros',
+                  suffixText: 'cm',
+                ),
+                keyboardType: TextInputType.number,
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Por favor ingresa la altura';
+                  }
+                  if (double.tryParse(value) == null) {
+                    return 'Por favor ingresa un número válido';
+                  }
+                  if (double.parse(value) <= 0) {
+                    return 'La altura debe ser mayor a 0';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
 
-                    // Comentario
-                    Text(
-                      'Comentario',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextFormField(
-                      controller: _comentarioController,
-                      decoration: const InputDecoration(
-                        border: OutlineInputBorder(),
-                        hintText: 'Comentarios adicionales sobre el cambio',
-                      ),
-                      maxLines: 3,
-                      maxLength: 500,
-                    ),
-                    const SizedBox(height: 32),
+              // Comentario
+              Text(
+                'Comentario',
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _comentarioController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  hintText: 'Comentarios adicionales sobre el cambio',
+                ),
+                maxLines: 3,
+                maxLength: 500,
+              ),
+              const SizedBox(height: 32),
 
-                    // Save button
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isLoading ? null : _saveCambiosAnimal,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+              // Save button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _saveCambiosAnimal,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                  ),
+                  child: _isLoading
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Text(
+                          'Guardar',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 38, 39, 37),
+                          ),
                         ),
-                        child: _isLoading
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                ),
-                              )
-                            : const Text(
-                                'Registrar Cambio',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

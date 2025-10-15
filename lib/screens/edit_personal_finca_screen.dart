@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
@@ -17,7 +18,8 @@ class EditPersonalFincaScreen extends StatefulWidget {
   });
 
   @override
-  State<EditPersonalFincaScreen> createState() => _EditPersonalFincaScreenState();
+  State<EditPersonalFincaScreen> createState() =>
+      _EditPersonalFincaScreenState();
 }
 
 class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
@@ -117,12 +119,12 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
           correo: _correoController.text.trim(),
           tipoTrabajador: _selectedTipoTrabajador!,
         );
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Empleado actualizado en modo offline. Se sincronizará cuando tengas conexión.',
+                'Actualizado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
@@ -150,19 +152,27 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
       LoggingService.info('Updating personal finca', 'EditPersonalFincaScreen');
       await _authService.updatePersonalFinca(updatedPersonal);
 
-      LoggingService.info('Personal finca updated successfully', 'EditPersonalFincaScreen');
+      LoggingService.info(
+        'Personal finca updated successfully',
+        'EditPersonalFincaScreen',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Empleado actualizado exitosamente'),
+            content: Text('Actualizado exitosamente'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
-      LoggingService.error('Error updating personal finca', 'EditPersonalFincaScreen', e);
+      LoggingService.error(
+        'Error updating personal finca',
+        'EditPersonalFincaScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -184,7 +194,18 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Empleado'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Editar Empleado'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -195,7 +216,7 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -207,29 +228,6 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
       ),
       body: Column(
         children: [
-          // Offline warning banner
-          if (_isOffline)
-            Container(
-              width: double.infinity,
-              color: Colors.orange[100],
-              padding: const EdgeInsets.all(12),
-              child: Row(
-                children: [
-                  Icon(Icons.warning, color: Colors.orange[800]),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      'Modo offline. Los cambios se sincronizarán cuando tengas conexión.',
-                      style: TextStyle(
-                        color: Colors.orange[800],
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
           // Form content
           Expanded(
             child: Form(
@@ -239,37 +237,6 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header with farm info
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: const Color.fromARGB(255, 192, 212, 59),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Finca',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          Text(
-                            widget.finca.nombre,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
                     // Form fields
                     // Cedula
                     Text(
@@ -403,7 +370,9 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                         if (value == null || value.isEmpty) {
                           return 'Por favor ingresa el correo electrónico';
                         }
-                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                        if (!RegExp(
+                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                        ).hasMatch(value)) {
                           return 'Por favor ingresa un correo válido';
                         }
                         return null;
@@ -453,11 +422,13 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _updatePersonalFinca,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color.fromARGB(255, 192, 212, 59),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+                          backgroundColor: const Color.fromARGB(
+                            255,
+                            192,
+                            212,
+                            59,
                           ),
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
                         child: _isLoading
                             ? const SizedBox(
@@ -469,10 +440,10 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                                 ),
                               )
                             : const Text(
-                                'Actualizar Empleado',
+                                'Actualizar',
                                 style: TextStyle(
                                   fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                                  color: Color.fromARGB(255, 38, 39, 37),
                                 ),
                               ),
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/farm_management_models.dart';
@@ -183,9 +184,10 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Peso guardado offline. Se sincronizará cuando tengas conexión.',
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -217,8 +219,9 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Peso registrado exitosamente'),
+              content: Text('Guardado exitosamente'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
             ),
           );
           Navigator.pop(context, true);
@@ -251,7 +254,18 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Peso Corporal'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Registrar Peso Corporal'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -262,7 +276,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -279,38 +293,6 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Farm info card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.agriculture,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium
-                                  ?.copyWith(fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              'Registro de peso corporal',
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(color: Colors.grey[600]),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
               const SizedBox(height: 24),
 
               // Animal selection
@@ -322,7 +304,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<Animal>(
-                value: _selectedAnimal,
+                initialValue: _selectedAnimal,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Selecciona el animal',
@@ -363,7 +345,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<EtapaAnimal>(
-                value: _selectedEtapaAnimal,
+                initialValue: _selectedEtapaAnimal,
                 decoration: InputDecoration(
                   border: const OutlineInputBorder(),
                   hintText: _isLoadingAnimalDetail
@@ -490,6 +472,7 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _savePesoCorporal,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
@@ -499,10 +482,10 @@ class _CreatePesoCorporalScreenState extends State<CreatePesoCorporalScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
-                          'Registrar Peso',
+                          'Guardar',
                           style: TextStyle(
                             fontSize: 16,
-                            fontWeight: FontWeight.bold,
+                            color: Color.fromARGB(255, 38, 39, 37),
                           ),
                         ),
                 ),

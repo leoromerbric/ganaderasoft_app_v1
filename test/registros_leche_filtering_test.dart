@@ -14,37 +14,40 @@ void main() {
           idAnimal: 1,
           nombre: 'Vaca1',
           codigoAnimal: 'V001',
-          sexo: 'hembra',
+          sexo: 'F',
           fechaNacimiento: '2020-01-01',
-          pesoNacimiento: 45.0,
-          idRebano: 1,
-          pesoActual: 500.0,
-          observaciones: '',
-          activo: true,
+          procedencia: 'Local',
+          idRebano: 6,
+          archivado: false,
+          createdAt: '',
+          updatedAt: '',
+          fkComposicionRaza: 72,
         ),
         Animal(
           idAnimal: 2,
-          nombre: 'Vaca2', 
+          nombre: 'Vaca2',
           codigoAnimal: 'V002',
-          sexo: 'hembra',
+          sexo: 'F',
           fechaNacimiento: '2020-02-01',
-          pesoNacimiento: 42.0,
-          idRebano: 1,
-          pesoActual: 480.0,
-          observaciones: '',
-          activo: true,
+          procedencia: 'Local',
+          idRebano: 6,
+          archivado: false,
+          createdAt: '',
+          updatedAt: '',
+          fkComposicionRaza: 71,
         ),
         Animal(
           idAnimal: 3,
           nombre: 'Toro1',
           codigoAnimal: 'T001',
-          sexo: 'macho',
+          sexo: 'M',
           fechaNacimiento: '2019-01-01',
-          pesoNacimiento: 50.0,
-          idRebano: 1,
-          pesoActual: 600.0,
-          observaciones: '',
-          activo: true,
+          procedencia: 'Local',
+          idRebano: 6,
+          archivado: false,
+          createdAt: '',
+          updatedAt: '',
+          fkComposicionRaza: 70,
         ),
       ];
 
@@ -121,7 +124,7 @@ void main() {
       final femaleAnimals = testAnimals
           .where((animal) => animal.sexo.toLowerCase() == 'hembra')
           .toList();
-      
+
       expect(femaleAnimals.length, equals(2));
       expect(femaleAnimals[0].nombre, equals('Vaca1'));
       expect(femaleAnimals[1].nombre, equals('Vaca2'));
@@ -130,19 +133,26 @@ void main() {
     test('should filter milk records by selected animal correctly', () {
       // Simulate filtering by animal ID 1 (Vaca1)
       final selectedAnimalId = 1;
-      
+
       // Get lactancias for selected animal
       final animalLactancias = testLactancias
-          .where((lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId)
+          .where(
+            (lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId,
+          )
           .map((lactancia) => lactancia.lactanciaId)
           .toSet();
-      
+
       // Filter milk records for these lactancias
       final filteredRecords = testRegistrosLeche
-          .where((registro) => animalLactancias.contains(registro.lecheLactanciaId))
+          .where(
+            (registro) => animalLactancias.contains(registro.lecheLactanciaId),
+          )
           .toList();
-      
-      expect(filteredRecords.length, equals(3)); // Records from lactancia 1 and 3
+
+      expect(
+        filteredRecords.length,
+        equals(3),
+      ); // Records from lactancia 1 and 3
       expect(filteredRecords.any((r) => r.lecheId == 1), isTrue);
       expect(filteredRecords.any((r) => r.lecheId == 2), isTrue);
       expect(filteredRecords.any((r) => r.lecheId == 4), isTrue);
@@ -151,11 +161,11 @@ void main() {
     test('should filter milk records by selected lactancia correctly', () {
       // Simulate filtering by lactancia ID 1
       final selectedLactanciaId = 1;
-      
+
       final filteredRecords = testRegistrosLeche
           .where((registro) => registro.lecheLactanciaId == selectedLactanciaId)
           .toList();
-      
+
       expect(filteredRecords.length, equals(2)); // Records 1 and 2
       expect(filteredRecords[0].lecheId, equals(1));
       expect(filteredRecords[1].lecheId, equals(2));
@@ -164,11 +174,13 @@ void main() {
     test('should get available lactancias for selected animal correctly', () {
       // Simulate getting lactancias for animal ID 1
       final selectedAnimalId = 1;
-      
+
       final availableLactancias = testLactancias
-          .where((lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId)
+          .where(
+            (lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId,
+          )
           .toList();
-      
+
       expect(availableLactancias.length, equals(2)); // Lactancias 1 and 3
       expect(availableLactancias[0].lactanciaId, equals(1));
       expect(availableLactancias[1].lactanciaId, equals(3));
@@ -177,9 +189,11 @@ void main() {
     test('should sort milk records by date descending correctly', () {
       final sortedRecords = List<RegistroLechero>.from(testRegistrosLeche);
       sortedRecords.sort(
-        (a, b) => DateTime.parse(b.lecheFechaPesaje).compareTo(DateTime.parse(a.lecheFechaPesaje)),
+        (a, b) => DateTime.parse(
+          b.lecheFechaPesaje,
+        ).compareTo(DateTime.parse(a.lecheFechaPesaje)),
       );
-      
+
       expect(sortedRecords[0].lecheId, equals(3)); // 2024-02-05
       expect(sortedRecords[1].lecheId, equals(2)); // 2024-01-10
       expect(sortedRecords[2].lecheId, equals(1)); // 2024-01-05
@@ -190,23 +204,30 @@ void main() {
       // Filter by animal 1 and lactancia 1
       final selectedAnimalId = 1;
       final selectedLactanciaId = 1;
-      
+
       // First filter by animal
       final animalLactancias = testLactancias
-          .where((lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId)
+          .where(
+            (lactancia) => lactancia.lactanciaEtapaAnid == selectedAnimalId,
+          )
           .map((lactancia) => lactancia.lactanciaId)
           .toSet();
-      
+
       var filteredRecords = testRegistrosLeche
-          .where((registro) => animalLactancias.contains(registro.lecheLactanciaId))
+          .where(
+            (registro) => animalLactancias.contains(registro.lecheLactanciaId),
+          )
           .toList();
-      
+
       // Then filter by specific lactancia
       filteredRecords = filteredRecords
           .where((registro) => registro.lecheLactanciaId == selectedLactanciaId)
           .toList();
-      
-      expect(filteredRecords.length, equals(2)); // Only records from lactancia 1
+
+      expect(
+        filteredRecords.length,
+        equals(2),
+      ); // Only records from lactancia 1
       expect(filteredRecords[0].lecheId, equals(1));
       expect(filteredRecords[1].lecheId, equals(2));
     });
@@ -234,30 +255,39 @@ void main() {
         return '$count registro${plural ? 's' : ''} de leche${plural ? ' encontrados' : ' encontrado'}';
       }
 
-      expect(getCountDisplayText(0), equals('0 registros de leche encontrados'));
+      expect(
+        getCountDisplayText(0),
+        equals('0 registros de leche encontrados'),
+      );
       expect(getCountDisplayText(1), equals('1 registro de leche encontrado'));
-      expect(getCountDisplayText(5), equals('5 registros de leche encontrados'));
+      expect(
+        getCountDisplayText(5),
+        equals('5 registros de leche encontrados'),
+      );
     });
 
     test('should get animal name by ID correctly', () {
       final testAnimals = [
         Animal(
-          idAnimal: 1,
+          idAnimal: 13,
           nombre: 'Vaca1',
           codigoAnimal: 'V001',
-          sexo: 'hembra',
+          sexo: 'F',
           fechaNacimiento: '2020-01-01',
-          pesoNacimiento: 45.0,
-          idRebano: 1,
-          pesoActual: 500.0,
-          observaciones: '',
-          activo: true,
+          procedencia: 'Local',
+          idRebano: 6,
+          archivado: false,
+          createdAt: '',
+          updatedAt: '',
+          fkComposicionRaza: 70,
         ),
       ];
 
       String getAnimalName(int animalId, List<Animal> femaleAnimals) {
         try {
-          final animal = femaleAnimals.firstWhere((a) => a.idAnimal == animalId);
+          final animal = femaleAnimals.firstWhere(
+            (a) => a.idAnimal == animalId,
+          );
           return animal.nombre;
         } catch (e) {
           return 'Animal #$animalId';

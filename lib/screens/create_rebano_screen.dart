@@ -58,8 +58,9 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Rebaño creado exitosamente'),
+            content: Text('Guardado exitosamente'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
         Navigator.of(context).pop(rebano);
@@ -155,57 +156,6 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                   ),
                 ),
 
-              // Finca Info Card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Finca',
-                        style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.agriculture,
-                            color: Colors.green[600],
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              widget.finca.nombre,
-                              style: Theme.of(context).textTheme.bodyLarge,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.category,
-                            color: Colors.grey[600],
-                            size: 16,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            widget.finca.explotacionTipo,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: Colors.grey[600]),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Nombre del Rebaño
               Text(
                 'Nombre del Rebaño *',
@@ -250,7 +200,7 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
-                          'Crear Rebaño',
+                          'Guardar',
                           style: TextStyle(
                             fontSize: 16,
                             color: Color.fromARGB(255, 38, 39, 37),
@@ -260,42 +210,6 @@ class _CreateRebanoScreenState extends State<CreateRebanoScreen> {
               ),
 
               const SizedBox(height: 16),
-
-              // Info Card
-              Card(
-                color: Colors.blue[50],
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.blue[700]),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Información',
-                            style: Theme.of(context).textTheme.titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.blue[700],
-                                ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Un rebaño es un grupo de animales que pertenecen a la misma finca. '
-                        'Puedes organizar tus animales en diferentes rebaños según tus necesidades '
-                        '(por ejemplo: vacas lecheras, toros reproductores, becerros, etc.).',
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.blue[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
             ],
           ),
         ),

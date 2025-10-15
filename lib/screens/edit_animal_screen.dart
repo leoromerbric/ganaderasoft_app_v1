@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/configuration_models.dart';
@@ -372,7 +373,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Animal actualizado en modo offline. Se sincronizará cuando tengas conexión.',
+                'Actualizado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
@@ -400,8 +401,9 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Animal actualizado exitosamente'),
+            content: Text('Registro actualizado exitosamente'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
         Navigator.of(context).pop(true); // Return true to indicate success
@@ -467,9 +469,37 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Editar Animal'),
-        backgroundColor: const Color.fromARGB(255, 192, 212, 59),
-        foregroundColor: const Color.fromARGB(255, 38, 39, 37),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Editar Animal'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
+        actions: [
+          if (_isOffline)
+            Container(
+              margin: const EdgeInsets.only(right: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.orange[800],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text(
+                AppConstants.offlineMode,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+        ],
       ),
       body: _isLoadingData
           ? const Center(child: CircularProgressIndicator())
@@ -481,31 +511,6 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Offline indicator
-                    if (_isOffline)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[100],
-                          border: Border.all(color: Colors.orange),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.wifi_off, color: Colors.orange[800]),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Modo offline - Los cambios se sincronizarán cuando tengas conexión',
-                              style: TextStyle(
-                                color: Colors.orange[800],
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                     // Rebaño
                     Text(
                       'Rebaño *',
@@ -515,7 +520,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Rebano>(
-                      value: _selectedRebano,
+                      initialValue: _selectedRebano,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona un rebaño',
@@ -595,7 +600,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedSexo,
+                      initialValue: _selectedSexo,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el sexo',
@@ -758,7 +763,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<EstadoSalud>(
-                      value: _selectedEstadoSalud,
+                      initialValue: _selectedEstadoSalud,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el estado de salud',
@@ -792,7 +797,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Etapa>(
-                      value: _selectedEtapa,
+                      initialValue: _selectedEtapa,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona la etapa',
@@ -840,7 +845,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                                 ),
                               )
                             : const Text(
-                                'Actualizar Animal',
+                                'Actualizar',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Color.fromARGB(255, 38, 39, 37),

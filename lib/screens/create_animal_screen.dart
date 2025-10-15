@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../models/configuration_models.dart';
@@ -35,7 +36,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   final _procedenciaController = TextEditingController();
 
   // Form data
-  final String _procedencia = 'Local';
+  final String _procedencia = '';
   Rebano? _selectedRebano;
   String? _selectedSexo;
   TipoAnimal? _selectedTipoAnimal;
@@ -346,7 +347,9 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Animal guardado localmente. Se sincronizará cuando haya conexión.'),
+              content: Text(
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
+              ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
             ),
@@ -370,7 +373,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('Animal creado exitosamente'),
+              content: Text('Guardado exitosamente'),
               backgroundColor: Colors.green,
             ),
           );
@@ -413,26 +416,19 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
         actions: [
           if (_isOffline)
             Container(
-              margin: const EdgeInsets.all(8),
+              margin: const EdgeInsets.only(right: 16),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: Colors.orange[100],
+                color: Colors.orange[800],
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.cloud_off, size: 16, color: Colors.orange[700]),
-                  const SizedBox(width: 4),
-                  Text(
-                    'Sin conexión',
-                    style: TextStyle(
-                      color: Colors.orange[700],
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
+              child: const Text(
+                AppConstants.offlineMode,
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
         ],
@@ -446,33 +442,6 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if (_isOffline)
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.only(bottom: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.orange[50],
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Colors.orange[200]!,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(Icons.info_outline, color: Colors.orange[700]),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'Sin conexión. El animal se guardará localmente y se sincronizará cuando haya conexión.',
-                                style: TextStyle(color: Colors.orange[700]),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
                     // Rebaño
                     Text(
                       'Rebaño *',
@@ -482,7 +451,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Rebano>(
-                      value: _selectedRebano,
+                      initialValue: _selectedRebano,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona un rebaño',
@@ -600,7 +569,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<TipoAnimal>(
-                      value: _selectedTipoAnimal,
+                      initialValue: _selectedTipoAnimal,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el tipo de animal',
@@ -809,7 +778,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                                 ),
                               )
                             : const Text(
-                                'Crear Animal',
+                                'Guardar',
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: Color.fromARGB(255, 38, 39, 37),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/farm_management_models.dart';
 import '../services/auth_service.dart';
@@ -9,13 +10,11 @@ import '../services/logging_service.dart';
 class CreatePersonalFincaScreen extends StatefulWidget {
   final Finca finca;
 
-  const CreatePersonalFincaScreen({
-    super.key,
-    required this.finca,
-  });
+  const CreatePersonalFincaScreen({super.key, required this.finca});
 
   @override
-  State<CreatePersonalFincaScreen> createState() => _CreatePersonalFincaScreenState();
+  State<CreatePersonalFincaScreen> createState() =>
+      _CreatePersonalFincaScreenState();
 }
 
 class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
@@ -103,12 +102,12 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
           correo: _correoController.text.trim(),
           tipoTrabajador: _selectedTipoTrabajador!,
         );
-        
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Empleado registrado en modo offline. Se sincronizará cuando tengas conexión.',
+                'Guardado en modo offline. Se sincronizará cuando tengas conexión.',
               ),
               backgroundColor: Colors.orange,
               duration: Duration(seconds: 4),
@@ -133,22 +132,33 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
         updatedAt: DateTime.now().toIso8601String(),
       );
 
-      LoggingService.info('Creating personal finca', 'CreatePersonalFincaScreen');
+      LoggingService.info(
+        'Creating personal finca',
+        'CreatePersonalFincaScreen',
+      );
       await _authService.createPersonalFinca(personalFinca);
 
-      LoggingService.info('Personal finca created successfully', 'CreatePersonalFincaScreen');
+      LoggingService.info(
+        'Personal finca created successfully',
+        'CreatePersonalFincaScreen',
+      );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Empleado registrado exitosamente'),
+            content: Text('Guardado exitosamente'),
             backgroundColor: Colors.green,
+            duration: Duration(seconds: 4),
           ),
         );
         Navigator.pop(context, true);
       }
     } catch (e) {
-      LoggingService.error('Error creating personal finca', 'CreatePersonalFincaScreen', e);
+      LoggingService.error(
+        'Error creating personal finca',
+        'CreatePersonalFincaScreen',
+        e,
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -170,7 +180,18 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Registrar Empleado'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Registrar Empleado'),
+            Text(
+              widget.finca.nombre,
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: Colors.white),
+            ),
+          ],
+        ),
         actions: [
           if (_isOffline)
             Container(
@@ -181,7 +202,7 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -191,6 +212,7 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
             ),
         ],
       ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -198,48 +220,12 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Farm info card
-              Card(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.agriculture,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              widget.finca.nombre,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Registro de nuevo empleado',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[600],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
               // Cedula
               Text(
                 'Número de Cédula *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -268,9 +254,9 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
               // Nombre
               Text(
                 'Nombre *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -296,9 +282,9 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
               // Apellido
               Text(
                 'Apellido *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -324,9 +310,9 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
               // Telefono
               Text(
                 'Teléfono *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -352,9 +338,9 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
               // Correo
               Text(
                 'Correo Electrónico *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               TextFormField(
@@ -369,7 +355,9 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
                   if (value == null || value.isEmpty) {
                     return 'Por favor ingresa el correo electrónico';
                   }
-                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                  if (!RegExp(
+                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                  ).hasMatch(value)) {
                     return 'Por favor ingresa un correo válido';
                   }
                   return null;
@@ -380,13 +368,13 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
               // Tipo Trabajador
               Text(
                 'Tipo de Trabajador *',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: _selectedTipoTrabajador,
+                initialValue: _selectedTipoTrabajador,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
                   hintText: 'Selecciona el tipo de trabajador',
@@ -418,6 +406,7 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
                 child: ElevatedButton(
                   onPressed: _isLoading ? null : _savePersonalFinca,
                   style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                     padding: const EdgeInsets.symmetric(vertical: 16),
                   ),
                   child: _isLoading
@@ -427,8 +416,11 @@ class _CreatePersonalFincaScreenState extends State<CreatePersonalFincaScreen> {
                           child: CircularProgressIndicator(strokeWidth: 2),
                         )
                       : const Text(
-                          'Registrar Empleado',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                          'Guardar',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Color.fromARGB(255, 38, 39, 37),
+                          ),
                         ),
                 ),
               ),

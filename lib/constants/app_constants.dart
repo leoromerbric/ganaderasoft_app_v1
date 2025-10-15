@@ -1,12 +1,13 @@
 class AppConstants {
   // App info
-  static const String appName = 'Ganadera Soft';
+  static const String appName = 'GanaderaSoft';
   static const String appSubtitle = 'Gestión de Fincas Ganaderas';
 
   // Storage keys
   static const String tokenKey = 'auth_token';
   static const String userKey = 'user_data';
-  static const String originalTokenKey = 'original_auth_token'; // For preserving JWT during offline mode
+  static const String originalTokenKey =
+      'original_auth_token'; // For preserving JWT during offline mode
 
   // Offline keys
   static const String offlineUserKey = 'offline_user_data';

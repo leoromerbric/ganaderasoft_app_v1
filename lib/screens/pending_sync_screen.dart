@@ -106,6 +106,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
             const SnackBar(
               content: Text('Sincronización completada exitosamente'),
               backgroundColor: Colors.green,
+              duration: Duration(seconds: 4),
             ),
           );
         } else if (syncData.status == SyncStatus.error) {
@@ -189,6 +190,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
             'Sin conexión a internet. Verifica tu conectividad e inténtalo de nuevo.',
           ),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 4),
         ),
       );
       return;
@@ -1070,7 +1072,7 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
               child: ElevatedButton(
                 onPressed: _isSyncing ? null : _syncPendingRecords,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[600],
+                  backgroundColor: const Color.fromARGB(255, 192, 212, 59),
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
                 child: _isSyncing
@@ -1090,13 +1092,19 @@ class _PendingSyncScreenState extends State<PendingSyncScreen> {
                           SizedBox(width: 12),
                           Text(
                             'Sincronizando...',
-                            style: TextStyle(color: Colors.white, fontSize: 16),
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 38, 39, 37),
+                              fontSize: 16,
+                            ),
                           ),
                         ],
                       )
                     : const Text(
                         'Sincronizar mis cambios',
-                        style: TextStyle(color: Colors.white, fontSize: 16),
+                        style: TextStyle(
+                          color: Color.fromARGB(255, 38, 39, 37),
+                          fontSize: 16,
+                        ),
                       ),
               ),
             ),

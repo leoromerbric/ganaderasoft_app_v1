@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import '../lib/services/database_service.dart';
-import '../lib/services/logging_service.dart';
 
 void main() {
   setUpAll(() {
@@ -18,57 +17,72 @@ void main() {
       await DatabaseService.clearAllData();
     });
 
-    test('should handle sync with current flow (no redundant save) - Issue #89 fix', () async {
-      print('\n=== Testing sync with current flow (AuthService no longer saves to DB) ===');
+    test(
+      'should handle sync with current flow (no redundant save) - Issue #89 fix',
+      () async {
+        print(
+          '\n=== Testing sync with current flow (AuthService no longer saves to DB) ===',
+        );
 
-      // Step 1: Create a pending personal finca with temp ID
-      await DatabaseService.savePendingPersonalFincaOffline(
-        idFinca: 1,
-        cedula: 12345678,
-        nombre: 'Test',
-        apellido: 'Personal',
-        telefono: '3001234567',
-        correo: 'test@example.com',
-        tipoTrabajador: 'Administrador',
-      );
+        // Step 1: Create a pending personal finca with temp ID
+        await DatabaseService.savePendingPersonalFincaOffline(
+          idFinca: 1,
+          cedula: 12345678,
+          nombre: 'Test',
+          apellido: 'Personal',
+          telefono: '3001234567',
+          correo: 'test@example.com',
+          tipoTrabajador: 'Administrador',
+        );
 
-      // Get the temp ID
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
-      expect(pendingPersonal.length, equals(1));
-      final tempId = pendingPersonal.first['id_tecnico'] as int;
-      expect(tempId < 0, isTrue); // Should be negative temp ID
-      
-      print('Created pending personal finca with temp ID: $tempId');
+        // Get the temp ID
+        final pendingPersonal =
+            await DatabaseService.getPendingPersonalFincaOffline();
+        expect(pendingPersonal.length, equals(1));
+        final tempId = pendingPersonal.first['id_tecnico'] as int;
+        expect(tempId < 0, isTrue); // Should be negative temp ID
 
-      // Step 2: Verify only temp record exists (AuthService no longer saves real ID record)
-      final db = await DatabaseService.database;
-      final allPersonal = await db.query('personal_finca');
-      expect(allPersonal.length, equals(1));
-      expect(allPersonal.first['id_tecnico'], equals(tempId));
-      
-      print('Verified only temp record exists (no redundant save from AuthService)');
+        print('Created pending personal finca with temp ID: $tempId');
 
-      // Step 3: Call markPersonalFincaAsSynced (should update temp record with real ID)
-      final realId = 1011;
-      await DatabaseService.markPersonalFincaAsSynced(tempId, realId);
-      print('Successfully called markPersonalFincaAsSynced');
+        // Step 2: Verify only temp record exists (AuthService no longer saves real ID record)
+        final db = await DatabaseService.database;
+        final allPersonal = await db.query('personal_finca');
+        expect(allPersonal.length, equals(1));
+        expect(allPersonal.first['id_tecnico'], equals(tempId));
 
-      // Step 4: Verify the temp record is updated with real ID (not removed)
-      final finalPersonal = await db.query('personal_finca');
-      expect(finalPersonal.length, equals(1)); // Still 1 record (updated, not removed)
-      expect(finalPersonal.first['id_tecnico'], equals(realId)); // Now has real ID
-      expect(finalPersonal.first['synced'], equals(1));
-      expect(finalPersonal.first['is_pending'], equals(0));
-      
-      print('✓ Temp record updated with real ID: $realId');
+        print(
+          'Verified only temp record exists (no redundant save from AuthService)',
+        );
 
-      // Step 5: Verify no pending records remain
-      final stillPending = await DatabaseService.getPendingPersonalFincaOffline();
-      expect(stillPending.length, equals(0));
-      
-      print('✓ No pending records remain');
-      print('=== Test PASSED - Issue #89 Fixed ===');
-    });
+        // Step 3: Call markPersonalFincaAsSynced (should update temp record with real ID)
+        final realId = 1011;
+        await DatabaseService.markPersonalFincaAsSynced(tempId, realId);
+        print('Successfully called markPersonalFincaAsSynced');
+
+        // Step 4: Verify the temp record is updated with real ID (not removed)
+        final finalPersonal = await db.query('personal_finca');
+        expect(
+          finalPersonal.length,
+          equals(1),
+        ); // Still 1 record (updated, not removed)
+        expect(
+          finalPersonal.first['id_tecnico'],
+          equals(realId),
+        ); // Now has real ID
+        expect(finalPersonal.first['synced'], equals(1));
+        expect(finalPersonal.first['is_pending'], equals(0));
+
+        print('✓ Temp record updated with real ID: $realId');
+
+        // Step 5: Verify no pending records remain
+        final stillPending =
+            await DatabaseService.getPendingPersonalFincaOffline();
+        expect(stillPending.length, equals(0));
+
+        print('✓ No pending records remain');
+        print('=== Test PASSED - Issue #89 Fixed ===');
+      },
+    );
 
     test('should handle sync when real ID record does not exist', () async {
       print('\n=== Testing sync when real ID record does not exist ===');
@@ -76,7 +90,7 @@ void main() {
       // Step 1: Create a pending personal finca with temp ID
       await DatabaseService.savePendingPersonalFincaOffline(
         idFinca: 1,
-        cedula:87654321,
+        cedula: 87654321,
         nombre: 'Another',
         apellido: 'Person',
         telefono: '3007654321',
@@ -85,10 +99,11 @@ void main() {
       );
 
       // Get the temp ID
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
+      final pendingPersonal =
+          await DatabaseService.getPendingPersonalFincaOffline();
       expect(pendingPersonal.length, equals(1));
       final tempId = pendingPersonal.first['id_tecnico'] as int;
-      
+
       print('Created pending personal finca with temp ID: $tempId');
 
       // Step 2: Call markPersonalFincaAsSynced (should update the record)
@@ -104,13 +119,14 @@ void main() {
       expect(finalPersonal.first['synced'], equals(1));
       expect(finalPersonal.first['is_pending'], equals(0));
       expect(finalPersonal.first['pending_operation'], isNull);
-      
+
       print('✓ Record updated with real ID: $realId');
 
       // Step 4: Verify no pending records remain
-      final stillPending = await DatabaseService.getPendingPersonalFincaOffline();
+      final stillPending =
+          await DatabaseService.getPendingPersonalFincaOffline();
       expect(stillPending.length, equals(0));
-      
+
       print('✓ No pending records remain');
       print('=== Test PASSED ===');
     });
@@ -140,12 +156,13 @@ void main() {
         tipoTrabajador: 'Supervisor',
       );
 
-      final pendingPersonal = await DatabaseService.getPendingPersonalFincaOffline();
+      final pendingPersonal =
+          await DatabaseService.getPendingPersonalFincaOffline();
       final tempId = pendingPersonal.first['id_tecnico'] as int;
-      
+
       // Mark as synced first time
       await DatabaseService.markPersonalFincaAsSynced(tempId, 4044);
-      
+
       // Try to mark as synced again
       errorCaught = false;
       try {
@@ -156,7 +173,7 @@ void main() {
       }
       expect(errorCaught, isTrue);
       print('✓ Correctly handled attempt to sync already synced record');
-      
+
       print('=== Error Cases Test PASSED ===');
     });
   });

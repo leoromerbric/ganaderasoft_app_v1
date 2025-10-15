@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
 import '../services/auth_service.dart';
@@ -47,6 +48,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
     final isConnected = await ConnectivityService.isConnected();
     setState(() {
       _isOffline = !isConnected;
+      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -78,7 +80,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
       setState(() {
         _animales = animalesResponse.animales;
         _isLoading = false;
-        _dataSourceMessage = animalesResponse.message;
+        //_dataSourceMessage = animalesResponse.message;
 
         // Apply rebano filter if one is selected
         if (_selectedRebano != null) {
@@ -150,7 +152,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Text(
-                'Offline',
+                AppConstants.offlineMode,
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12,
@@ -190,47 +192,6 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
           : Column(
               children: [
                 // Data source info banner
-                if (_dataSourceMessage != null)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.all(16).copyWith(bottom: 8),
-                    decoration: BoxDecoration(
-                      color: _isOffline
-                          ? Colors.orange[100]
-                          : Color.fromARGB(255, 192, 212, 59),
-                      border: Border.all(
-                        color: _isOffline
-                            ? Colors.orange
-                            : Color.fromARGB(255, 192, 212, 59),
-                        width: 1,
-                      ),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          _isOffline ? Icons.cloud_off : Icons.cloud_done,
-                          color: _isOffline
-                              ? Colors.orange[800]
-                              : Colors.green[800],
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            _dataSourceMessage!,
-                            style: TextStyle(
-                              color: _isOffline
-                                  ? Colors.orange[800]
-                                  : Colors.green[800],
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
 
                 // Filter section
                 if (widget.rebanos.isNotEmpty && widget.selectedRebano == null)

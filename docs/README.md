@@ -83,4 +83,4 @@ Para más información sobre instalación, configuración y uso, consulte la doc
 
 ---
 
-*Documentación actualizada para reflejar la implementación actual del proyecto*
+*Última actualización: 2025-10-15 - Documentación corregida para reflejar únicamente las tecnologías y características implementadas*

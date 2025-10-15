@@ -444,19 +444,17 @@ graph TD
 
 ### Implementación de Timeouts
 
+Los timeouts se configuran directamente en las peticiones HTTP usando el método `.timeout()` de Dart:
+
 ```dart
-class ApiTimeouts {
-  static const Duration httpTimeout = Duration(seconds: 10);
-  static const Duration connectionTimeout = Duration(seconds: 5);
-  
-  static Future<http.Response> makeRequest(String url) async {
-    return await http.get(
-      Uri.parse(url),
-      headers: await _getHeaders(),
-    ).timeout(httpTimeout);
-  }
-}
+// Ejemplo de timeout en peticiones HTTP
+final response = await http.get(
+  Uri.parse(url),
+  headers: headers,
+).timeout(Duration(seconds: 10));
 ```
+
+**Nota**: No hay una clase ApiTimeouts centralizada. Los timeouts se configuran según sea necesario en cada petición HTTP.
 
 ## Autenticación y Seguridad
 

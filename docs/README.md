@@ -83,4 +83,4 @@ Para más información sobre instalación, configuración y uso, consulte la doc
 
 ---
 
-*Última actualización: $(date '+%Y-%m-%d')*
+*Documentación actualizada para reflejar la implementación actual del proyecto*

@@ -367,19 +367,16 @@ La aplicación actualmente no tiene un sistema de backup/restauración implement
 ## Monitoreo y Logging
 
 ### Configuración de Logging
+
+El proyecto utiliza `LoggingService` para logging básico:
+
 ```dart
-class LoggingConfig {
-  static void setup() {
-    if (Environment.isDevelopment) {
-      // Logging detallado en desarrollo
-      LoggingService.setLevel(LogLevel.debug);
-    } else {
-      // Logging mínimo en producción
-      LoggingService.setLevel(LogLevel.error);
-    }
-  }
-}
+// lib/services/logging_service.dart
+// Proporciona métodos estáticos: debug, info, warning, error
+// Los logs se imprimen directamente en consola
 ```
+
+**Nota**: No hay configuración de niveles de log implementada. Todos los logs se imprimen en consola durante el desarrollo.
 
 ### Analytics y Crash Reporting
 
@@ -411,15 +408,15 @@ La aplicación utiliza las configuraciones de seguridad predeterminadas de Flutt
 **Nota**: Actualmente no hay validación personalizada de certificados SSL implementada. Se utiliza la validación estándar del framework.
 
 ### Obfuscación de Código
+
+Flutter soporta obfuscación de código para builds de release:
+
 ```bash
 # Build con obfuscación
 flutter build apk --obfuscate --split-debug-info=build/debug-info/
-
-# Mantener símbolos específicos
-# android/app/proguard-rules.pro
--keep class com.ganaderasoft.** { *; }
--keepattributes *Annotation*
 ```
+
+**Nota**: Actualmente no hay reglas de ProGuard personalizadas configuradas. Se usan las reglas predeterminadas de Flutter.
 
 ## Troubleshooting
 

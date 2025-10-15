@@ -205,7 +205,7 @@ La aplicación utiliza el patrón **Service Locator** donde:
 ### Datos
 - Validación de entrada en todos los formularios
 - Sanitización de datos antes de almacenamiento
-- Encriptación de datos sensibles
+- Hash SHA-256 de contraseñas para autenticación offline
 
 ## Escalabilidad
 

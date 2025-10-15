@@ -44,23 +44,16 @@ graph TB
 ## Estructura de Tests
 
 ### Directorio de Tests
-```
-test/
-├── unit/
-│   ├── services/
-│   ├── models/
-│   └── utils/
-├── integration/
-│   ├── offline_workflows/
-│   ├── sync_scenarios/
-│   └── api_integration/
-├── widget/
-│   ├── screens/
-│   └── components/
-└── e2e/
-    ├── complete_workflows/
-    └── user_scenarios/
-```
+
+El proyecto tiene tests organizados en el directorio `test/` con los siguientes archivos principales:
+
+- Tests de autenticación y flujo completo
+- Tests de funcionalidad offline
+- Tests de sincronización
+- Tests de base de datos y esquema
+- Tests de configuración y API
+
+**Nota**: Los tests están organizados en archivos individuales en lugar de subdirectorios separados por tipo.
 
 ## Tests de Funcionalidad Offline
 
@@ -392,59 +385,25 @@ void main() {
 ## Configuración de Testing
 
 ### Setup Base para Tests
+
+Cada archivo de test configura su propio entorno de testing:
+
 ```dart
-// test/test_setup.dart
-void setupTestEnvironment() {
-  // Configurar FFI para SQLite en tests
-  sqfliteFfiInit();
-  databaseFactory = databaseFactoryFfi;
+void main() {
+  setUpAll(() async {
+    // Configurar FFI para SQLite en tests
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfi;
+  });
   
-  // Configurar mocks
-  MockConnectivityService.setupMocks();
-  MockApiService.setupMocks();
-  
-  // Limpiar estado entre tests
-  tearDown(() async {
-    await DatabaseService.clearDatabase();
-    MockServices.reset();
+  setUp(() async {
+    // Preparar base de datos para cada test
+    await DatabaseService.database;
   });
 }
 ```
 
-### Utilities de Testing
-```dart
-// test/test_utils.dart
-class TestUtils {
-  static Future<User> createTestUser() async {
-    return User(
-      id: 1,
-      name: 'Test User',
-      email: 'test@example.com',
-      typeUser: 'Propietario',
-    );
-  }
-  
-  static Future<Animal> createTestAnimal() async {
-    return Animal(
-      idAnimal: -1,
-      idRebano: 1,
-      nombre: 'Test Animal',
-      codigoAnimal: 'TA001',
-      sexo: 'F',
-      fechaNacimiento: '2024-01-01',
-      // ... otros campos
-    );
-  }
-  
-  static Future<void> simulateOfflineMode() async {
-    MockConnectivityService.setConnected(false);
-  }
-  
-  static Future<void> simulateOnlineMode() async {
-    MockConnectivityService.setConnected(true);
-  }
-}
-```
+**Nota**: No hay archivos centralizados de utilities de testing. Cada test maneja su propia configuración y datos de prueba según sea necesario.
 
 ## Comandos de Testing
 
@@ -474,40 +433,33 @@ flutter test --coverage
 genhtml coverage/lcov.info -o coverage/html
 ```
 
-## Metricas de Testing
+## Métricas de Testing
 
-### Coverage Actual
-- **Unit Tests**: 85% de cobertura
-- **Integration Tests**: 78% de cobertura
-- **Widget Tests**: 70% de cobertura
-- **E2E Tests**: 60% de cobertura
+### Cobertura de Tests
 
-### Areas de Testing Críticas
-1. ✅ **Funcionalidad Offline**: 90% cobertura
-2. ✅ **Sincronización**: 85% cobertura
-3. ✅ **Autenticación**: 88% cobertura
-4. ✅ **Base de Datos**: 92% cobertura
-5. ⚠️ **UI Components**: 65% cobertura (área de mejora)
+El proyecto tiene tests implementados para las siguientes áreas:
+
+- ✅ **Funcionalidad Offline**: Tests de creación y edición offline
+- ✅ **Sincronización**: Tests de workflow completo offline a online
+- ✅ **Autenticación**: Tests de login y password hash
+- ✅ **Base de Datos**: Tests de esquema y operaciones CRUD
+- ✅ **Configuración**: Tests de API y respuestas
+
+**Nota**: Las métricas de cobertura específicas se pueden obtener ejecutando `flutter test --coverage` y analizando el archivo `coverage/lcov.info`.
 
 ## Continuous Integration
 
-### Pipeline de Tests
-```yaml
-# .github/workflows/test.yml
-name: Test Suite
-on: [push, pull_request]
+El proyecto actualmente no tiene integración continua (CI) configurada. Los tests se ejecutan localmente usando:
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: subosito/flutter-action@v2
-      - run: flutter pub get
-      - run: flutter test
-      - run: flutter test --coverage
-      - uses: codecov/codecov-action@v1
+```bash
+# Ejecutar todos los tests
+flutter test
+
+# Ejecutar tests con coverage
+flutter test --coverage
 ```
+
+**Nota**: Para implementar CI en el futuro, se pueden considerar servicios como GitHub Actions, GitLab CI, o CircleCI con workflows similares a los comandos anteriores.
 
 ## Mejores Prácticas
 

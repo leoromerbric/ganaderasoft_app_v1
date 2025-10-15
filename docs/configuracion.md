@@ -227,30 +227,27 @@ android {
 
 ## Variables de Entorno
 
-### Configuración de Desarrollo
+### Configuración de API
+
+La configuración de la API se encuentra en `lib/config/app_config.dart`:
+
 ```dart
-// lib/config/environment.dart
-class Environment {
-  static const bool isDevelopment = true;
-  static const bool enableLogging = true;
-  static const Duration httpTimeout = Duration(seconds: 30);
+// lib/config/app_config.dart
+class AppConfig {
+  static const String _baseUrl = 'http://52.53.127.245:8000';
   
-  static String get apiUrl => isDevelopment 
-    ? 'http://localhost:8000/api'
-    : 'http://52.53.127.245:8000/api';
+  static String get baseUrl => _baseUrl;
+  static String get apiUrl => '$_baseUrl/api';
+  
+  // Para cambiar a servidor de desarrollo, modificar _baseUrl:
+  // static const String _baseUrl = 'http://localhost:8000';
+  
+  // Para producción con HTTPS:
+  // static const String _baseUrl = 'https://api.ganaderasoft.com';
 }
 ```
 
-### Configuración de Producción
-```dart
-class Environment {
-  static const bool isDevelopment = false;
-  static const bool enableLogging = false;
-  static const Duration httpTimeout = Duration(seconds: 10);
-  
-  static String get apiUrl => 'https://api.ganaderasoft.com/api';
-}
-```
+**Nota**: No hay un sistema de variables de entorno implementado. Para cambiar el servidor, se debe modificar directamente el archivo `app_config.dart`.
 
 ## Build y Deployment
 
@@ -314,197 +311,58 @@ flutter build web --release --tree-shake-icons
 
 ## Configuración de CI/CD
 
-### GitHub Actions
+### Opciones de CI/CD
 
-#### Workflow para Testing
-```yaml
-# .github/workflows/test.yml
-name: Test Suite
+El proyecto actualmente no tiene pipelines de CI/CD configurados. Las siguientes son opciones recomendadas si se desea implementar en el futuro:
 
-on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main ]
+#### GitHub Actions (Ejemplo para consideración futura)
+- Crear workflows en `.github/workflows/` para automatizar testing y builds
+- Configurar steps para `flutter pub get`, `flutter analyze`, `flutter test`
+- Configurar builds para Android/iOS/Web según plataformas objetivo
 
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.8.1'
-        channel: 'stable'
-    
-    - name: Install dependencies
-      run: flutter pub get
-    
-    - name: Analyze code
-      run: flutter analyze
-    
-    - name: Run tests
-      run: flutter test --coverage
-    
-    - name: Upload coverage
-      uses: codecov/codecov-action@v3
-      with:
-        file: coverage/lcov.info
-```
+#### Otras Opciones
+- **GitLab CI/CD**: Para proyectos en GitLab
+- **Bitbucket Pipelines**: Para proyectos en Bitbucket
+- **Jenkins**: Para configuraciones on-premise
+- **CircleCI**: Alternativa cloud-based
 
-#### Workflow para Build Android
-```yaml
-# .github/workflows/build-android.yml
-name: Build Android
-
-on:
-  push:
-    tags:
-      - 'v*'
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Java
-      uses: actions/setup-java@v3
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-    
-    - name: Setup Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        flutter-version: '3.8.1'
-    
-    - name: Install dependencies
-      run: flutter pub get
-    
-    - name: Build APK
-      run: flutter build apk --release
-    
-    - name: Build App Bundle
-      run: flutter build appbundle --release
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: android-builds
-        path: |
-          build/app/outputs/flutter-apk/app-release.apk
-          build/app/outputs/bundle/release/app-release.aab
-```
-
-### Firebase App Distribution
-
-#### Configuración
-```bash
-# Instalar Firebase CLI
-npm install -g firebase-tools
-
-# Login a Firebase
-firebase login
-
-# Configurar proyecto
-firebase init hosting
-```
-
-#### Deploy Automático
-```yaml
-# firebase.json
-{
-  "hosting": {
-    "public": "build/web",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
-    ]
-  }
-}
-```
+**Nota**: Actualmente el proyecto no tiene CI/CD configurado. Los builds se realizan manualmente usando los comandos de Flutter.
 
 ## Configuración de Base de Datos
 
 ### Migración de Esquema
 
 #### Sistema de Versiones
+
+El sistema de migraciones de base de datos está implementado directamente en `DatabaseService`:
+
 ```dart
-class DatabaseMigrations {
-  static const Map<int, List<String>> migrations = {
-    2: [
-      'ALTER TABLE animales ADD COLUMN nueva_columna TEXT',
-    ],
-    3: [
-      'CREATE TABLE nueva_tabla (id INTEGER PRIMARY KEY)',
-      'UPDATE version SET number = 3',
-    ],
-  };
-  
-  static Future<void> runMigrations(Database db, int oldVersion, int newVersion) async {
-    for (int version = oldVersion + 1; version <= newVersion; version++) {
-      if (migrations.containsKey(version)) {
-        for (String sql in migrations[version]!) {
-          await db.execute(sql);
-        }
-      }
-    }
-  }
+// lib/services/database_service.dart
+static const int _databaseVersion = 11;
+
+static Future<Database> _initDatabase() async {
+  return await openDatabase(
+    path,
+    version: _databaseVersion,
+    onCreate: _createDatabase,
+    onUpgrade: _upgradeDatabase,
+  );
 }
 ```
+
+Las migraciones se manejan en el método `_upgradeDatabase` que se ejecuta automáticamente cuando cambia la versión de la base de datos.
 
 ### Backup y Restauración
 
-#### Script de Backup
-```dart
-class DatabaseBackup {
-  static Future<void> exportToJson() async {
-    final db = await DatabaseService.database;
-    
-    final backup = {
-      'version': await DatabaseService.getDatabaseVersion(),
-      'timestamp': DateTime.now().toIso8601String(),
-      'data': {
-        'users': await db.query('users'),
-        'fincas': await db.query('fincas'),
-        'animales': await db.query('animales'),
-        // ... otras tablas
-      }
-    };
-    
-    final json = jsonEncode(backup);
-    // Guardar en archivo o enviar al servidor
-  }
-  
-  static Future<void> importFromJson(String jsonData) async {
-    final data = jsonDecode(jsonData);
-    final db = await DatabaseService.database;
-    
-    // Limpiar datos existentes
-    await db.delete('animales');
-    await db.delete('fincas');
-    // ... otras tablas
-    
-    // Importar datos
-    for (final user in data['data']['users']) {
-      await db.insert('users', user);
-    }
-    // ... importar otras tablas
-  }
-}
-```
+#### Estrategia Actual
+
+La aplicación actualmente no tiene un sistema de backup/restauración implementado. Los datos se mantienen sincronizados con el servidor a través de:
+
+1. **Sincronización automática**: Los datos se guardan en el servidor cuando hay conectividad
+2. **Cache local**: SQLite mantiene copia local de todos los datos
+3. **Recuperación desde servidor**: Los datos pueden re-descargarse del servidor
+
+**Nota**: Para implementar backup/export en el futuro, se puede considerar exportar datos a JSON o implementar funcionalidad de backup a archivos locales.
 
 ## Monitoreo y Logging
 
@@ -524,40 +382,33 @@ class LoggingConfig {
 ```
 
 ### Analytics y Crash Reporting
-```bash
-# Agregar Firebase Analytics
-flutter pub add firebase_analytics
-flutter pub add firebase_crashlytics
 
-# Configurar en main.dart
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  
-  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
-  
-  runApp(MyApp());
-}
-```
+El proyecto actualmente no tiene analytics ni crash reporting configurados. Si se desea implementar en el futuro, considere:
+
+#### Opciones de Analytics
+- **Firebase Analytics**: Análisis de uso y comportamiento de usuarios
+- **Google Analytics**: Alternativa web-based
+- **Mixpanel**: Analytics avanzado con segmentación de usuarios
+- **Amplitude**: Analytics enfocado en producto
+
+#### Opciones de Crash Reporting
+- **Firebase Crashlytics**: Reporting de crashes en tiempo real
+- **Sentry**: Plataforma de monitoring de errores
+- **Bugsnag**: Monitoring y reporting de errores
+
+**Nota**: Actualmente el proyecto usa `LoggingService` para logging básico en consola. No hay integración con servicios externos de analytics o crash reporting.
 
 ## Seguridad
 
 ### Configuración de Red
-```dart
-class SecurityConfig {
-  // Configurar certificados SSL
-  static void setupSSL() {
-    HttpOverrides.global = MyHttpOverrides();
-  }
-  
-  // Validar certificados
-  static bool validateCertificate(X509Certificate cert, String host, int port) {
-    // Implementar validación personalizada
-    return cert.issuer.contains('Let\'s Encrypt') || 
-           cert.issuer.contains('DigiCert');
-  }
-}
-```
+
+La aplicación utiliza las configuraciones de seguridad predeterminadas de Flutter/Dart para conexiones HTTP:
+
+- **HTTPS**: Se recomienda usar HTTPS en producción para el servidor API
+- **Certificados SSL**: Flutter valida automáticamente certificados SSL estándar
+- **Timeouts**: Configurados en las peticiones HTTP para evitar bloqueos
+
+**Nota**: Actualmente no hay validación personalizada de certificados SSL implementada. Se utiliza la validación estándar del framework.
 
 ### Obfuscación de Código
 ```bash

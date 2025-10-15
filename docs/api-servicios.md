@@ -462,51 +462,35 @@ class ApiTimeouts {
 
 ### Gestión de Tokens JWT
 
+La gestión de tokens está implementada en `AuthService`:
+
 ```dart
-class TokenManager {
-  // Guardar token original para uso online
-  static Future<void> saveToken(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.tokenKey, token);
-  }
-  
-  // Generar token offline temporal
-  static Future<void> saveOfflineToken(String userId) async {
-    final offlineToken = 'offline_${userId}_${DateTime.now().millisecondsSinceEpoch}';
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.tokenKey, offlineToken);
-  }
-  
-  // Headers para requests autenticados
-  static Future<Map<String, String>> getAuthHeaders() async {
-    final token = await getToken();
-    return {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer $token',
-    };
-  }
-}
+// lib/services/auth_service.dart
+// Los tokens se guardan y recuperan de SharedPreferences
+// El AuthService maneja tanto tokens JWT del servidor como
+// tokens temporales para modo offline
 ```
+
+Los métodos principales incluyen:
+- Guardar token JWT después de login exitoso
+- Recuperar token para autenticar requests
+- Generar identificador temporal para modo offline
 
 ### Hash de Contraseñas
 
-```dart
-import 'package:crypto/crypto.dart';
+El hash de contraseñas para autenticación offline está implementado en `AuthService`:
 
-class PasswordSecurity {
-  // Hash SHA-256 para almacenamiento offline
-  static String hashPassword(String password) {
-    final bytes = utf8.encode(password);
-    final digest = sha256.convert(bytes);
-    return digest.toString();
-  }
-  
-  // Verificar contraseña offline
-  static bool verifyPassword(String password, String hash) {
-    return hashPassword(password) == hash;
-  }
-}
+```dart
+// lib/services/auth_service.dart
+// Usa el paquete crypto (sha256) para hash de contraseñas
+// Las contraseñas se hashean antes de almacenar offline
+// Se verifica el hash durante login offline
 ```
+
+Implementación:
+- Algoritmo: SHA-256
+- Uso: Autenticación offline con credenciales locales
+- Almacenamiento: Contraseñas hasheadas en SQLite
 
 ## Logging y Monitoreo
 
@@ -536,38 +520,15 @@ class LoggingService {
 
 ### Monitoreo de Performance
 
+El proyecto utiliza `LoggingService` para logging básico de operaciones:
+
 ```dart
-class ApiPerformance {
-  static Future<T> measureApiCall<T>(
-    String endpoint,
-    Future<T> Function() apiCall,
-  ) async {
-    final stopwatch = Stopwatch()..start();
-    
-    try {
-      final result = await apiCall();
-      stopwatch.stop();
-      
-      LoggingService.info(
-        'API call to $endpoint completed in ${stopwatch.elapsedMilliseconds}ms',
-        'ApiPerformance'
-      );
-      
-      return result;
-    } catch (e) {
-      stopwatch.stop();
-      
-      LoggingService.error(
-        'API call to $endpoint failed after ${stopwatch.elapsedMilliseconds}ms',
-        'ApiPerformance',
-        e
-      );
-      
-      rethrow;
-    }
-  }
-}
+// lib/services/logging_service.dart
+// Proporciona métodos para debug, info, warning y error
+// Los logs se imprimen en consola para debugging
 ```
+
+**Nota**: No hay monitoreo de performance de API implementado actualmente. Para implementarlo en el futuro, se puede usar Stopwatch de Dart para medir tiempos de respuesta.
 
 ## Mejores Prácticas
 

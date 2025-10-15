@@ -2,7 +2,7 @@
 
 ## Visión General
 
-GanaderaSoft utiliza **SQLite** como base de datos local para almacenamiento offline. La base de datos está diseñada para replicar la estructura del servidor y mantener sincronización de datos entre el cliente y el backend.
+GanaderaSoft utiliza **SQLite** como base de datos local para almacenamiento offline. La base de datos está diseñada para almacenar todos los datos necesarios para el funcionamiento offline de la aplicación y mantener sincronización con el servidor a través de la REST API.
 
 ## Arquitectura de Base de Datos
 

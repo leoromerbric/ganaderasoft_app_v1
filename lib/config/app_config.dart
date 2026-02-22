@@ -1,5 +1,6 @@
 class AppConfig {
-  static const String _baseUrl = 'http://52.53.127.245:8000';
+  static const String _baseUrl =
+      'http://ec2-54-219-108-54.us-west-1.compute.amazonaws.com:9000';
 
   static String get baseUrl => _baseUrl;
   static String get apiUrl => '$_baseUrl/api';
@@ -12,7 +13,7 @@ class AppConfig {
   static String get animalesUrl => '$apiUrl/animales';
   static String get rebanosUrl => '$apiUrl/rebanos';
   static String get composicionRazaUrl => '$apiUrl/composicion-raza';
-  
+
   // Farm Management Endpoints
   static String get cambiosAnimalUrl => '$apiUrl/cambios-animal';
   static String get lactanciaUrl => '$apiUrl/lactancia';

@@ -1,0 +1,27 @@
+name: Test Metrics Collection
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set up Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: 'stable'
+
+      - name: Run tests
+        run: |
+          dart test integration_test/app_test.dart > test_output.log
+          
+      - name: Collect metrics
+        run: |
+          dart test_driver/perf_driver.dart < test_output.log > metrics_summary.txt
+
+      - name: Upload metrics
+        uses: actions/upload-artifact@v2
+        with:
+          name: metrics-summary
+          path: metrics_summary.txt

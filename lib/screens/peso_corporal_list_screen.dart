@@ -86,6 +86,14 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
         _isLoading = false;
         //_dataSourceMessage = pesosResponse.message;
 
+        // First filter by finca animals (only show peso records for animals that belong to this finca)
+        final fincaAnimalIds = widget.animales
+            .map((animal) => animal.idAnimal)
+            .toSet();
+        _pesos = _pesos
+            .where((peso) => fincaAnimalIds.contains(peso.pesoEtapaAnid))
+            .toList();
+
         // Apply animal filter if one is selected
         if (_selectedAnimal != null) {
           _filteredPesos = _pesos
@@ -153,8 +161,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
   }
 
   Color _getPesoTrendColor(int index) {
-    if (index == _filteredPesos.length - 1)
+    if (index == _filteredPesos.length - 1) {
       return Colors.grey; // No previous weight to compare
+    }
 
     final currentWeight = _filteredPesos[index].peso;
     final previousWeight = _filteredPesos[index + 1].peso;
@@ -165,8 +174,9 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
   }
 
   IconData _getPesoTrendIcon(int index) {
-    if (index == _filteredPesos.length - 1)
+    if (index == _filteredPesos.length - 1) {
       return Icons.circle; // No previous weight to compare
+    }
 
     final currentWeight = _filteredPesos[index].peso;
     final previousWeight = _filteredPesos[index + 1].peso;

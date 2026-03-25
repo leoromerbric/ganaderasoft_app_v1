@@ -58,7 +58,10 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
         idFinca: widget.finca.idFinca,
       );
       setState(() {
-        _rebanos = rebanosResponse.rebanos;
+        // Filter rebanos by finca to ensure we only show rebanos from this finca
+        _rebanos = rebanosResponse.rebanos
+            .where((rebano) => rebano.idFinca == widget.finca.idFinca)
+            .toList();
         _isLoadingRebanos = false;
       });
     } catch (e) {
@@ -79,7 +82,12 @@ class _FarmDetailsScreenState extends State<FarmDetailsScreen> {
         idFinca: widget.finca.idFinca,
       );
       setState(() {
-        _animales = animalesResponse.animales;
+        // Filter animales by finca to ensure we only show animales from this finca
+        // We can filter by rebano since rebanos are already filtered by finca
+        final fincaRebanoIds = _rebanos.map((r) => r.idRebano).toSet();
+        _animales = animalesResponse.animales
+            .where((animal) => fincaRebanoIds.contains(animal.idRebano))
+            .toList();
         _isLoadingAnimales = false;
       });
     } catch (e) {

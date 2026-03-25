@@ -66,7 +66,10 @@ class _PersonalFincaListScreenState extends State<PersonalFincaListScreen> {
       );
 
       setState(() {
-        _personal = personalResponse.data;
+        // Filter personal finca to ensure we only show personal from this finca
+        _personal = personalResponse.data
+            .where((personal) => personal.idFinca == widget.finca.idFinca)
+            .toList();
         _isLoading = false;
         //_dataSourceMessage = personalResponse.message;
       });

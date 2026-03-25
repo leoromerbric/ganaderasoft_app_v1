@@ -65,7 +65,10 @@ class _RebanosListScreenState extends State<RebanosListScreen> {
       );
 
       setState(() {
-        _rebanos = rebanosResponse.rebanos;
+        // Filter rebanos by finca to ensure we only show rebanos from this finca
+        _rebanos = rebanosResponse.rebanos
+            .where((rebano) => rebano.idFinca == widget.finca.idFinca)
+            .toList();
         _isLoading = false;
         //_dataSourceMessage = rebanosResponse.message;
       });

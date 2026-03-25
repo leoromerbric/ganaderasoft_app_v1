@@ -78,7 +78,22 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
       );
 
       setState(() {
-        _animales = animalesResponse.animales;
+        // First filter animales by finca to ensure we only show animales from this finca
+        _animales = animalesResponse.animales.where((animal) {
+          // Check if animal belongs to this finca through its rebano
+          final animalRebano = _rebanos.firstWhere(
+            (rebano) => rebano.idRebano == animal.idRebano,
+            orElse: () => Rebano(
+              idRebano: -1,
+              idFinca: -1,
+              nombre: '',
+              createdAt: '',
+              updatedAt: '',
+              archivado: false,
+            ),
+          );
+          return animalRebano.idFinca == widget.finca.idFinca;
+        }).toList();
         _isLoading = false;
         //_dataSourceMessage = animalesResponse.message;
 

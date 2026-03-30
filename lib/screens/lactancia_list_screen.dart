@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -31,6 +32,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
   Animal? _selectedAnimal;
   List<Animal> _animales = [];
   String _selectedStatus = 'todas'; // 'todas', 'activas', 'finalizadas'
@@ -41,7 +43,33 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
     _selectedAnimal = widget.selectedAnimal;
     _animales = widget.animales;
     _checkConnectivity();
+    _listenToConnectivity();
     _loadLactancias();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -92,7 +120,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
       setState(() {
         _lactancias = lactanciaResponse.data;
         _isLoading = false;
-        //_dataSourceMessage = lactanciaResponse.message;
+        //// _dataSourceMessage = lactanciaResponse.message;
 
         _applyFilters();
       });
@@ -319,7 +347,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: DropdownButtonFormField<String>(
-                              value: _selectedStatus,
+                              initialValue: _selectedStatus,
                               decoration: const InputDecoration(
                                 hintText: 'Filtrar por estado',
                                 border: OutlineInputBorder(),
@@ -361,7 +389,7 @@ class _LactanciaListScreenState extends State<LactanciaListScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: DropdownButtonFormField<Animal?>(
-                                value: _selectedAnimal,
+                                initialValue: _selectedAnimal,
                                 decoration: const InputDecoration(
                                   hintText: 'Filtrar por animal',
                                   border: OutlineInputBorder(),

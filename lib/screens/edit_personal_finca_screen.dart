@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/farm_management_models.dart';
@@ -39,6 +40,7 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
   // Loading states
   bool _isLoading = false;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   // Options
   final List<String> _tiposTrabajador = [
@@ -56,6 +58,7 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
     super.initState();
     _initializeFormData();
     _checkConnectivity();
+    _listenToConnectivity();
   }
 
   void _initializeFormData() {
@@ -75,7 +78,27 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
     _apellidoController.dispose();
     _telefonoController.dispose();
     _correoController.dispose();
+    _connectivitySubscription?.cancel();
     super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -389,7 +412,7 @@ class _EditPersonalFincaScreenState extends State<EditPersonalFincaScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedTipoTrabajador,
+                      initialValue: _selectedTipoTrabajador,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el tipo de trabajador',

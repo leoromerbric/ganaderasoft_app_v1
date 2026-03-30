@@ -160,24 +160,29 @@ class SyncService {
         LoggingService.debug('Syncing animales data...', 'SyncService');
         final animalesResponse = await _authService.getAnimales();
         await DatabaseService.saveAnimalesOffline(animalesResponse.animales);
-        
+
         // Sync animal details for each animal
         LoggingService.debug('Syncing animal details...', 'SyncService');
         int totalAnimals = animalesResponse.animales.length;
         int syncedAnimals = 0;
-        
+
         for (final animal in animalesResponse.animales) {
           try {
-            final animalDetailResponse = await _authService.getAnimalDetail(animal.idAnimal);
-            await DatabaseService.saveAnimalDetailOffline(animalDetailResponse.data);
+            final animalDetailResponse = await _authService.getAnimalDetail(
+              animal.idAnimal,
+            );
+            await DatabaseService.saveAnimalDetailOffline(
+              animalDetailResponse.data,
+            );
             syncedAnimals++;
-            
+
             // Update progress for animal detail sync
             double detailProgress = 0.3 + (0.2 * syncedAnimals / totalAnimals);
             _syncController.add(
               SyncData(
                 status: SyncStatus.syncing,
-                message: 'Sincronizando detalles de animales... ($syncedAnimals/$totalAnimals)',
+                message:
+                    'Sincronizando detalles de animales... ($syncedAnimals/$totalAnimals)',
                 progress: detailProgress,
               ),
             );
@@ -189,7 +194,7 @@ class SyncService {
             // Continue with other animals even if one fails
           }
         }
-        
+
         LoggingService.info(
           'Animales data synchronized successfully (${animalesResponse.animales.length} items, $syncedAnimals details)',
           'SyncService',
@@ -238,6 +243,75 @@ class SyncService {
         SyncData(
           status: SyncStatus.error,
           message: 'Error inesperado: ${e.toString()}',
+        ),
+      );
+      return false;
+    }
+  }
+
+  /// Syncs only configuration data after login
+  static Future<bool> syncConfigurationDataOnly() async {
+    LoggingService.info(
+      'Starting configuration-only synchronization...',
+      'SyncService',
+    );
+
+    try {
+      // Check connectivity
+      if (!await ConnectivityService.isConnected()) {
+        LoggingService.warning(
+          'No internet connection for configuration sync',
+          'SyncService',
+        );
+        _syncController.add(
+          SyncData(
+            status: SyncStatus.error,
+            message: 'No hay conexión a internet',
+          ),
+        );
+        return false;
+      }
+
+      LoggingService.info(
+        'Connection available, proceeding with configuration sync',
+        'SyncService',
+      );
+
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.syncing,
+          message: 'Sincronizando datos de configuración...',
+          progress: 0.1,
+        ),
+      );
+
+      // Sync only configuration data
+      await _syncConfigurationData();
+
+      LoggingService.info(
+        'Configuration data synchronization completed successfully',
+        'SyncService',
+      );
+
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.success,
+          message: 'Configuración sincronizada exitosamente',
+          progress: 1.0,
+        ),
+      );
+
+      return true;
+    } catch (e) {
+      LoggingService.error(
+        'Error during configuration synchronization',
+        'SyncService',
+        e,
+      );
+      _syncController.add(
+        SyncData(
+          status: SyncStatus.error,
+          message: 'Error sincronizando configuración: ${e.toString()}',
         ),
       );
       return false;

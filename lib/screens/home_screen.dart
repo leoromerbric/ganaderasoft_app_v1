@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/sync_service.dart';
 import '../models/user.dart';
 import '../constants/app_constants.dart';
 import 'profile_screen.dart';
@@ -20,12 +22,54 @@ class _HomeScreenState extends State<HomeScreen> {
   final _authService = AuthService();
   User? _currentUser;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
+  StreamSubscription<SyncData>? _syncSubscription;
+  bool _isSyncing = false;
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
     _checkConnectivity();
+    _listenToConnectivity();
+    _listenToSyncStatus();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    _syncSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        // Handle connectivity stream errors gracefully
+        if (mounted) {
+          setState(() {
+            _isOffline = true; // Assume offline on error
+          });
+        }
+      },
+    );
+  }
+
+  void _listenToSyncStatus() {
+    _syncSubscription = SyncService.syncStream.listen((SyncData syncData) {
+      if (mounted) {
+        setState(() {
+          _isSyncing = syncData.status == SyncStatus.syncing;
+        });
+      }
+    });
   }
 
   Future<void> _checkConnectivity() async {
@@ -216,6 +260,43 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Modo offline - Los datos se cargan desde caché local',
                         style: TextStyle(
                           color: Colors.orange[800],
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+            // Sync status banner
+            if (_isSyncing && !_isOffline)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  border: Border.all(color: Colors.blue, width: 1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          Colors.blue[800]!,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Sincronizando datos de configuración...',
+                        style: TextStyle(
+                          color: Colors.blue[800],
                           fontWeight: FontWeight.w500,
                         ),
                       ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -26,19 +27,21 @@ class RegistrosLecheListScreen extends StatefulWidget {
 class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
   final _authService = AuthService();
   List<Animal> _femaleAnimals = [];
-  List<Lactancia> _lactancias = [];
-  List<RegistroLechero> _registrosLeche = [];
+  final List<Lactancia> _lactancias = [];
+  final List<RegistroLechero> _registrosLeche = [];
   List<RegistroLechero> _filteredRegistrosLeche = [];
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
-  String? _dataSourceMessage;
+  StreamSubscription<bool>? _connectivitySubscription;
+  // String? _dataSourceMessage; // Removed unused variable
   Animal? _selectedAnimal;
   Lactancia? _selectedLactancia;
 
   @override
   void initState() {
     super.initState();
+    _listenToConnectivity();
     _initializeData();
   }
 
@@ -48,6 +51,33 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
         .where((animal) => animal.sexo.toLowerCase() == 'f')
         .toList();
     await _loadData();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+            // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+            // _dataSourceMessage = 'Datos offline';
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -102,7 +132,7 @@ class _RegistrosLecheListScreenState extends State<RegistrosLecheListScreen> {
       }
 
       setState(() {
-        _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+        // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
         _applyFilters();
       });
 

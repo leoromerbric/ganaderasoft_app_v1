@@ -46,8 +46,8 @@ class Animal {
       updatedAt: json['updated_at'],
       fkComposicionRaza: json['fk_composicion_raza'],
       rebano: json['rebano'] != null ? Rebano.fromJson(json['rebano']) : null,
-      composicionRaza: json['composicion_raza'] != null 
-          ? ComposicionRaza.fromJson(json['composicion_raza']) 
+      composicionRaza: json['composicion_raza'] != null
+          ? ComposicionRaza.fromJson(json['composicion_raza'])
           : null,
     );
   }
@@ -138,8 +138,10 @@ class AnimalesResponse {
 
   factory AnimalesResponse.fromJson(Map<String, dynamic> json) {
     var animalesData = json['data']['data'] as List;
-    List<Animal> animalesList = animalesData.map((i) => Animal.fromJson(i)).toList();
-    
+    List<Animal> animalesList = animalesData
+        .map((i) => Animal.fromJson(i))
+        .toList();
+
     return AnimalesResponse(
       success: json['success'],
       message: json['message'],
@@ -161,8 +163,10 @@ class RebanosResponse {
 
   factory RebanosResponse.fromJson(Map<String, dynamic> json) {
     var rebanosData = json['data']['data'] as List;
-    List<Rebano> rebanosList = rebanosData.map((i) => Rebano.fromJson(i)).toList();
-    
+    List<Rebano> rebanosList = rebanosData
+        .map((i) => Rebano.fromJson(i))
+        .toList();
+
     return RebanosResponse(
       success: json['success'],
       message: json['message'],
@@ -303,7 +307,9 @@ class AnimalDetail extends Animal {
     List<EtapaAnimal> etapaAnimalesList = [];
     if (json['etapa_animales'] != null) {
       var etapaAnimalesData = json['etapa_animales'] as List;
-      etapaAnimalesList = etapaAnimalesData.map((i) => EtapaAnimal.fromJson(i)).toList();
+      etapaAnimalesList = etapaAnimalesData
+          .map((i) => EtapaAnimal.fromJson(i))
+          .toList();
     }
 
     // Parse etapa_actual
@@ -325,8 +331,8 @@ class AnimalDetail extends Animal {
       updatedAt: json['updated_at'],
       fkComposicionRaza: json['fk_composicion_raza'],
       rebano: json['rebano'] != null ? Rebano.fromJson(json['rebano']) : null,
-      composicionRaza: json['composicion_raza'] != null 
-          ? ComposicionRaza.fromJson(json['composicion_raza']) 
+      composicionRaza: json['composicion_raza'] != null
+          ? ComposicionRaza.fromJson(json['composicion_raza'])
           : null,
       estados: estadosList,
       etapaAnimales: etapaAnimalesList,
@@ -334,6 +340,7 @@ class AnimalDetail extends Animal {
     );
   }
 
+  @override
   Map<String, dynamic> toJson() {
     return {
       'id_Animal': idAnimal,

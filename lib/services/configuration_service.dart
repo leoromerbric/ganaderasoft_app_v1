@@ -23,71 +23,165 @@ class ConfigurationService {
     };
   }
 
-  // Estados de Salud
+  // Estados de Salud (with offline support)
   static Future<EstadoSaludResponse> getEstadosSalud() async {
+    LoggingService.debug(
+      'Getting estados de salud list...',
+      'ConfigurationService',
+    );
+
     try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached estados de salud data',
+          'ConfigurationService',
+        );
+        return await _getOfflineEstadosSalud();
+      }
+
       LoggingService.debug(
-        'Fetching estados de salud from server',
+        'Connectivity available - fetching estados de salud from server',
         'ConfigurationService',
       );
 
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('${AppConfig.apiUrl}/estados-salud'),
-        headers: headers,
-      );
+      final response = await http
+          .get(Uri.parse('${AppConfig.apiUrl}/estados-salud'), headers: headers)
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
+        final estadoSaludResponse = EstadoSaludResponse.fromJson(jsonData);
+
         LoggingService.info(
-          'Estados de salud fetched successfully',
+          'Estados de salud fetched successfully from server (${estadoSaludResponse.data.data.length} items)',
           'ConfigurationService',
         );
-        return EstadoSaludResponse.fromJson(jsonData);
+
+        // Save to offline storage
+        await DatabaseService.saveEstadosSaludOffline(
+          estadoSaludResponse.data.data,
+        );
+
+        return estadoSaludResponse;
       } else {
+        LoggingService.error(
+          'Estados de salud request failed with status: ${response.statusCode}',
+          'ConfigurationService',
+        );
         throw Exception(
           'Failed to load estados de salud: ${response.statusCode}',
         );
       }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Estados de salud request timeout - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineEstadosSalud();
+    } on SocketException {
+      LoggingService.warning(
+        'Estados de salud request socket error - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineEstadosSalud();
     } catch (e) {
+      LoggingService.error(e.toString(), 'ConfigurationService', e);
       LoggingService.error(
-        'Error fetching estados de salud',
+        'Estados de salud request error',
         'ConfigurationService',
         e,
       );
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline estados de salud data',
+          'ConfigurationService',
+        );
+        return await _getOfflineEstadosSalud();
+      }
+
       rethrow;
     }
   }
 
-  // Etapas
+  // Etapas (with offline support)
   static Future<List<Etapa>> getEtapas() async {
+    LoggingService.debug('Getting etapas list...', 'ConfigurationService');
+
     try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached etapas data',
+          'ConfigurationService',
+        );
+        return await _getOfflineEtapas();
+      }
+
       LoggingService.debug(
-        'Fetching etapas from server',
+        'Connectivity available - fetching etapas from server',
         'ConfigurationService',
       );
 
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('${AppConfig.apiUrl}/etapas'),
-        headers: headers,
-      );
+      final response = await http
+          .get(Uri.parse('${AppConfig.apiUrl}/etapas'), headers: headers)
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         final etapas = (jsonData['data'] as List)
             .map((item) => Etapa.fromJson(item))
             .toList();
+
         LoggingService.info(
-          '${etapas.length} etapas fetched successfully',
+          'Etapas fetched successfully from server (${etapas.length} items)',
           'ConfigurationService',
         );
+
+        // Save to offline storage
+        await DatabaseService.saveEtapasOffline(etapas);
+
         return etapas;
       } else {
+        LoggingService.error(
+          'Etapas request failed with status: ${response.statusCode}',
+          'ConfigurationService',
+        );
         throw Exception('Failed to load etapas: ${response.statusCode}');
       }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Etapas request timeout - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineEtapas();
+    } on SocketException {
+      LoggingService.warning(
+        'Etapas request socket error - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineEtapas();
     } catch (e) {
-      LoggingService.error('Error fetching etapas', 'ConfigurationService', e);
+      LoggingService.error(e.toString(), 'ConfigurationService', e);
+      LoggingService.error('Etapas request error', 'ConfigurationService', e);
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline etapas data',
+          'ConfigurationService',
+        );
+        return await _getOfflineEtapas();
+      }
+
       rethrow;
     }
   }
@@ -346,36 +440,86 @@ class ConfigurationService {
     }
   }
 
-  // Tipos Animal
+  // Tipos Animal (with offline support)
   static Future<TipoAnimalResponse> getTiposAnimal() async {
+    LoggingService.debug(
+      'Getting tipos animal list...',
+      'ConfigurationService',
+    );
+
     try {
+      // Check connectivity first
+      final isConnected = await ConnectivityService.isConnected();
+
+      if (!isConnected) {
+        LoggingService.info(
+          'No connectivity - using cached tipos animal data',
+          'ConfigurationService',
+        );
+        return await _getOfflineTiposAnimal();
+      }
+
       LoggingService.debug(
-        'Fetching tipos animal from server',
+        'Connectivity available - fetching tipos animal from server',
         'ConfigurationService',
       );
 
       final headers = await _getHeaders();
-      final response = await http.get(
-        Uri.parse('${AppConfig.apiUrl}/tipos-animal'),
-        headers: headers,
-      );
+      final response = await http
+          .get(Uri.parse('${AppConfig.apiUrl}/tipos-animal'), headers: headers)
+          .timeout(_httpTimeout);
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
+        final tipoAnimalResponse = TipoAnimalResponse.fromJson(jsonData);
+
         LoggingService.info(
-          'Tipos animal fetched successfully',
+          'Tipos animal fetched successfully from server (${tipoAnimalResponse.data.data.length} items)',
           'ConfigurationService',
         );
-        return TipoAnimalResponse.fromJson(jsonData);
+
+        // Save to offline storage
+        await DatabaseService.saveTiposAnimalOffline(
+          tipoAnimalResponse.data.data,
+        );
+
+        return tipoAnimalResponse;
       } else {
+        LoggingService.error(
+          'Tipos animal request failed with status: ${response.statusCode}',
+          'ConfigurationService',
+        );
         throw Exception('Failed to load tipos animal: ${response.statusCode}');
       }
+    } on TimeoutException {
+      LoggingService.warning(
+        'Tipos animal request timeout - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineTiposAnimal();
+    } on SocketException {
+      LoggingService.warning(
+        'Tipos animal request socket error - falling back to offline data',
+        'ConfigurationService',
+      );
+      return await _getOfflineTiposAnimal();
     } catch (e) {
+      LoggingService.error(e.toString(), 'ConfigurationService', e);
       LoggingService.error(
-        'Error fetching tipos animal',
+        'Tipos animal request error',
         'ConfigurationService',
         e,
       );
+
+      // If any network-related error, try offline data
+      if (_isNetworkError(e)) {
+        LoggingService.info(
+          'Network error detected - trying offline tipos animal data',
+          'ConfigurationService',
+        );
+        return await _getOfflineTiposAnimal();
+      }
+
       rethrow;
     }
   }
@@ -465,6 +609,129 @@ class ConfigurationService {
         return await _getOfflineComposicionRaza();
       }
 
+      rethrow;
+    }
+  }
+
+  // Get offline estados de salud data
+  static Future<EstadoSaludResponse> _getOfflineEstadosSalud() async {
+    try {
+      LoggingService.debug(
+        'Getting estados de salud from offline storage',
+        'ConfigurationService',
+      );
+
+      final estadosSalud = await DatabaseService.getEstadosSaludOffline();
+
+      if (estadosSalud.isEmpty) {
+        LoggingService.warning(
+          'No estados de salud data found in offline storage',
+          'ConfigurationService',
+        );
+        throw Exception('No hay datos de estados de salud disponibles offline');
+      }
+
+      LoggingService.info(
+        '${estadosSalud.length} estados de salud items retrieved from offline storage',
+        'ConfigurationService',
+      );
+
+      // Create a mock paginated response
+      return EstadoSaludResponse(
+        success: true,
+        message:
+            'Datos de estados de salud obtenidos desde almacenamiento local',
+        data: PaginatedData<EstadoSalud>(
+          currentPage: 1,
+          data: estadosSalud,
+          total: estadosSalud.length,
+          perPage: estadosSalud.length,
+        ),
+      );
+    } catch (e) {
+      LoggingService.error(
+        'Error getting offline estados de salud data',
+        'ConfigurationService',
+        e,
+      );
+      rethrow;
+    }
+  }
+
+  // Get offline etapas data
+  static Future<List<Etapa>> _getOfflineEtapas() async {
+    try {
+      LoggingService.debug(
+        'Getting etapas from offline storage',
+        'ConfigurationService',
+      );
+
+      final etapas = await DatabaseService.getEtapasOffline();
+
+      if (etapas.isEmpty) {
+        LoggingService.warning(
+          'No etapas data found in offline storage',
+          'ConfigurationService',
+        );
+        throw Exception('No hay datos de etapas disponibles offline');
+      }
+
+      LoggingService.info(
+        '${etapas.length} etapas items retrieved from offline storage',
+        'ConfigurationService',
+      );
+
+      return etapas;
+    } catch (e) {
+      LoggingService.error(
+        'Error getting offline etapas data',
+        'ConfigurationService',
+        e,
+      );
+      rethrow;
+    }
+  }
+
+  // Get offline tipos animal data
+  static Future<TipoAnimalResponse> _getOfflineTiposAnimal() async {
+    try {
+      LoggingService.debug(
+        'Getting tipos animal from offline storage',
+        'ConfigurationService',
+      );
+
+      final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
+
+      if (tiposAnimal.isEmpty) {
+        LoggingService.warning(
+          'No tipos animal data found in offline storage',
+          'ConfigurationService',
+        );
+        throw Exception('No hay datos de tipos animal disponibles offline');
+      }
+
+      LoggingService.info(
+        '${tiposAnimal.length} tipos animal items retrieved from offline storage',
+        'ConfigurationService',
+      );
+
+      // Create a mock paginated response
+      return TipoAnimalResponse(
+        success: true,
+        message: 'Datos de tipos animal obtenidos desde almacenamiento local',
+        data: PaginatedData<TipoAnimal>(
+          currentPage: 1,
+          data: tiposAnimal,
+          total: tiposAnimal.length,
+          perPage: tiposAnimal.length,
+        ),
+      );
+    } catch (e) {
+      LoggingService.error(
+        'Error getting offline tipos animal data',
+        'ConfigurationService',
+        e,
+      );
       rethrow;
     }
   }

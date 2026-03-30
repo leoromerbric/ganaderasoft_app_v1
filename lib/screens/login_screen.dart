@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
+import '../services/sync_service.dart';
+import '../services/logging_service.dart';
 import '../constants/app_constants.dart';
 import 'home_screen.dart';
 
@@ -38,9 +40,19 @@ class _LoginScreenState extends State<LoginScreen> {
         );
 
         if (mounted) {
+          // Navigate to HomeScreen immediately after successful login
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const HomeScreen()),
           );
+
+          // Start configuration sync in background (non-blocking)
+          SyncService.syncConfigurationDataOnly().catchError((e) {
+            LoggingService.warning(
+              'Configuration sync failed after login: $e',
+              'LoginScreen',
+            );
+            return false; // Return false to indicate sync failure
+          });
         }
       } catch (e) {
         if (mounted) {

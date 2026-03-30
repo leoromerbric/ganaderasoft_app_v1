@@ -207,6 +207,16 @@ class EstadoSalud {
       'synced': synced,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EstadoSalud &&
+          runtimeType == other.runtimeType &&
+          estadoId == other.estadoId;
+
+  @override
+  int get hashCode => estadoId.hashCode;
 }
 
 class TipoAnimal {
@@ -235,6 +245,16 @@ class TipoAnimal {
       'synced': synced,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is TipoAnimal &&
+          runtimeType == other.runtimeType &&
+          tipoAnimalId == other.tipoAnimalId;
+
+  @override
+  int get hashCode => tipoAnimalId.hashCode;
 }
 
 // Complex Etapa model with nested TipoAnimal
@@ -284,6 +304,16 @@ class Etapa {
       'synced': synced,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is Etapa &&
+          runtimeType == other.runtimeType &&
+          etapaId == other.etapaId;
+
+  @override
+  int get hashCode => etapaId.hashCode;
 }
 
 // Response wrapper classes for paginated APIs
@@ -431,6 +461,16 @@ class ComposicionRaza {
       'synced': synced,
     };
   }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ComposicionRaza &&
+          runtimeType == other.runtimeType &&
+          idComposicion == other.idComposicion;
+
+  @override
+  int get hashCode => idComposicion.hashCode;
 }
 
 // Response wrapper for ComposicionRaza

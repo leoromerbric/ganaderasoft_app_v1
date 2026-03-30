@@ -9,14 +9,8 @@ void main() {
     setUp(() {
       // Create test data similar to API responses
       testTiposAnimal = [
-        TipoAnimal(
-          tipoAnimalId: 3,
-          tipoAnimalNombre: 'Vacuno',
-        ),
-        TipoAnimal(
-          tipoAnimalId: 4,
-          tipoAnimalNombre: 'Bufala',
-        ),
+        TipoAnimal(tipoAnimalId: 3, tipoAnimalNombre: 'Vacuno'),
+        TipoAnimal(tipoAnimalId: 4, tipoAnimalNombre: 'Bufala'),
       ];
 
       testEtapas = [
@@ -83,15 +77,18 @@ void main() {
       // Simulate filtering logic from create_animal_screen.dart
       String selectedSexo = 'M';
       TipoAnimal selectedTipoAnimal = testTiposAnimal[0]; // Vacuno
-      
+
       // Convert F to H for filtering (as implemented)
       String sexoForFiltering = selectedSexo == 'F' ? 'H' : selectedSexo;
-      
-      List<Etapa> filteredEtapas = testEtapas.where((etapa) => 
-        etapa.etapaSexo == sexoForFiltering && 
-        etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId
-      ).toList();
-      
+
+      List<Etapa> filteredEtapas = testEtapas
+          .where(
+            (etapa) =>
+                etapa.etapaSexo == sexoForFiltering &&
+                etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId,
+          )
+          .toList();
+
       expect(filteredEtapas.length, 2); // Becerro and Toro
       expect(filteredEtapas[0].etapaNombre, 'Becerro');
       expect(filteredEtapas[1].etapaNombre, 'Toro');
@@ -101,15 +98,18 @@ void main() {
       // Test female sex conversion
       String selectedSexo = 'F';
       TipoAnimal selectedTipoAnimal = testTiposAnimal[0]; // Vacuno
-      
+
       // Convert F to H for filtering
       String sexoForFiltering = selectedSexo == 'F' ? 'H' : selectedSexo;
-      
-      List<Etapa> filteredEtapas = testEtapas.where((etapa) => 
-        etapa.etapaSexo == sexoForFiltering && 
-        etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId
-      ).toList();
-      
+
+      List<Etapa> filteredEtapas = testEtapas
+          .where(
+            (etapa) =>
+                etapa.etapaSexo == sexoForFiltering &&
+                etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId,
+          )
+          .toList();
+
       expect(filteredEtapas.length, 2); // Becerra and Vaca
       expect(filteredEtapas[0].etapaNombre, 'Becerra');
       expect(filteredEtapas[1].etapaNombre, 'Vaca');
@@ -118,23 +118,26 @@ void main() {
     test('Should filter etapas by different tipo animal', () {
       String selectedSexo = 'M';
       TipoAnimal selectedTipoAnimal = testTiposAnimal[1]; // Bufala
-      
+
       String sexoForFiltering = selectedSexo == 'F' ? 'H' : selectedSexo;
-      
-      List<Etapa> filteredEtapas = testEtapas.where((etapa) => 
-        etapa.etapaSexo == sexoForFiltering && 
-        etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId
-      ).toList();
-      
+
+      List<Etapa> filteredEtapas = testEtapas
+          .where(
+            (etapa) =>
+                etapa.etapaSexo == sexoForFiltering &&
+                etapa.etapaFkTipoAnimalId == selectedTipoAnimal.tipoAnimalId,
+          )
+          .toList();
+
       expect(filteredEtapas.length, 1); // Only Bucerro
       expect(filteredEtapas[0].etapaNombre, 'Bucerro');
     });
 
     test('Should return empty list when no sex or tipo animal selected', () {
       // Simulate the condition when no selection is made
-      String? selectedSexo = null;
-      TipoAnimal? selectedTipoAnimal = null;
-      
+      String? selectedSexo;
+      TipoAnimal? selectedTipoAnimal;
+
       if (selectedSexo == null || selectedTipoAnimal == null) {
         expect([], isEmpty);
       }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../services/auth_service.dart';
 import '../services/connectivity_service.dart';
@@ -18,12 +19,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     _loadProfile();
     _checkConnectivity();
+    _listenToConnectivity();
   }
 
   Future<void> _checkConnectivity() async {
@@ -53,6 +56,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _isLoading = false;
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   @override

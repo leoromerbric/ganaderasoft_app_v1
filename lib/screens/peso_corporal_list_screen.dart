@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -31,7 +32,8 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
-  String? _dataSourceMessage;
+  StreamSubscription<bool>? _connectivitySubscription;
+  // String? _dataSourceMessage; // Removed unused variable
   Animal? _selectedAnimal;
   List<Animal> _animales = [];
 
@@ -41,14 +43,42 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
     _selectedAnimal = widget.selectedAnimal;
     _animales = widget.animales;
     _checkConnectivity();
+    _listenToConnectivity();
     _loadPesos();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+            // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+            // _dataSourceMessage = 'Datos offline';
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
     setState(() {
       _isOffline = !isConnected;
-      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+      // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -62,7 +92,7 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
       setState(() {
         _isLoading = true;
         _error = null;
-        _dataSourceMessage = null;
+        // _dataSourceMessage = null;
       });
 
       await _checkConnectivity();
@@ -84,7 +114,7 @@ class _PesoCorporalListScreenState extends State<PesoCorporalListScreen> {
       setState(() {
         _pesos = pesosResponse.data;
         _isLoading = false;
-        //_dataSourceMessage = pesosResponse.message;
+        //// _dataSourceMessage = pesosResponse.message;
 
         // First filter by finca animals (only show peso records for animals that belong to this finca)
         final fincaAnimalIds = widget.animales

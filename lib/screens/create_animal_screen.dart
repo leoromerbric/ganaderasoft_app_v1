@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -48,6 +49,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
   bool _isLoading = false;
   bool _isLoadingData = true;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   // Data lists
   List<Rebano> _rebanos = [];
@@ -65,6 +67,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     _procedenciaController.text =
         _procedencia; // Initialize controller with default value
     _checkConnectivity();
+    _listenToConnectivity();
     _loadConfigurationData();
   }
 
@@ -74,7 +77,27 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
     _codigoAnimalController.dispose();
     _fechaNacimientoController.dispose();
     _procedenciaController.dispose();
+    _connectivitySubscription?.cancel();
     super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -123,106 +146,89 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
 
   Future<void> _loadComposicionRaza() async {
     try {
-      if (_isOffline) {
-        final composicionRaza =
-            await DatabaseService.getComposicionRazaOffline();
-        setState(() {
-          _composicionRaza = composicionRaza;
-        });
-      } else {
-        final response = await ConfigurationService.getComposicionRaza();
-        setState(() {
-          _composicionRaza = response.data.data;
-        });
-      }
+      final response = await ConfigurationService.getComposicionRaza();
+      setState(() {
+        _composicionRaza = response.data.data;
+      });
     } catch (e) {
       LoggingService.error(
         'Error loading composicion raza',
         'CreateAnimalScreen',
         e,
       );
-      // Try offline fallback
-      final composicionRaza = await DatabaseService.getComposicionRazaOffline();
-      setState(() {
-        _composicionRaza = composicionRaza;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar composición de raza: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _loadEstadosSalud() async {
     try {
-      if (_isOffline) {
-        final estadosSalud = await DatabaseService.getEstadosSaludOffline();
-        setState(() {
-          _estadosSalud = estadosSalud;
-        });
-      } else {
-        final response = await ConfigurationService.getEstadosSalud();
-        setState(() {
-          _estadosSalud = response.data.data;
-        });
-      }
+      final response = await ConfigurationService.getEstadosSalud();
+      setState(() {
+        _estadosSalud = response.data.data;
+      });
     } catch (e) {
       LoggingService.error(
         'Error loading estados salud',
         'CreateAnimalScreen',
         e,
       );
-      // Try offline fallback
-      final estadosSalud = await DatabaseService.getEstadosSaludOffline();
-      setState(() {
-        _estadosSalud = estadosSalud;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar estados de salud: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _loadEtapas() async {
     try {
-      if (_isOffline) {
-        final etapas = await DatabaseService.getEtapasOffline();
-        setState(() {
-          _etapas = etapas;
-        });
-      } else {
-        final etapas = await ConfigurationService.getEtapas();
-        setState(() {
-          _etapas = etapas;
-        });
-      }
-    } catch (e) {
-      LoggingService.error('Error loading etapas', 'CreateAnimalScreen', e);
-      // Try offline fallback
-      final etapas = await DatabaseService.getEtapasOffline();
+      final etapas = await ConfigurationService.getEtapas();
       setState(() {
         _etapas = etapas;
       });
+    } catch (e) {
+      LoggingService.error('Error loading etapas', 'CreateAnimalScreen', e);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar etapas: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
   Future<void> _loadTiposAnimal() async {
     try {
-      if (_isOffline) {
-        final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
-        setState(() {
-          _tiposAnimal = tiposAnimal;
-        });
-      } else {
-        final response = await ConfigurationService.getTiposAnimal();
-        setState(() {
-          _tiposAnimal = response.data.data;
-        });
-      }
+      final response = await ConfigurationService.getTiposAnimal();
+      setState(() {
+        _tiposAnimal = response.data.data;
+      });
     } catch (e) {
       LoggingService.error(
         'Error loading tipos animal',
         'CreateAnimalScreen',
         e,
       );
-      // Try offline fallback
-      final tiposAnimal = await DatabaseService.getTiposAnimalOffline();
-      setState(() {
-        _tiposAnimal = tiposAnimal;
-      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error al cargar tipos de animal: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -531,7 +537,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<String>(
-                      value: _selectedSexo,
+                      initialValue: _selectedSexo,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el sexo',
@@ -658,7 +664,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<ComposicionRaza>(
-                      value: _selectedComposicionRaza,
+                      initialValue: _selectedComposicionRaza,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona la composición de raza',
@@ -694,7 +700,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<EstadoSalud>(
-                      value: _selectedEstadoSalud,
+                      initialValue: _selectedEstadoSalud,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el estado de salud',
@@ -728,7 +734,7 @@ class _CreateAnimalScreenState extends State<CreateAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<Etapa>(
-                      value: _selectedEtapa,
+                      initialValue: _selectedEtapa,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona la etapa',

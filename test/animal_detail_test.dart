@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/models/animal.dart';
-import '../lib/models/configuration_models.dart';
+import 'package:ganaderasoft_app_v1/models/animal.dart';
+import 'package:ganaderasoft_app_v1/models/configuration_models.dart';
 
 void main() {
   group('AnimalDetail Model Tests', () {
@@ -27,11 +27,8 @@ void main() {
             "esan_fecha_fin": null,
             "esan_fk_estado_id": 15,
             "esan_fk_id_animal": 13,
-            "estado_salud": {
-              "estado_id": 15,
-              "estado_nombre": "Sano"
-            }
-          }
+            "estado_salud": {"estado_id": 15, "estado_nombre": "Sano"},
+          },
         ],
         "etapa_animales": [
           {
@@ -48,10 +45,10 @@ void main() {
               "etapa_sexo": "M",
               "tipo_animal": {
                 "tipo_animal_id": 3,
-                "tipo_animal_nombre": "Vacuno"
-              }
-            }
-          }
+                "tipo_animal_nombre": "Vacuno",
+              },
+            },
+          },
         ],
         "etapa_actual": {
           "etan_etapa_id": 15,
@@ -67,10 +64,10 @@ void main() {
             "etapa_sexo": "M",
             "tipo_animal": {
               "tipo_animal_id": 3,
-              "tipo_animal_nombre": "Vacuno"
-            }
-          }
-        }
+              "tipo_animal_nombre": "Vacuno",
+            },
+          },
+        },
       };
 
       final animalDetail = AnimalDetail.fromJson(json);
@@ -121,10 +118,7 @@ void main() {
         etapa: etapa,
       );
 
-      final estadoSalud = EstadoSalud(
-        estadoId: 15,
-        estadoNombre: "Sano",
-      );
+      final estadoSalud = EstadoSalud(estadoId: 15, estadoNombre: "Sano");
 
       final estadoAnimal = EstadoAnimal(
         esanId: 13,
@@ -196,7 +190,7 @@ void main() {
       // Test serialization/deserialization
       final json = etapaAnimal.toJson();
       final reconstructed = EtapaAnimal.fromJson(json);
-      
+
       expect(reconstructed.etanEtapaId, etapaAnimal.etanEtapaId);
       expect(reconstructed.etapa.etapaNombre, etapaAnimal.etapa.etapaNombre);
     });

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -32,7 +33,8 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
-  String? _dataSourceMessage;
+  StreamSubscription<bool>? _connectivitySubscription;
+  // String? _dataSourceMessage; // Removed unused variable
   Animal? _selectedAnimal;
   List<Animal> _animales = [];
 
@@ -42,14 +44,42 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
     _selectedAnimal = widget.selectedAnimal;
     _animales = widget.animales;
     _checkConnectivity();
+    _listenToConnectivity();
     _loadCambios();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+            // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+            // _dataSourceMessage = 'Datos offline';
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
     setState(() {
       _isOffline = !isConnected;
-      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+      // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -63,7 +93,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
       setState(() {
         _isLoading = true;
         _error = null;
-        _dataSourceMessage = null;
+        // _dataSourceMessage = null;
       });
 
       await _checkConnectivity();
@@ -85,7 +115,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
       setState(() {
         _cambios = cambiosResponse.data;
         _isLoading = false;
-        //_dataSourceMessage = cambiosResponse.message;
+        //// _dataSourceMessage = cambiosResponse.message;
 
         // Filter by finca animals (only show changes for animals that belong to this finca)
         final fincaAnimalIds = _animales
@@ -238,7 +268,7 @@ class _CambiosAnimalListScreenState extends State<CambiosAnimalListScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: DropdownButtonFormField<Animal?>(
-                            value: _selectedAnimal,
+                            initialValue: _selectedAnimal,
                             decoration: const InputDecoration(
                               hintText: 'Filtrar por animal',
                               border: OutlineInputBorder(),

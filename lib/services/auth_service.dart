@@ -672,8 +672,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -1350,8 +1349,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -1499,8 +1497,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -1631,15 +1628,15 @@ class AuthService {
       String url = AppConfig.registroLecheroUrl;
       Map<String, String> queryParams = {};
 
-      if (lactanciaId != null)
+      if (lactanciaId != null) {
         queryParams['lactancia_id'] = lactanciaId.toString();
+      }
       if (fechaInicio != null) queryParams['fecha_inicio'] = fechaInicio;
       if (fechaFin != null) queryParams['fecha_fin'] = fechaFin;
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -1759,8 +1756,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -1894,8 +1890,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http
@@ -2011,8 +2006,7 @@ class AuthService {
 
       if (queryParams.isNotEmpty) {
         url +=
-            '?' +
-            queryParams.entries.map((e) => '${e.key}=${e.value}').join('&');
+            '?${queryParams.entries.map((e) => '${e.key}=${e.value}').join('&')}';
       }
 
       final response = await http

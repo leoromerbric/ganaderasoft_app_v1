@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -31,9 +32,10 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
-  String? _dataSourceMessage;
+  // String? _dataSourceMessage; // Removed unused variable
   Rebano? _selectedRebano;
   List<Rebano> _rebanos = [];
+  StreamSubscription<bool>? _connectivitySubscription;
 
   @override
   void initState() {
@@ -41,14 +43,42 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
     _selectedRebano = widget.selectedRebano;
     _rebanos = widget.rebanos;
     _checkConnectivity();
+    _listenToConnectivity();
     _loadAnimales();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+            // // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+            // // _dataSourceMessage = 'Datos offline';
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
     final isConnected = await ConnectivityService.isConnected();
     setState(() {
       _isOffline = !isConnected;
-      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+      // // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -62,7 +92,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
       setState(() {
         _isLoading = true;
         _error = null;
-        _dataSourceMessage = null;
+        // // _dataSourceMessage = null;
       });
 
       await _checkConnectivity();
@@ -95,7 +125,7 @@ class _AnimalesListScreenState extends State<AnimalesListScreen> {
           return animalRebano.idFinca == widget.finca.idFinca;
         }).toList();
         _isLoading = false;
-        //_dataSourceMessage = animalesResponse.message;
+        //// _dataSourceMessage = animalesResponse.message;
 
         // Apply rebano filter if one is selected
         if (_selectedRebano != null) {

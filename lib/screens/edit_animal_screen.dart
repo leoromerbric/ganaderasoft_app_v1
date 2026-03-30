@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/finca.dart';
 import '../models/animal.dart';
@@ -47,6 +48,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
   bool _isLoading = false;
   bool _isLoadingData = true;
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   // Configuration data
   List<TipoAnimal> _tiposAnimal = [];
@@ -61,6 +63,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
   void initState() {
     super.initState();
     _initializeData();
+    _listenToConnectivity();
     _populateFormWithAnimalData();
   }
 
@@ -112,7 +115,27 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
     _codigoAnimalController.dispose();
     _fechaNacimientoController.dispose();
     _procedenciaController.dispose();
+    _connectivitySubscription?.cancel();
     super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _initializeData() async {
@@ -638,7 +661,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<TipoAnimal>(
-                      value: _selectedTipoAnimal,
+                      initialValue: _selectedTipoAnimal,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona el tipo de animal',
@@ -727,7 +750,7 @@ class _EditAnimalScreenState extends State<EditAnimalScreen> {
                     ),
                     const SizedBox(height: 8),
                     DropdownButtonFormField<ComposicionRaza>(
-                      value: _selectedComposicionRaza,
+                      initialValue: _selectedComposicionRaza,
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(),
                         hintText: 'Selecciona la composición de raza',

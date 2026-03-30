@@ -19,7 +19,7 @@ class _FincasScreenState extends State<FincasScreen> {
   bool _isLoading = true;
   String? _error;
   bool _isOffline = false;
-  String? _dataSourceMessage;
+  // String? _dataSourceMessage; // Removed unused variable
 
   @override
   void initState() {
@@ -36,7 +36,7 @@ class _FincasScreenState extends State<FincasScreen> {
     );
     setState(() {
       _isOffline = !isConnected;
-      _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
+      // _dataSourceMessage = _isOffline ? 'Datos offline' : 'Datos online';
     });
   }
 
@@ -47,7 +47,7 @@ class _FincasScreenState extends State<FincasScreen> {
       setState(() {
         _isLoading = true;
         _error = null;
-        _dataSourceMessage = null;
+        // _dataSourceMessage = null;
       });
 
       // Check connectivity status
@@ -63,7 +63,7 @@ class _FincasScreenState extends State<FincasScreen> {
       setState(() {
         _fincas = fincasResponse.fincas;
         _isLoading = false;
-        //_dataSourceMessage = fincasResponse.message;
+        //// _dataSourceMessage = fincasResponse.message;
       });
     } catch (e) {
       LoggingService.error('Error loading fincas', 'FincasScreen', e);

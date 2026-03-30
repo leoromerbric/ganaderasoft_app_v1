@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:ganaderasoft_app_v1/constants/app_constants.dart';
 import '../models/configuration_models.dart';
 import '../services/database_service.dart';
 import '../services/connectivity_service.dart';
+import '../services/configuration_service.dart';
 
 class ConfigurationDataScreen extends StatefulWidget {
   const ConfigurationDataScreen({super.key});
@@ -14,11 +16,38 @@ class ConfigurationDataScreen extends StatefulWidget {
 
 class _ConfigurationDataScreenState extends State<ConfigurationDataScreen> {
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
   @override
   void initState() {
     super.initState();
     _checkConnectivity();
+    _listenToConnectivity();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -267,6 +296,7 @@ class ConfigurationDetailScreen extends StatefulWidget {
 
 class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
   bool _isOffline = false;
+  StreamSubscription<bool>? _connectivitySubscription;
   bool _isLoading = true;
   List<dynamic> _data = [];
   String _error = '';
@@ -275,7 +305,33 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
   void initState() {
     super.initState();
     _checkConnectivity();
+    _listenToConnectivity();
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  void _listenToConnectivity() {
+    _connectivitySubscription = ConnectivityService.connectionStream.listen(
+      (bool isConnected) {
+        if (mounted) {
+          setState(() {
+            _isOffline = !isConnected;
+          });
+        }
+      },
+      onError: (error) {
+        if (mounted) {
+          setState(() {
+            _isOffline = true;
+          });
+        }
+      },
+    );
   }
 
   Future<void> _checkConnectivity() async {
@@ -296,13 +352,15 @@ class _ConfigurationDetailScreenState extends State<ConfigurationDetailScreen> {
 
       switch (widget.configurationType) {
         case ConfigurationType.estadoSalud:
-          data = await DatabaseService.getEstadosSaludOffline();
+          final response = await ConfigurationService.getEstadosSalud();
+          data = response.data.data;
           break;
         case ConfigurationType.tipoAnimal:
-          data = await DatabaseService.getTiposAnimalOffline();
+          final response = await ConfigurationService.getTiposAnimal();
+          data = response.data.data;
           break;
         case ConfigurationType.etapa:
-          data = await DatabaseService.getEtapasOffline();
+          data = await ConfigurationService.getEtapas();
           break;
         case ConfigurationType.fuenteAgua:
           data = await DatabaseService.getFuenteAguaOffline();
